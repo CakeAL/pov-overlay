@@ -3,15 +3,7 @@ use geo::{Distance, Haversine};
 use gpx::{Track, TrackSegment};
 use std::{f64, fs::File, io::BufReader, path::Path};
 use time::OffsetDateTime;
-
-#[derive(Debug)]
-pub struct PointData {
-    pub time: OffsetDateTime,
-    pub latitude: f64,
-    pub longitude: f64,
-    pub elevation: f64,
-    pub speed: f64, // m/s
-}
+use crate::point_data::PointData;
 
 pub fn handle_gpx<P: AsRef<Path>>(path: P) -> Result<Vec<PointData>> {
     let file = File::open(path)?;

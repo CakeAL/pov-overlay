@@ -6,5 +6,9 @@ edition = "2024"
 [dependencies]
 gpx = "=0.10.0"
 geo = "0.31.0"
+slippy-map-tiles = "0.16"
+
+tokio = { version = "1", features = ["full"] }
 time = "0.3.44"
 anyhow = "1"
+reqwest = "0.12.24"
