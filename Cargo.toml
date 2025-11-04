@@ -6,9 +6,13 @@ edition = "2024"
 [dependencies]
 gpx = "=0.10.0"
 geo = "0.31.0"
-slippy-map-tiles = "0.16"
+geojson = "0.24"
+galileo = {version="0.2.1", features = ["geojson"]}
+galileo-types = "0.2.1"
+env_logger = "0.11"
 
 tokio = { version = "1", features = ["full"] }
 time = "0.3.44"
 anyhow = "1"
-reqwest = "0.12.24"
+image = "0.25"
+# reqwest = "0.12.24"
