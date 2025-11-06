@@ -3,11 +3,11 @@ use std::{time::Duration, vec};
 use anyhow::Result;
 use galileo::{
     Map, MapView, Messenger, TileSchema,
+    galileo_types::{cartesian::Size, geo::Crs},
     layer::{FeatureLayer, raster_tile_layer::RasterTileLayerBuilder},
     render::WgpuRenderer,
     symbol::ArbitraryGeometrySymbol,
 };
-use galileo_types::{cartesian::Size, geo::Crs};
 use geojson::{Feature, Geometry, Value};
 use image::{ImageBuffer, Rgba};
 use time::OffsetDateTime;
@@ -22,7 +22,7 @@ pub struct PointData {
 }
 
 impl PointData {
-    pub async fn get_map_tile(&self, zoom: u8) -> Result<Vec<u8>> {
+    pub async fn get_map_tile(&self) -> Result<Vec<u8>> {
         let geometry = Geometry::new(Value::Point(vec![self.longitude, self.latitude]));
         let symbol = ArbitraryGeometrySymbol::default();
         let feature = Feature {
@@ -38,7 +38,7 @@ impl PointData {
 
         let image_size = Size::new(256, 256);
         let resolution = TileSchema::web(18)
-            .lod_resolution(14)
+            .lod_resolution(16)
             .expect("invalid tile schema");
 
         let mut osm = RasterTileLayerBuilder::new_osm()
@@ -49,7 +49,9 @@ impl PointData {
         osm.set_fade_in_duration(Duration::default());
 
         let map_view = MapView::new_projected(&center, resolution).with_size(image_size.cast());
+
         osm.load_tiles(&map_view).await;
+
         let map = Map::new(
             map_view,
             vec![Box::new(osm), Box::new(layer)],
@@ -82,7 +84,7 @@ mod tests {
             elevation: 0.0,
             speed: 0.0,
         };
-        let data = point.get_map_tile(16).await.unwrap();
+        let data = point.get_map_tile().await.unwrap();
         std::fs::write("test_tile.png", &data).unwrap();
     }
 }
