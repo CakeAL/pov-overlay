@@ -1518,7 +1518,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gpx-overlay"
+name = "pov-overlay"
 version = "0.1.0"
 dependencies = [
  "anyhow",
