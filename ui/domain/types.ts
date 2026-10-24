@@ -72,4 +72,4 @@ export function defaultWidgets(): Widget[] {
 
 export interface ImageAsset {name:string;url:string;width:number;height:number}
 
-export interface TrackSource {id:string;name:string;track:Track}
+export interface TrackSource {id:string;name:string;track:Track;enabled?:boolean}

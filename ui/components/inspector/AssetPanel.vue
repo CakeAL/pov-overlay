@@ -7,9 +7,9 @@ import { formatTime } from "../../domain/telemetry";
 const { media, playback, timeline } = useEditorContext();
 const { track, asset, gpxName, busy, gpxInput, videoInput } = toRefs(media);
 const { chooseGpx, chooseVideo, selectedFile,chooseImage,selectedImage } = media;
-const {image,imageInput,backgroundMode}=toRefs(media);
+const {image,imageInput,backgroundMode,sources,joinSources,mergeInfo}=toRefs(media);
 const { videoDuration } = toRefs(playback);
-const { routePath } = toRefs(timeline);
+const { routePath,routePoint } = toRefs(timeline);
 </script>
 
 <template>
@@ -27,7 +27,7 @@ const { routePath } = toRefs(timeline);
     >
       <span class="asset-icon track-icon"><Route :size="20" /></span
       ><span class="asset-copy"
-        ><strong>{{ gpxName || "导入 GPX 轨迹" }}</strong
+        ><strong>{{ sources.length ? `已导入 ${sources.length} 段 GPX（继续添加）` : "导入 GPX 轨迹" }}</strong
         ><small>{{
           track
             ? `${track.samples.length.toLocaleString()} 个轨迹点 · ${(track.distanceMeters / 1000).toFixed(2)} km`
@@ -38,6 +38,9 @@ const { routePath } = toRefs(timeline);
         :size="17"
       />
     </button>
+    <div class="track-sources"><div v-for="source in sources" :key="source.id" class="track-source"><label><input type="checkbox" :checked="source.enabled !== false" :aria-label="`启用 ${source.name}`" @change="media.toggleSource(source.id)"/><span>{{source.name}}</span></label><button :aria-label="`移除 ${source.name}`" @click="media.removeSource(source.id)">×</button></div></div>
+    <label v-if="sources.length>1" class="field-label"><input type="checkbox" v-model="joinSources"/>连接相邻文件的连续点</label>
+    <p v-if="sources.length>1" class="field-hint">按绝对时间排序，后导入覆盖重叠时段。已替换 {{mergeInfo.overwritten}} 点，保留 {{mergeInfo.breaks}} 处断点。</p>
     <button
       class="asset-card"
       :class="{ imported: asset }"
@@ -67,6 +70,7 @@ const { routePath } = toRefs(timeline);
       class="file-input"
       type="file"
       accept=".gpx,application/gpx+xml"
+      multiple
       @change="selectedFile($event, 'gpx')"
     />
     <input
@@ -78,8 +82,8 @@ const { routePath } = toRefs(timeline);
       @change="selectedFile($event, 'video')"
     />
     <div v-if="track" class="track-summary">
-      <svg viewBox="0 0 120 52" aria-hidden="true">
-        <path :d="routePath" />
+      <svg viewBox="0 0 240 110" aria-hidden="true">
+        <path :d="routePath" /><circle v-if="routePoint" :cx="routePoint.x" :cy="routePoint.y" r="4" fill="#476e39"/>
       </svg>
       <div>
         <span>GPX 起始时间</span><strong>{{ dateText(track.startMs) }}</strong

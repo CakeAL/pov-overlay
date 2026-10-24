@@ -1,7 +1,7 @@
 import type {Widget,Track,ImageAsset,TrackSource,VideoAsset} from '../../domain/types';
 import {sanitizeSvg} from '../svg';
 export interface PresetDocument {type:'pov-overlay/preset';version:1;name:string;widgets:Widget[];smoothingSeconds:number;refreshSeconds:number;aspectRatio:number}
-export interface ProjectDocument extends Omit<PresetDocument,'type'> {type:'pov-overlay/project';tracks:TrackSource[];backgroundMode:'none'|'image'|'video';image:ImageAsset|null;video:Omit<VideoAsset,'url'|'warning'>|null;currentTime:number;offset:number;alignmentKnown:boolean;syncMode:'auto'|'manual'|'none'}
+export interface ProjectDocument extends Omit<PresetDocument,'type'> {type:'pov-overlay/project';tracks:TrackSource[];joinSources:boolean;backgroundMode:'none'|'image'|'video';image:ImageAsset|null;video:Omit<VideoAsset,'url'|'warning'>|null;currentTime:number;offset:number;alignmentKnown:boolean;syncMode:'auto'|'manual'|'none'}
 const object=(v:unknown):Record<string,unknown>=>{if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('文件结构无效。');return v as Record<string,unknown>;};
 const text=(v:unknown,max=256):string=>{if(typeof v!=='string'||v.length>max)throw new Error('文本字段无效。');return v;};
 const num=(v:unknown,min:number,max:number):number=>{if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)throw new Error('数值字段超出范围。');return v;};
@@ -31,11 +31,11 @@ export function parseDocument(json:string,kind:'preset'|'project'):PresetDocumen
  const base={version:1 as const,name:text(d.name),widgets:validateWidgets(d.widgets),smoothingSeconds:num(d.smoothingSeconds,0,60),refreshSeconds:num(d.refreshSeconds,0.01,10),aspectRatio:num(d.aspectRatio,0.01,100)};
  if(kind==='preset')return {...base,type:'pov-overlay/preset'};
  if(!Array.isArray(d.tracks)||d.tracks.length>100)throw new Error('轨迹列表无效。');
- const tracks=d.tracks.map(value=>{const s=object(value);return {id:text(s.id),name:text(s.name),track:validateTrack(s.track)};});
+ const tracks=d.tracks.map(value=>{const s=object(value);return {id:text(s.id),name:text(s.name),track:validateTrack(s.track),enabled:s.enabled==null?true:bool(s.enabled)};});
  const ids=tracks.map(t=>t.id);if(new Set(ids).size!==ids.length)throw new Error('轨迹 ID 重复。');
  if(!['none','image','video'].includes(String(d.backgroundMode))||!['auto','manual','none'].includes(String(d.syncMode)))throw new Error('工程模式无效。');
  let image:ImageAsset|null=null,video:ProjectDocument['video']=null;
  if(d.image){const i=object(d.image),url=text(i.url,30*1024*1024);if(!/^data:image\/(png|jpeg|webp|gif|avif);base64,[a-z0-9+/=]+$/i.test(url))throw new Error('工程图片无效。');image={name:text(i.name),url,width:num(i.width,1,100000),height:num(i.height,1,100000)};}
  if(d.video){const v=object(d.video);video={name:text(v.name),path:v.path==null?undefined:text(v.path,4096),duration:num(v.duration,0,1e9),capturedAtMs:v.capturedAtMs==null?null:num(v.capturedAtMs,-8.64e15,8.64e15),timeSource:v.timeSource==null?null:text(v.timeSource)};}
- return {...base,type:'pov-overlay/project',tracks,image,video,backgroundMode:d.backgroundMode as ProjectDocument['backgroundMode'],currentTime:num(d.currentTime,0,1e9),offset:num(d.offset,-1e12,1e12),alignmentKnown:bool(d.alignmentKnown),syncMode:d.syncMode as ProjectDocument['syncMode']};
+ return {...base,type:'pov-overlay/project',tracks,joinSources:d.joinSources==null?true:bool(d.joinSources),image,video,backgroundMode:d.backgroundMode as ProjectDocument['backgroundMode'],currentTime:num(d.currentTime,0,1e9),offset:num(d.offset,-1e12,1e12),alignmentKnown:bool(d.alignmentKnown),syncMode:d.syncMode as ProjectDocument['syncMode']};
 }

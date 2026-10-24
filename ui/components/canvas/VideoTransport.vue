@@ -16,7 +16,7 @@ const { activeVideo:asset } = toRefs(media);
 const { duration, currentTime, playing, muted } = toRefs(playback);
 const { seek, togglePlay } = playback;
 const { alignmentKnown, offsetLabel } = toRefs(alignment);
-const { timelineTicks, coverage, absoluteTime, sample } = toRefs(timeline);
+const { timelineTicks, coverageRanges, absoluteTime, sample } = toRefs(timeline);
 </script>
 
 <template>
@@ -68,7 +68,7 @@ const { timelineTicks, coverage, absoluteTime, sample } = toRefs(timeline);
       </div>
       <div class="timeline-rail">
         <div class="timeline-background"></div>
-        <div v-if="coverage" class="timeline-gpx" :style="coverage"></div>
+        <div v-for="(range,index) in coverageRanges" :key="index" class="timeline-gpx" :style="range"></div>
         <div
           class="timeline-progress"
           :style="{

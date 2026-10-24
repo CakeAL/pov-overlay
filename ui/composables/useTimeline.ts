@@ -1,3 +1,4 @@
+import {routePreview,coverageIntervals} from "../domain/routePreview";
 import {prepareMotion} from "../domain/motion";
 import type {TelemetrySettings} from "./useTelemetrySettings";
 import { computed } from "vue";
@@ -61,26 +62,13 @@ export function useTimeline(
       formatTime((duration.value * index) / 6),
     ),
   );
-  const routePath = computed(() => {
-    if (!track.value) return "";
-    const points = track.value.samples.filter(
-      (_, index) =>
-        index % Math.max(1, Math.floor(track.value!.samples.length / 120)) ===
-        0,
-    );
-    const lats = points.map((point) => point.latitude),
-      lons = points.map((point) => point.longitude);
-    const minLat = Math.min(...lats),
-      maxLat = Math.max(...lats),
-      minLon = Math.min(...lons),
-      maxLon = Math.max(...lons);
-    return points
-      .map(
-        (point, index) =>
-          `${index ? "L" : "M"}${8 + ((point.longitude - minLon) / (maxLon - minLon || 1)) * 104},${44 - ((point.latitude - minLat) / (maxLat - minLat || 1)) * 36}`,
-      )
-      .join(" ");
+  const routeGeometry=computed(()=>track.value?routePreview(track.value):null);
+  const routePath=computed(()=>routeGeometry.value?.path??'');
+  const routePoint=computed(()=>sample.value&&routeGeometry.value?routeGeometry.value.point(sample.value):null);
+  const coverageRanges=computed(()=>{
+    if(!track.value||!duration.value||(asset.value&&!alignmentKnown.value))return [];
+    return coverageIntervals(track.value).flatMap(([start,end])=>{const left=Math.max(0,(start-track.value!.startMs)/1000-offset.value),right=Math.min(duration.value,(end-track.value!.startMs)/1000-offset.value);return right>left?[{left:`${left/duration.value*100}%`,width:`${(right-left)/duration.value*100}%`}]:[];});
   });
 
-  return { absoluteTime, sample, currentHeading, status, coverage, timelineTicks, routePath };
+  return { absoluteTime, sample, currentHeading, status, coverage,coverageRanges, timelineTicks, routePath,routePoint };
 }

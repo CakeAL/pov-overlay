@@ -13,7 +13,7 @@ export function useDocuments(media:MediaSession,layout:WidgetLayout,playback:Pla
  const name=ref('未命名工程'),busy=ref(false),projectInput=ref<HTMLInputElement>(),presetInput=ref<HTMLInputElement>();
  let pending:ProjectDocument|null=null;
  function preset():PresetDocument{return {type:'pov-overlay/preset',version:1,name:name.value,widgets:JSON.parse(JSON.stringify(layout.widgets.value)),smoothingSeconds:telemetry.smoothingSeconds.value,refreshSeconds:telemetry.refreshSeconds.value,aspectRatio:playback.ratio.value};}
- function project():ProjectDocument {const video=media.asset.value;return {...preset(),type:'pov-overlay/project',tracks:media.sources.value,backgroundMode:media.backgroundMode.value,image:media.image.value,video:video?{name:video.name,path:video.path,capturedAtMs:video.capturedAtMs,timeSource:video.timeSource,duration:playback.videoDuration.value}:null,currentTime:playback.currentTime.value,offset:alignment.offset.value,alignmentKnown:alignment.alignmentKnown.value,syncMode:alignment.syncMode.value};}
+ function project():ProjectDocument {const video=media.asset.value;return {...preset(),type:'pov-overlay/project',tracks:media.sources.value,joinSources:media.joinSources.value,backgroundMode:media.backgroundMode.value,image:media.image.value,video:video?{name:video.name,path:video.path,capturedAtMs:video.capturedAtMs,timeSource:video.timeSource,duration:playback.videoDuration.value}:null,currentTime:playback.currentTime.value,offset:alignment.offset.value,alignmentKnown:alignment.alignmentKnown.value,syncMode:alignment.syncMode.value};}
  async function action(work:()=>Promise<void>){if(busy.value)return;busy.value=true;messages.clear();try{await work();}catch(reason){messages.report(reason);}finally{busy.value=false;}}
  function applyPreset(data:PresetDocument|ProjectDocument){layout.remember();layout.widgets.value=data.widgets;layout.selectedId.value=data.widgets[0]?.id??'';telemetry.smoothingSeconds.value=data.smoothingSeconds;telemetry.refreshSeconds.value=data.refreshSeconds;playback.ratio.value=data.aspectRatio;layout.widgets.value.forEach(layout.clampWidget);}
  function restoreTime(data:ProjectDocument){alignment.offset.value=data.offset;alignment.alignmentKnown.value=data.alignmentKnown;alignment.syncMode.value=data.syncMode;const element=playback.video.value;if(media.activeVideo.value&&element&&element.readyState<1)element.addEventListener('loadedmetadata',()=>playback.seek(data.currentTime),{once:true});else playback.seek(data.currentTime);}
@@ -23,7 +23,7 @@ export function useDocuments(media:MediaSession,layout:WidgetLayout,playback:Pla
   if(data.video?.path&&native){try{restoredVideo=await importNativeVideo(data.video.path);}catch{messages.notice.value=`视频需要重新关联：${data.video.name}`;}}
   else if(data.video)messages.notice.value=`视频需要重新关联：${data.video.name}`;
   pending=null;playback.playing.value=false;playback.video.value?.pause();releaseVideo(media.asset.value);media.asset.value=null;
-  media.sources.value=data.tracks;media.track.value=data.tracks[0]?.track??null;media.gpxName.value=data.tracks.map(t=>t.name).join('、');media.image.value=data.image;
+  media.joinSources.value=data.joinSources;media.restoreSources(data.tracks);media.image.value=data.image;
   if(restoredVideo)await media.acceptVideo(restoredVideo);
   media.backgroundMode.value=data.backgroundMode==='video'&&!restoredVideo?'none':data.backgroundMode;
   applyPreset(data);name.value=data.name;restoreTime(data);
