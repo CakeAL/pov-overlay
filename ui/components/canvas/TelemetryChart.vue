@@ -10,7 +10,12 @@ const { duration, currentTime } = toRefs(playback);
 </script>
 
 <template>
-  <div v-if="geometry" class="track-profile" data-testid="track-profile">
+  <div
+    v-if="geometry"
+    id="telemetry-profile"
+    class="track-profile"
+    data-testid="track-profile"
+  >
     <div class="profile-legend">
       <span class="profile-speed-key">速度 · km/h</span>
       <span class="profile-elevation-key">海拔 · m</span>

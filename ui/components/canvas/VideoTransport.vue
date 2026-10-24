@@ -6,6 +6,8 @@ import {
   Link2,
   VolumeX,
   Volume2,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-vue-next";
 import TelemetryChart from "./TelemetryChart.vue";
 import { toRefs } from "vue";
@@ -22,7 +24,10 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
 </script>
 
 <template>
-  <div class="transport-panel" :class="{ 'has-profile': profile.geometry }">
+  <div
+    class="transport-panel"
+    :class="{ 'has-profile': profile.geometry && !profile.collapsed }"
+  >
     <div class="transport-top">
       <div class="transport-buttons">
         <button
@@ -51,6 +56,20 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
         </div>
       </div>
       <div class="transport-meta">
+        <button
+          v-if="profile.geometry"
+          class="text-button"
+          :aria-label="profile.collapsed ? '展开曲线' : '收起曲线'"
+          :title="profile.collapsed ? '展开速度/海拔曲线' : '收起速度/海拔曲线'"
+          :aria-expanded="!profile.collapsed"
+          aria-controls="telemetry-profile"
+          @click="profile.toggleCollapsed"
+        >
+          曲线<ChevronDown v-if="profile.collapsed" :size="14" /><ChevronUp
+            v-else
+            :size="14"
+          />
+        </button>
         <span v-if="asset && alignmentKnown" class="sync-meta"
           ><Link2 :size="13" /> {{ offsetLabel }}</span
         ><button
@@ -63,7 +82,7 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
         </button>
       </div>
     </div>
-    <TelemetryChart />
+    <TelemetryChart v-if="!profile.collapsed" />
     <div class="timeline">
       <div class="timeline-ticks">
         <span v-for="(tickLabel, index) in timelineTicks" :key="index">{{

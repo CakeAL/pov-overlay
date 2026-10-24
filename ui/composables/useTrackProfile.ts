@@ -12,7 +12,12 @@ export function useTrackProfile(
   alignment: Alignment,
   media: MediaSession,
 ) {
+  const collapsed = ref(false);
   const hoverFraction = ref<number | null>(null);
+  function toggleCollapsed() {
+    hoverFraction.value = null;
+    collapsed.value = !collapsed.value;
+  }
   const geometry = computed(() =>
     timeline.preparedTrack.value && (!media.activeVideo.value || alignment.alignmentKnown.value)
       ? buildTrackProfile(timeline.preparedTrack.value, playback.duration.value, alignment.offset.value)
@@ -55,5 +60,8 @@ export function useTrackProfile(
     playback.seek(target);
     hoverFraction.value = cursorFraction.value;
   }
-  return { geometry, hover, cursorFraction, hoverFraction, pointAt, seek, keydown };
+  return {
+    collapsed, toggleCollapsed,
+    geometry, hover, cursorFraction, hoverFraction, pointAt, seek, keydown,
+  };
 }
