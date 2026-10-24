@@ -7,7 +7,7 @@ const preset = () => ({
   version: 1,
   name: "ride",
   widgets: defaultWidgets(),
-  smoothingSeconds: 3,
+  smoothingPoints: 7,
   refreshSeconds: 0.1,
   aspectRatio: 16 / 9,
 });
@@ -147,4 +147,16 @@ it("persists the stop threshold and defaults older presets without accepting inv
       "preset",
     ),
   ).toThrow();
+});
+
+it("round-trips point windows and migrates legacy seconds without confusing units", () => {
+  for (const count of [0, 3, 7, 15, 61]) {
+    expect(parseDocument(JSON.stringify({ ...preset(), smoothingPoints: count }), "preset").smoothingPoints).toBe(count);
+  }
+  const { smoothingPoints, ...legacy } = preset();
+  expect(parseDocument(JSON.stringify({ ...legacy, smoothingSeconds: 3 }), "preset").smoothingPoints).toBe(7);
+  expect(parseDocument(JSON.stringify({ ...legacy, smoothingSeconds: 0 }), "preset").smoothingPoints).toBe(0);
+  for (const invalid of [1, 2, 6, 7.5, 63, -1, "7"]) {
+    expect(() => parseDocument(JSON.stringify({ ...preset(), smoothingPoints: invalid }), "preset")).toThrow();
+  }
 });

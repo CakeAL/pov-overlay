@@ -1,4 +1,5 @@
 import { routePreview, coverageIntervals } from "../domain/routePreview";
+import { normalizeSmoothingPoints } from "../domain/speedEstimation";
 import { prepareMotion } from "../domain/motion";
 import type { TelemetrySettings } from "./useTelemetrySettings";
 import { computed } from "vue";
@@ -25,10 +26,7 @@ export function useTimeline(
     track.value
       ? prepareMotion(
           track.value,
-          Math.max(
-            0,
-            Math.min(60, Number(settings.smoothingSeconds.value) || 0),
-          ),
+          normalizeSmoothingPoints(Number(settings.smoothingPoints.value)),
           Math.max(
             0,
             Math.min(2000, Number(settings.stopThresholdKmh.value) || 0),

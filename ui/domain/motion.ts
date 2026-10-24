@@ -32,7 +32,7 @@ export function angleBetween(
 /** Cached distance-over-time speed estimates, followed by monotone cubic interpolation. */
 export function prepareMotion(
   track: Track,
-  windowSeconds: number,
+  windowPoints: number,
   stopThresholdKmh = 0,
 ): Track {
   const stopThresholdMps = Math.max(0, stopThresholdKmh) / 3.6;
@@ -50,7 +50,7 @@ export function prepareMotion(
       track.samples,
       start,
       end,
-      windowSeconds,
+      windowPoints,
     );
     let heading: number | null = null;
     for (let i = start; i < end; i++) {

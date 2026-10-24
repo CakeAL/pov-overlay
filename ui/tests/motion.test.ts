@@ -22,7 +22,7 @@ const track = (samples: Sample[]): Track => ({
 describe("motion fitting", () => {
   it("smooths a one-sample spike without changing raw data", () => {
     const raw = track([point(0), point(1), point(2, 30), point(3), point(4)]),
-      fit = prepareMotion(raw, 3);
+      fit = prepareMotion(raw, 7);
     expect(fit.samples[2]!.speedMps).toBeLessThan(30);
     expect(fit.samples[2]!.speedMps).toBeGreaterThan(10);
     expect(raw.samples[2]!.speedMps).toBe(30);
@@ -124,13 +124,16 @@ it("does not amplify a millisecond GPS fix into a large speed spike", () => {
     metersPoint(4, 40),
   ]);
   expect(raw.samples[2]!.speedMps).toBeGreaterThan(900);
-  const fit = prepareMotion(raw, 3);
+  const fit = prepareMotion(raw, 7);
   expect(sampleAt(fit, 0)!.speedValid).toBe(false);
   for (let time = 1000; time <= 4000; time += 100) {
     const speed = sampleAt(fit, time)!.speedMps;
-    expect(speed).toBeGreaterThanOrEqual(9.9);
-    expect(speed).toBeLessThan(11.1);
+    // At the clipped tail, the earliest included fix is at 1.001 s / 11 m.
+    // Its actual elapsed-time estimate is 29 / 2.999, rather than 10 m/s.
+    expect(speed).toBeGreaterThanOrEqual(9.6);
+    expect(speed).toBeLessThan(10.1);
   }
+  expect(fit.samples.at(-1)!.speedMps).toBeCloseTo(29 / 2.999, 4);
 });
 it("rejects an isolated GPS excursion without altering the source or inventing a turn", () => {
   const raw = measuredTrack(
@@ -139,7 +142,7 @@ it("rejects an isolated GPS excursion without altering the source or inventing a
     ),
   );
   expect(raw.samples[3]!.speedMps).toBeGreaterThan(100);
-  const fit = prepareMotion(raw, 3, 0.5);
+  const fit = prepareMotion(raw, 7, 0.5);
   expect(fit.samples[3]!.speedMps).toBeCloseTo(10, 4);
   expect(fit.samples[3]!.headingDeg).toBeCloseTo(90, 3);
   expect(raw.samples[3]!.latitude).toBeGreaterThan(0.0008);
@@ -148,7 +151,7 @@ it("rejects an isolated GPS excursion without altering the source or inventing a
 it("retains real sustained high speed and measures road distance around a bend", () => {
   const fast = prepareMotion(
     measuredTrack(Array.from({ length: 7 }, (_, i) => metersPoint(i, 40 * i))),
-    3,
+    7,
   );
   expect(fast.samples[3]!.speedMps).toBeCloseTo(40, 4);
   const turn = prepareMotion(
@@ -158,7 +161,7 @@ it("retains real sustained high speed and measures road distance around a bend",
       metersPoint(2, 10, 10),
       metersPoint(3, 20, 10),
     ]),
-    3,
+    7,
   );
   expect(turn.samples[1]!.speedMps).toBeCloseTo(10, 4);
 });
@@ -166,7 +169,7 @@ it("retains real sustained high speed and measures road distance around a bend",
 it("does not borrow speed before the second fix of a new segment", () => {
   const prepared = prepareMotion(
     measuredTrack([metersPoint(0, 0), metersPoint(1, 1), metersPoint(2, 2)]),
-    3,
+    7,
   );
   expect(sampleAt(prepared, 0)!.speedValid).toBe(false);
   expect(sampleAt(prepared, 500)!.speedValid).toBe(false);
@@ -174,7 +177,7 @@ it("does not borrow speed before the second fix of a new segment", () => {
   expect(sampleAt(prepared, 0)!.headingDeg).toBeNull();
   const isolated = prepareMotion(
     measuredTrack([metersPoint(0, 0), metersPoint(60, 1), metersPoint(61, 2)]),
-    3,
+    7,
   );
   expect(sampleAt(isolated, 0)).toBeNull();
   expect(sampleAt(isolated, 60_000)!.speedValid).toBe(false);
@@ -187,8 +190,8 @@ it("does not let an unsupported terminal jump inflate the preceding window", () 
   const jump = measuredTrack(
     Array.from({ length: 7 }, (_, i) => metersPoint(i, i === 6 ? 1000 : 2 * i)),
   );
-  const normal = prepareMotion(clean, 3),
-    bad = prepareMotion(jump, 3);
+  const normal = prepareMotion(clean, 7),
+    bad = prepareMotion(jump, 7);
   for (let time = 1000; time <= 5000; time += 100)
     expect(sampleAt(bad, time)!.speedMps).toBeCloseTo(
       sampleAt(normal, time)!.speedMps,
@@ -199,16 +202,10 @@ it("does not let an unsupported terminal jump inflate the preceding window", () 
   expect(sampleAt(bad, 6001)).toBeNull();
   expect(sampleAt(prepareMotion(jump, 0), 6000)!.speedValid).toBe(false);
 });
-it("keeps a stationary start at zero without borrowing later movement", () => {
+it("keeps a stationary start at zero when movement is outside its centered window", () => {
   const prepared = prepareMotion(
-    measuredTrack([
-      metersPoint(0, 0),
-      metersPoint(1, 0),
-      metersPoint(2, 0),
-      metersPoint(3, 10),
-      metersPoint(4, 20),
-    ]),
-    3,
+    measuredTrack(Array.from({ length: 11 }, (_, i) => metersPoint(i, Math.max(0, i - 6) * 10))),
+    7,
   );
   expect(sampleAt(prepared, 0)!.speedValid).toBe(false);
   expect(sampleAt(prepared, 1000)!.speedMps).toBe(0);
@@ -218,8 +215,22 @@ it("keeps a stationary start at zero without borrowing later movement", () => {
 it("retains a supported gradual acceleration through the last fix", () => {
   const prepared = prepareMotion(
     measuredTrack([0, 1, 3, 6, 10, 15].map((east, i) => metersPoint(i, east))),
-    3,
+    7,
   );
   expect(sampleAt(prepared, 5000)!.speedValid).toBe(true);
   expect(sampleAt(prepared, 5000)!.speedMps).toBeCloseTo(4, 4);
+});
+
+it("uses exactly three fixes on each side, actual elapsed time and clipped edge windows", () => {
+  const seconds = [0, 1, 2, 4, 5, 7, 8, 11, 12, 14, 15];
+  const east = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55];
+  const fit = prepareMotion(measuredTrack(seconds.map((time, i) => metersPoint(time, east[i]!))), 7);
+  // At index 5 the seven fixes are indices 2..8: 33 meters in 10 seconds.
+  expect(fit.samples[5]!.speedMps).toBeCloseTo(3.3, 4);
+  // Clip at the segment boundary instead of moving the full window forward/back.
+  expect(fit.samples[1]!.speedMps).toBeCloseTo(10 / 5, 4);
+  expect(fit.samples[10]!.speedMps).toBeCloseTo(27 / 4, 4);
+  const changed = seconds.map((time, i) => metersPoint(time, east[i]! + (i >= 9 ? 100 : 0)));
+  expect(prepareMotion(measuredTrack(changed), 7).samples[5]!.speedMps).toBeCloseTo(3.3, 4);
+  expect(prepareMotion(measuredTrack(seconds.map((time, i) => metersPoint(time, east[i]!))), 3).samples[5]!.speedMps).not.toBeCloseTo(3.3, 4);
 });

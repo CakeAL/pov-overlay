@@ -2,21 +2,24 @@
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 const { telemetry, timeline } = useEditorContext();
-const { smoothingSeconds, refreshSeconds, stopThresholdKmh } =
+const { smoothingPoints, refreshSeconds, stopThresholdKmh } =
   toRefs(telemetry);
 const { currentHeading } = toRefs(timeline);
+const windows = Array.from({ length: 30 }, (_, index) => index * 2 + 3);
 </script>
 <template>
   <section class="panel-section">
     <div class="section-title">数据采样</div>
     <label class="setting-row"
-      >速度平滑窗口（秒）<input
-        aria-label="速度平滑窗口（秒）"
-        type="number"
-        min="0"
-        max="60"
-        step="0.5"
-        v-model.number="smoothingSeconds" /></label
+      >速度平滑窗口（点）<select
+        aria-label="速度平滑窗口（点）"
+        v-model.number="smoothingPoints"
+      >
+        <option :value="0">关闭</option>
+        <option v-for="count in windows" :key="count" :value="count">
+          {{ count }}
+        </option>
+      </select></label
     ><label class="setting-row"
       >数据刷新间隔（秒）<input
         aria-label="数据刷新间隔（秒）"
@@ -27,8 +30,7 @@ const { currentHeading } = toRefs(timeline);
         v-model.number="refreshSeconds"
     /></label>
     <p class="field-hint">
-      按时间窗口内距离计算速度，过滤孤立跳点，再插值到刷新时刻。0
-      使用原始点速度。
+      {{ smoothingPoints === 0 ? "使用原始点速度。" : `当前点及前后各 ${(smoothingPoints - 1) / 2} 点，以累计路程除以实际时间计算速度。` }}
     </p>
     <label class="setting-row">
       速度归零阈值（km/h）<input

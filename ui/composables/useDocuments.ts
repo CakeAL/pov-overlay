@@ -40,7 +40,7 @@ export function useDocuments(
       version: 1,
       name: name.value,
       widgets: JSON.parse(JSON.stringify(layout.widgets.value)),
-      smoothingSeconds: telemetry.smoothingSeconds.value,
+      smoothingPoints: telemetry.smoothingPoints.value,
       refreshSeconds: telemetry.refreshSeconds.value,
       stopThresholdKmh: telemetry.stopThresholdKmh.value,
       aspectRatio: playback.ratio.value,
@@ -89,7 +89,7 @@ export function useDocuments(
     layout.remember();
     layout.widgets.value = data.widgets;
     layout.selectedId.value = data.widgets[0]?.id ?? "";
-    telemetry.smoothingSeconds.value = data.smoothingSeconds;
+    telemetry.smoothingPoints.value = data.smoothingPoints;
     telemetry.refreshSeconds.value = data.refreshSeconds;
     telemetry.stopThresholdKmh.value = data.stopThresholdKmh;
     playback.ratio.value = data.aspectRatio;

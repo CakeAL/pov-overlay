@@ -5,6 +5,10 @@ import type {
   TrackSource,
   VideoAsset,
 } from "../../domain/types";
+import {
+  DEFAULT_SMOOTHING_POINTS,
+  MAX_SMOOTHING_POINTS,
+} from "../../domain/speedEstimation";
 import { sanitizeSvg } from "../svg";
 import { correctTrackTime, validTrackTimeOffset } from "../../domain/trackTime";
 export interface PresetDocument {
@@ -12,7 +16,7 @@ export interface PresetDocument {
   version: 1;
   name: string;
   widgets: Widget[];
-  smoothingSeconds: number;
+  smoothingPoints: number;
   refreshSeconds: number;
   stopThresholdKmh: number;
   aspectRatio: number;
@@ -111,6 +115,20 @@ function validateTrack(value: unknown): Track {
     skippedPoints: num(t.skippedPoints, 0, 1e9),
   };
 }
+function readSmoothingPoints(d: Record<string, unknown>): number {
+  if (d.smoothingPoints === undefined) {
+    // Seconds cannot be mapped to point counts for irregular GPX sampling.
+    // Preserve "off"; migrate enabled legacy windows to the new default.
+    return num(d.smoothingSeconds, 0, 60) === 0 ? 0 : DEFAULT_SMOOTHING_POINTS;
+  }
+  const points = num(d.smoothingPoints, 0, MAX_SMOOTHING_POINTS);
+  if (
+    points !== 0 &&
+    (!Number.isInteger(points) || points < 3 || points % 2 === 0)
+  )
+    throw new Error("速度平滑窗口必须为 0 或 3–61 之间的奇数。");
+  return points;
+}
 export function parseDocument(json: string, kind: "preset"): PresetDocument;
 export function parseDocument(json: string, kind: "project"): ProjectDocument;
 export function parseDocument(
@@ -125,7 +143,7 @@ export function parseDocument(
     version: 1 as const,
     name: text(d.name),
     widgets: validateWidgets(d.widgets),
-    smoothingSeconds: num(d.smoothingSeconds, 0, 60),
+    smoothingPoints: readSmoothingPoints(d),
     refreshSeconds: num(d.refreshSeconds, 0.01, 10),
     stopThresholdKmh:
       d.stopThresholdKmh == null ? 0.5 : num(d.stopThresholdKmh, 0, 2000),

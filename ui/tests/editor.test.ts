@@ -247,3 +247,18 @@ it("does not keep a valid quantized speed when the actual time enters an invalid
   editor.playback.seek(1.05);
   expect(editor.timeline.sample?.speedValid).toBe(false);
 });
+
+it("defaults to seven-point smoothing and restores it through projects and presets", async () => {
+  const editor = session();
+  expect(editor.telemetry.smoothingPoints).toBe(7);
+  editor.telemetry.smoothingPoints = 11;
+  const project = JSON.stringify(editor.documents.project());
+  editor.telemetry.smoothingPoints = 0;
+  await editor.documents.load(project, "project");
+  expect(editor.telemetry.smoothingPoints).toBe(11);
+  const preset = JSON.stringify(editor.documents.preset());
+  editor.telemetry.smoothingPoints = 3;
+  await editor.documents.load(preset, "preset");
+  expect(editor.telemetry.smoothingPoints).toBe(11);
+  expect(editor.documents.preset()).not.toHaveProperty("smoothingSeconds");
+});

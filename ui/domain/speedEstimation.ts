@@ -1,17 +1,30 @@
 import type { Sample } from "./types";
 import { distance } from "./geography";
 
+export const DEFAULT_SMOOTHING_POINTS = 7;
+export const MAX_SMOOTHING_POINTS = 61;
+
+/** A centered window needs an odd count; zero explicitly disables smoothing. */
+export function normalizeSmoothingPoints(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_SMOOTHING_POINTS;
+  if (value <= 0) return 0;
+  return Math.min(
+    MAX_SMOOTHING_POINTS,
+    Math.max(3, 2 * Math.floor(value / 2) + 1),
+  );
+}
+
 /**
- * Uses gpx.studio's distance-over-time window approach, with interpolated window
- * boundaries and isolated GPS detour rejection for video telemetry.
- * Reference: https://github.com/gpxstudio/gpx.studio/blob/6a0d4343718e01637a8e301251977fb218cf88f8/gpx/src/gpx.ts#L964-L980
+ * Distance / elapsed time in a centered window, with isolated detour rejection.
+ * Reference: https://github.com/gpxstudio/gpx.studio/blob/main/gpx/src/gpx.ts#L906-L922
+ * Upstream uses time windows; here the caller chooses an odd point count.
  * Independently implemented; no upstream source is copied.
  */
 export function estimateSegmentSpeed(
   samples: Sample[],
   start: number,
   end: number,
-  windowSeconds: number,
+  windowPoints: number,
 ): {
   speedsMps: number[];
   movementSpeedsMps: number[];
@@ -41,7 +54,7 @@ export function estimateSegmentSpeed(
     if (intervals[lastIndex]! > Math.max(3 * baseline, baseline + 5))
       speedValid[lastIndex] = false;
   }
-  if (windowSeconds <= 0) {
+  if (windowPoints <= 0) {
     const speedsMps = original.map((point, index) =>
       speedValid[index] ? point.speedMps : 0,
     );
@@ -93,35 +106,21 @@ export function estimateSegmentSpeed(
     cumulative[index] = cumulative[index - 1]! + meters;
     return meters / ((point.timestampMs - previous.timestampMs) / 1000);
   });
-  // The first fix has no observed motion interval yet.
-  movementSpeedsMps[0] = 0;
-  const first = positions[0]!.timestampMs;
-  const leftCursor = { index: 0 },
-    rightCursor = { index: 0 };
-  function distanceAt(time: number, cursor: { index: number }): number {
-    while (
-      cursor.index + 1 < positions.length &&
-      positions[cursor.index + 1]!.timestampMs <= time
-    )
-      cursor.index++;
-    const a = positions[cursor.index]!,
-      b = positions[cursor.index + 1];
-    if (!b) return cumulative[cursor.index]!;
-    const fraction = (time - a.timestampMs) / (b.timestampMs - a.timestampMs);
-    return (
-      cumulative[cursor.index]! +
-      fraction * (cumulative[cursor.index + 1]! - cumulative[cursor.index]!)
-    );
-  }
-  const widthMs = Math.max(1000, windowSeconds * 1000);
-  const speedsMps = positions.map((point, index) => {
+  // Exclude an unsupported last interval from every centered window, not just
+  // from the final readout, so its distance cannot leak into earlier estimates.
+  const lastUsable = speedValid[lastIndex]
+    ? lastIndex
+    : Math.max(0, lastIndex - 1);
+  const radius = (normalizeSmoothingPoints(windowPoints) - 1) / 2;
+  const speedsMps = positions.map((_, index) => {
     if (!speedValid[index]) return 0;
-    const right = point.timestampMs;
-    const left = Math.max(first, right - widthMs);
+    const left = Math.max(0, index - radius);
+    const right = Math.min(lastUsable, index + radius);
+    const elapsedSeconds =
+      (positions[right]!.timestampMs - positions[left]!.timestampMs) / 1000;
     return Math.max(
       0,
-      (distanceAt(right, rightCursor) - distanceAt(left, leftCursor)) /
-        Math.max(1, (right - left) / 1000),
+      (cumulative[right]! - cumulative[left]!) / Math.max(1, elapsedSeconds),
     );
   });
   return { speedsMps, movementSpeedsMps, positions, speedValid };
