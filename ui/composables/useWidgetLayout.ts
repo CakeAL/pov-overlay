@@ -203,6 +203,7 @@ export function useWidgetLayout(
     updatePosition,
     updateScale,
     clampWidget,
+    dimensions,
     widgetStyle,
     startDrag,
     moveDrag,

@@ -11,10 +11,16 @@ import {
 } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
+import { TELEMETRY_ITEMS } from "../../domain/telemetryItems";
 const { layout, svgElements } = useEditorContext();
 const { widgets, selectedId } = toRefs(layout);
 const { svgInput } = toRefs(svgElements);
 const { toggleVisible, toggleLock } = layout;
+function addItem(event: Event) {
+  const input = event.target as HTMLSelectElement;
+  svgElements.addTelemetryItem(input.value);
+  input.value = "";
+}
 </script>
 
 <template>
@@ -29,8 +35,31 @@ const { toggleVisible, toggleLock } = layout;
       <button class="text-button" @click="svgElements.chooseSvg">
         导入 SVG</button
       ><button class="text-button" @click="svgElements.addTelemetryStrip">
-        添加数据条</button
-      ><button
+        添加数据条
+      </button>
+      <select
+        class="data-item-select"
+        aria-label="添加数据项"
+        value=""
+        @change="addItem"
+      >
+        <option value="" disabled>添加数据项</option>
+        <option
+          v-for="item in TELEMETRY_ITEMS"
+          :key="item.key"
+          :value="item.key"
+        >
+          {{ item.label }}
+        </option>
+      </select>
+      <button
+        v-if="svgElements.canSplitTelemetryStrip"
+        class="text-button"
+        @click="svgElements.splitTelemetryStrip"
+      >
+        拆分数据条
+      </button>
+      <button
         class="text-button"
         :disabled="!selectedId"
         @click="svgElements.removeSelected"

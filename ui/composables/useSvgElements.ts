@@ -1,16 +1,39 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import { native } from "../infrastructure/media";
 import { sanitizeSvg } from "../infrastructure/svg";
 import { TELEMETRY_STRIP } from "../domain/telemetryStrip";
+import { TELEMETRY_ITEMS, type TelemetryItem } from "../domain/telemetryItems";
+import type { Widget } from "../domain/types";
 import type { WidgetLayout } from "./useWidgetLayout";
 import type { EditorMessages } from "./useMessages";
 export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
   const svgInput = ref<HTMLInputElement>();
+  const legacyStrip = sanitizeSvg(TELEMETRY_STRIP);
+  const canSplitTelemetryStrip = computed(
+    () => layout.selected.value?.svg?.source === legacyStrip.source,
+  );
+  function insert(values: Widget[], replaceId?: string) {
+    if (
+      layout.widgets.value.length + values.length - (replaceId ? 1 : 0) >
+      100
+    ) {
+      messages.report(new Error("最多添加 100 个画布元素。"));
+      return;
+    }
+    layout.remember();
+    if (replaceId) {
+      const index = layout.widgets.value.findIndex(
+        (widget) => widget.id === replaceId,
+      );
+      layout.widgets.value.splice(index, 1, ...values);
+    } else layout.widgets.value.push(...values);
+    layout.selectedId.value = values[0]?.id ?? "";
+    values.forEach(layout.clampWidget);
+  }
   function addSvg(source: string, name: string, width = 0.3) {
     const svg = sanitizeSvg(source);
-    layout.remember();
     const widget = {
       id: crypto.randomUUID(),
       kind: "svg" as const,
@@ -25,9 +48,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
       svg,
       widthRatio: width,
     };
-    layout.widgets.value.push(widget);
-    layout.selectedId.value = widget.id;
-    layout.clampWidget(widget);
+    insert([widget]);
   }
   async function chooseSvg() {
     if (!native) {
@@ -62,11 +83,54 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
       input.value = "";
     }
   }
+  function makeItem(item: TelemetryItem, parent: Widget): Widget {
+    const size = layout.dimensions(parent);
+    return {
+      ...parent,
+      id: crypto.randomUUID(),
+      label: item.label,
+      x: parent.x + (size.width * item.x) / 960,
+      y: parent.y + (size.height * item.y) / 130,
+      widthRatio: (size.width * item.width) / 960 / parent.scale,
+      svg: sanitizeSvg(item.source),
+    };
+  }
+  function stripAnchor(): Widget {
+    return {
+      id: "",
+      kind: "svg",
+      label: "数据条",
+      x: 0.05,
+      y: 0.78,
+      scale: 1,
+      opacity: 0,
+      color: "#ffffff",
+      visible: true,
+      locked: false,
+      widthRatio: 0.9,
+      svg: legacyStrip,
+    };
+  }
   function addTelemetryStrip() {
-    addSvg(TELEMETRY_STRIP, "数据条", 0.9);
-    const widget = layout.selected.value!;
-    widget.y = 0.78;
-    layout.clampWidget(widget);
+    const parent = stripAnchor();
+    layout.clampWidget(parent);
+    insert(TELEMETRY_ITEMS.map((item) => makeItem(item, parent)));
+  }
+  function addTelemetryItem(key: string) {
+    const item = TELEMETRY_ITEMS.find((item) => item.key === key);
+    if (!item) return;
+    const widget = makeItem(item, stripAnchor());
+    widget.x = 0.05;
+    widget.y = 0.05;
+    insert([widget]);
+  }
+  function splitTelemetryStrip() {
+    if (!canSplitTelemetryStrip.value || !layout.selected.value) return;
+    const parent = layout.selected.value;
+    insert(
+      TELEMETRY_ITEMS.map((item) => makeItem(item, parent)),
+      parent.id,
+    );
   }
   function removeSelected() {
     if (!layout.selected.value) return;
@@ -82,6 +146,9 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
     selectedSvg,
     addSvg,
     addTelemetryStrip,
+    addTelemetryItem,
+    splitTelemetryStrip,
+    canSplitTelemetryStrip,
     removeSelected,
   };
 }
