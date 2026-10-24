@@ -69,6 +69,9 @@ POV Overlay 是本地 GPX 叠加层编辑器，用于在视频、图片或透明
 
 ## 画布、SVG 与界面
 
+Avoid unnecessary secondary labels and descriptions. Let the layout do the explaining.
+避免不必要的次要标签和描述。让布局自己说话。
+
 - 界面使用简洁中文与明确功能名称，不添加宣传口号、无关标签或默认演示素材。
 - 常规界面字号以 14px 为基准，辅助文字通常不小于 12px；画布内元素允许按设计缩放。
 - 保持画布元素的拖动、缩放、边界约束、锁定、显隐和撤销/重做行为。
