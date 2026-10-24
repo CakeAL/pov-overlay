@@ -108,6 +108,7 @@ export function useTimeline(
   });
 
   return {
+    preparedTrack,
     absoluteTime,
     sample,
     currentHeading,
@@ -118,3 +119,5 @@ export function useTimeline(
     routePoint,
   };
 }
+
+export type Timeline = ReturnType<typeof useTimeline>;

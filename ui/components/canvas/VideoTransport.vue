@@ -7,11 +7,12 @@ import {
   VolumeX,
   Volume2,
 } from "lucide-vue-next";
+import TelemetryChart from "./TelemetryChart.vue";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 import { formatTime } from "../../domain/telemetry";
 import { dateText } from "../../lib/format";
-const { media, playback, alignment, timeline } = useEditorContext();
+const { media, playback, alignment, timeline, profile } = useEditorContext();
 const { activeVideo: asset } = toRefs(media);
 const { duration, currentTime, playing, muted } = toRefs(playback);
 const { seek, togglePlay } = playback;
@@ -21,7 +22,7 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
 </script>
 
 <template>
-  <div class="transport-panel">
+  <div class="transport-panel" :class="{ 'has-profile': profile.geometry }">
     <div class="transport-top">
       <div class="transport-buttons">
         <button
@@ -62,6 +63,7 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
         </button>
       </div>
     </div>
+    <TelemetryChart />
     <div class="timeline">
       <div class="timeline-ticks">
         <span v-for="(tickLabel, index) in timelineTicks" :key="index">{{

@@ -1,3 +1,4 @@
+import { useTrackProfile } from "../composables/useTrackProfile";
 import { useTelemetrySettings } from "../composables/useTelemetrySettings";
 import { useSvgElements } from "../composables/useSvgElements";
 import { useDocuments } from "../composables/useDocuments";
@@ -23,6 +24,7 @@ export function createEditor() {
   const telemetry = useTelemetrySettings();
   const svgElements = useSvgElements(layout, messages);
   const timeline = useTimeline(media, playback, alignment, telemetry);
+  const profile = useTrackProfile(timeline, playback, alignment, media);
   const documents = useDocuments(
     media,
     layout,
@@ -42,6 +44,7 @@ export function createEditor() {
     viewport,
     layout,
     timeline,
+    profile,
     telemetry,
     svgElements,
     drop,
