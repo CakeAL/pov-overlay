@@ -60,7 +60,7 @@ export function validateWidgets(v: unknown): Widget[] {
       id = text(w.id);
     if (ids.has(id)) throw new Error("元素 ID 重复。");
     ids.add(id);
-    if (!["speed", "coordinates", "svg"].includes(String(w.kind)))
+    if (!["speed", "coordinates", "svg", "route"].includes(String(w.kind)))
       throw new Error("元素类型无效。");
     const color = text(w.color);
     if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error("颜色无效。");
@@ -75,6 +75,11 @@ export function validateWidgets(v: unknown): Widget[] {
       color,
       visible: bool(w.visible),
       locked: bool(w.locked),
+      route: w.route == null ? undefined : (() => {
+        const r = object(w.route);
+        if (r.mode != null && r.mode !== 'full' && r.mode !== 'local') throw new Error('路线范围无效。');
+        return { mode: r.mode as 'full' | 'local' | undefined, windowSeconds: r.windowSeconds == null ? undefined : num(r.windowSeconds, 10, 7200), headingUp: r.headingUp == null ? undefined : bool(r.headingUp) };
+      })(),
       speedMaxKmh: w.speedMaxKmh == null ? undefined : num(w.speedMaxKmh, 1, 2000),
       typography: w.typography == null ? undefined : (() => {
         const t = object(w.typography);

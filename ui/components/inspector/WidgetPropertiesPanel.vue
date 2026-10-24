@@ -2,6 +2,7 @@
 import { Settings2, Check, Plus, Bold, Italic } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
+import RouteProperties from "./RouteProperties.vue";
 import { FONT_FAMILIES } from "../../domain/widgetTypography";
 const { layout } = useEditorContext();
 const { selected } = toRefs(layout);
@@ -19,6 +20,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
       <span><Settings2 :size="15" /> {{ selected.label }}设置</span
       ><button class="text-button" @click="resetSelected">重置</button>
     </div>
+    <RouteProperties />
     <div class="position-fields">
       <label
         >X

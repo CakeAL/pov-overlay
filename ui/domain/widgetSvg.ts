@@ -1,3 +1,4 @@
+import { routeOverlay } from "./routeOverlay";
 import type { OverlayContext } from "./overlayContext";
 import { styleWidgetSvg } from "./widgetTypography";
 import type { Sample, Widget } from "./types";
@@ -7,6 +8,7 @@ import { widgetAspect, widgetDimensions } from "./widgetGeometry";
 export const svgDataUrl = (source: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
 export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number, context: OverlayContext = {}): string {
+  if (widget.kind === "route") return styleWidgetSvg(routeOverlay(widget, sample, context), widget.typography);
   if (widget.kind === "svg")
     return styleWidgetSvg(bindSvg(widget.svg?.source ?? "", sample, elapsed, widget.color, { ...context, speedMaxKmh: widget.speedMaxKmh }), widget.typography);
   const width = widgetDimensions(widget, ratio).width * 1000;

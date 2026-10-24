@@ -32,7 +32,7 @@ export interface VideoAsset {
   warning: string | null;
   duration: number;
 }
-export type WidgetKind = "speed" | "coordinates" | "svg";
+export type WidgetKind = "speed" | "coordinates" | "svg" | "route";
 export interface Widget {
   id: string;
   kind: WidgetKind;
@@ -46,6 +46,7 @@ export interface Widget {
   locked: boolean;
   svg?: { source: string; aspectRatio: number };
   widthRatio?: number;
+  route?: { mode?: "full" | "local"; windowSeconds?: number; headingUp?: boolean };
   speedMaxKmh?: number;
   typography?: { fontFamily?: string; fontSize?: number; bold?: boolean; italic?: boolean };
 }

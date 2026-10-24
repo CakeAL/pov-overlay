@@ -111,6 +111,9 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
       svg: legacyStrip,
     };
   }
+  function addRoute() {
+    insert([{ id: crypto.randomUUID(), kind: 'route', label: '路线', x: 0.05, y: 0.05, widthRatio: 0.22, scale: 1, opacity: 0, color: '#c7f284', visible: true, locked: false, route: { mode: 'full', windowSeconds: 120, headingUp: false } }]);
+  }
   function addTelemetryStrip() {
     const parent = stripAnchor();
     layout.clampWidget(parent);
@@ -145,6 +148,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
     chooseSvg,
     selectedSvg,
     addSvg,
+    addRoute,
     addTelemetryStrip,
     addTelemetryItem,
     splitTelemetryStrip,
