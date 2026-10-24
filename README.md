@@ -6,17 +6,17 @@
 
 ## 启动
 
-要求 Node.js 22.12+（或支持 Vite 7 的更新版本）、Rust stable，以及 [Tauri 系统开发依赖](https://v2.tauri.app/start/prerequisites/)。
+要求 Node.js 22.13+、pnpm 11.24.0（版本见 `package.json` 的 `packageManager`）、Rust stable，以及 [Tauri 系统开发依赖](https://v2.tauri.app/start/prerequisites/)。
 
 ```sh
-npm ci
-npm run tauri dev
+pnpm install --frozen-lockfile
+pnpm tauri dev
 ```
 
 只启动浏览器开发预览：
 
 ```sh
-npm run dev
+pnpm dev
 ```
 
 访问 `http://127.0.0.1:1420`，导入自己的 GPX。视频和图片均为可选背景；只有 GPX 也能播放预览。
@@ -149,15 +149,15 @@ Rust 依赖方向为 `commands → application → domain / infrastructure`，�
 
 桌面导入使用 Rust 解析 GPX。浏览器开发模式保留 TypeScript 解析适配；两者均有覆盖重复点、断档、时区与跨日期变更线的测试。播放逐帧更新在前端完成，不进行逐帧 IPC。
 
-Hikari 采用官方 Vue 源码包，按需引入组件和样式，并使用 Vue JSX 插件编译 TSX。版本由 `package-lock.json` 锁定。
+Hikari 采用官方 Vue 源码包，按需引入组件和样式，并使用 Vue JSX 插件编译 TSX。版本由 `pnpm-lock.yaml` 锁定。
 
 当前不提供视频合成导出、在线地图底图或 HEVC 预览代理。工程需手动保存。
 
 ## 检查
 
 ```sh
-npm run build
-npm test
+pnpm build
+pnpm test
 cargo test --workspace
 cargo clippy --workspace --all-targets -- -D warnings
 cargo check --workspace --all-features

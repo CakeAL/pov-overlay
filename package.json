@@ -10,7 +10,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@celestia-island/hikari": "0.55.199",
+    "@celestia-island/hikari": "0.55.203",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "dompurify": "^3.4.17",
@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.6.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vitejs/plugin-vue-jsx": "^5.1.6",
     "happy-dom": "^20.0.0",
@@ -29,5 +29,10 @@
     "vite": "^7.0.0",
     "vitest": "^3.2.0",
     "vue-tsc": "^3.0.0"
+  },
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22.13.0",
+    "pnpm": ">=11.24.0 <12"
   }
 }

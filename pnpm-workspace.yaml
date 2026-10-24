@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: true
+  "@parcel/watcher": false
+  fsevents: false
+minimumReleaseAgeExclude:
+  - '@celestia-island/hikari@0.55.203'

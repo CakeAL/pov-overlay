@@ -89,19 +89,21 @@ POV Overlay 是本地 GPX 叠加层编辑器，用于在视频、图片或透明
 
 ## 开发与验证
 
+统一使用 pnpm；版本由 `package.json` 的 `packageManager` 固定，仅维护 `pnpm-lock.yaml`，不要生成 npm 或 Yarn 锁文件。
+
 在仓库根目录运行：
 
 ```sh
-npm ci
-npm run dev             # 浏览器预览，127.0.0.1:1420
-npm run tauri dev       # 桌面开发
+pnpm install --frozen-lockfile
+pnpm dev             # 浏览器预览，127.0.0.1:1420
+pnpm tauri dev       # 桌面开发
 ```
 
 按改动范围执行检查：
 
 ```sh
-npm run build
-npm test
+pnpm build
+pnpm test
 cargo fmt --all -- --check
 cargo test --workspace
 cargo clippy --workspace --all-targets -- -D warnings
