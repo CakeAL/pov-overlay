@@ -30,10 +30,19 @@ export class ExportRenderer {
     if (!context) throw new Error("当前系统无法创建导出画布。");
     this.context = context;
   }
-  async frame(sample: Sample | null, elapsed: number): Promise<Uint8Array> {
+  async frame(sample: Sample | null, elapsed: number, signal?: AbortSignal): Promise<Uint8Array> {
     const visible = this.widgets.filter(widget => widget.visible);
     const context = overlayContext(this.track, this.track ? this.track.startMs + (this.offset + elapsed) * 1000 : 0, sample);
-    const sources = await Promise.all(visible.map(widget => renderWidgetSvg(widget, sample, elapsed, this.ratio, context)));
+    if (signal?.aborted) throw new Error("导出已取消。");
+    const loading = Promise.all(visible.map(widget => renderWidgetSvg(widget, sample, elapsed, this.ratio, context)));
+    let abort: (() => void) | undefined;
+    let sources: string[];
+    try {
+      sources = signal ? await Promise.race([loading, new Promise<never>((_, reject) => {
+        abort = () => reject(new Error("导出已取消。"));
+        signal.addEventListener('abort', abort, { once: true });
+      })]) : await loading;
+    } finally { if (signal && abort) signal.removeEventListener('abort', abort); }
     const key = JSON.stringify(sources);
     if (key === this.previousKey && this.previousFrame) return this.previousFrame;
     const images = await Promise.all(visible.map(async (widget, i) => {

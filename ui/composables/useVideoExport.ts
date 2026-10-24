@@ -26,6 +26,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   });
   const start = ref(0), end = ref(0), progress = ref(0), phase = ref("");
   let job: string | null = null, cancelled = false;
+  let controller: AbortController | null = null;
   const ready = computed(() => !!timeline.preparedTrack.value && playback.duration.value > 0
     && (!media.activeVideo.value || alignment.alignmentKnown.value));
   const mismatch = computed(() => Math.abs(width.value / height.value - playback.ratio.value) > 0.001);
@@ -52,7 +53,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
     if (value) [width.value, height.value] = value.split("x").map(Number) as [number, number];
   }
   async function cancel() {
-    cancelled = true; phase.value = "正在取消";
+    cancelled = true; controller?.abort(); phase.value = "正在取消";
     if (job) { try { await cancelExport(job); } catch { /* the finishing task may have already completed */ } }
   }
   async function run() {
@@ -67,7 +68,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
       if (!Number.isFinite(start.value) || start.value < 0 || end.value > playback.duration.value)
         throw new Error("导出区间超出当前时间轴。");
       if (!info.value[format.value]) throw new Error("当前 FFmpeg 不支持所选编码器。");
-      busy.value = true; cancelled = false; phase.value = "准备导出";
+      busy.value = true; cancelled = false; controller = new AbortController(); phase.value = "准备导出";
       const path = await chooseExportPath(documents.name.value, settings.format);
       if (!path || cancelled) { phase.value = ""; return; }
       playback.playing.value = false; playback.video.value?.pause();
@@ -90,7 +91,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
       for (let index = 0; index < frames; index++) {
         if (cancelled) throw new Error("导出已取消。");
         const elapsed = origin + index / settings.fps;
-        const bytes = await renderer.frame(playbackSample(track, elapsed, offset, refresh), elapsed);
+        const bytes = await renderer.frame(playbackSample(track, elapsed, offset, refresh), elapsed, controller.signal);
         if (cancelled) throw new Error("导出已取消。");
         if (pending && (pending.bytes !== bytes || pending.count >= 120)) await flush();
         if (pending) pending.count++;
@@ -110,7 +111,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
       if (cancelled) phase.value = "导出已取消";
       else { error.value = reason instanceof Error ? reason.message : String(reason); phase.value = "导出失败"; }
     } finally {
-      job = null; renderer?.dispose(); busy.value = false;
+      job = null; renderer?.dispose(); controller = null; busy.value = false;
     }
   }
   onBeforeUnmount(() => { if (job) void cancel(); });

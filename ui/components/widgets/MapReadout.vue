@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import type { Widget, Sample } from '../../domain/types';
 import { useEditorContext } from '../../editor/context';
+import { retryMapTiles } from "../../infrastructure/maps/tiles";
 import { renderWidgetSvg } from '../../infrastructure/renderWidget';
 import { svgDataUrl } from '../../domain/widgetSvg';
 const props = defineProps<{ widget: Widget; sample: Sample | null }>();
@@ -18,5 +19,5 @@ watch(() => [JSON.stringify(props.widget), props.sample, timeline.context.timest
 </script>
 <template>
   <img v-if="url && !error" class="builtin-readout" :src="url" alt="小地图" draggable="false" />
-  <div v-else class="map-status"><span>{{ error ? '地图加载失败' : '加载地图…' }}</span><button v-if="error" :title="error" @pointerdown.stop @click.stop="retry++">重试</button></div>
+  <div v-else class="map-status"><span>{{ error ? '地图加载失败' : '加载地图…' }}</span><button v-if="error" :title="error" @pointerdown.stop @click.stop="retryMapTiles(); retry++">重试</button></div>
 </template>
