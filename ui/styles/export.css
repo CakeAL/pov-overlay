@@ -27,3 +27,5 @@
 .export-progress progress { width: 100%; accent-color: var(--green); }
 .export-actions { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 20px; }
 .export-actions > button:not(.text-button) { padding: 8px 18px; border-radius: 5px; color: white; background: var(--green) !important; }
+
+.export-hardware { display: flex; gap: 8px; align-items: center; margin: 12px 0; }

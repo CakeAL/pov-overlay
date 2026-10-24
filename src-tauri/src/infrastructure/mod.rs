@@ -10,3 +10,5 @@ pub mod documents;
 pub mod images;
 
 pub mod overlay_encoder;
+
+pub mod export_codec;

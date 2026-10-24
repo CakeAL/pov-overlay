@@ -1,3 +1,4 @@
+import type { FrameRegion } from "./exportRegion";
 export type ExportFormat = "prores4444" | "pngMov" | "h264Mp4";
 export type ExportBackground = "transparent" | "green";
 export const exportExtension = (format: ExportFormat) => format === "h264Mp4" ? "mp4" : "mov";
@@ -8,6 +9,8 @@ export interface ExportSettings {
   durationSeconds: number;
   format: ExportFormat;
   background: ExportBackground;
+  preferHardware?: boolean;
+  frame?: FrameRegion;
 }
 export function validateExport(settings: ExportSettings): number {
   const { width, height, fps, durationSeconds } = settings;

@@ -1,4 +1,5 @@
-use crate::domain::overlay_export::{ExportFormat, ExportSettings};
+use super::export_codec::{EncoderSelection, configure_codec, select_encoder};
+use crate::domain::overlay_export::{ExportBackground, ExportSettings};
 use serde::Serialize;
 use std::{
     collections::VecDeque,
@@ -64,6 +65,7 @@ struct Input {
 /// Independent input/child locks let cancellation kill FFmpeg while a write is blocked.
 pub struct OverlayEncoder {
     settings: ExportSettings,
+    pub selection: EncoderSelection,
     input: Mutex<Input>,
     child: Mutex<Child>,
     stderr: Mutex<Option<JoinHandle<String>>>,
@@ -108,6 +110,8 @@ impl OverlayEncoder {
             .create_new(true)
             .open(&temporary)
             .map_err(|e| format!("无法写入输出目录：{e}"))?;
+        let selection = select_encoder(ffmpeg, &settings);
+        let region = settings.region();
         let mut command = Command::new(ffmpeg);
         command
             .args([
@@ -117,46 +121,31 @@ impl OverlayEncoder {
                 "-nostdin",
                 "-y",
                 "-f",
-                "image2pipe",
-                "-framerate",
+                "rawvideo",
+                "-pixel_format",
+                "rgba",
+                "-video_size",
             ])
+            .arg(format!("{}x{}", region.width, region.height))
+            .arg("-framerate")
             .arg(settings.fps.to_string())
-            .args([
-                "-vcodec",
-                "png",
-                "-i",
-                "pipe:0",
-                "-an",
-                "-c:v",
-                settings.encoder(),
-            ]);
-        match settings.format {
-            ExportFormat::Prores4444 => {
-                command.args([
-                    "-profile:v",
-                    "4",
-                    "-pix_fmt",
-                    "yuva444p10le",
-                    "-alpha_bits",
-                    "16",
-                ]);
-            }
-            ExportFormat::PngMov => {
-                command.args(["-pix_fmt", "rgba", "-pred", "mixed"]);
-            }
-            ExportFormat::H264Mp4 => {
-                command.args([
-                    "-pix_fmt",
-                    "yuv420p",
-                    "-preset",
-                    "medium",
-                    "-crf",
-                    "18",
-                    "-movflags",
-                    "+faststart",
-                ]);
-            }
+            .args(["-i", "pipe:0", "-an"]);
+        if region.width != settings.width
+            || region.height != settings.height
+            || region.x != 0
+            || region.y != 0
+        {
+            let color = if settings.background == ExportBackground::Green {
+                "0x00ff00ff"
+            } else {
+                "0x00000000"
+            };
+            command.arg("-vf").arg(format!(
+                "pad={}:{}:{}:{}:color={}",
+                settings.width, settings.height, region.x, region.y, color
+            ));
         }
+        configure_codec(&mut command, &settings, selection);
         command
             .args(["-frames:v"])
             .arg(settings.validate()?.to_string())
@@ -190,6 +179,7 @@ impl OverlayEncoder {
         });
         Ok(Self {
             settings,
+            selection,
             input: Mutex::new(Input {
                 stdin: Some(stdin),
                 frames: 0,
@@ -201,22 +191,33 @@ impl OverlayEncoder {
             temporary,
         })
     }
-    pub fn append(&self, index: u64, bytes: &[u8]) -> Result<(), String> {
-        self.settings.validate_png(bytes)?;
+    pub fn append(&self, index: u64, count: u64, bytes: &[u8]) -> Result<(), String> {
+        self.settings.validate_rgba(bytes)?;
         let mut input = self.input.lock().map_err(|e| e.to_string())?;
         if self.cancelled.load(Ordering::SeqCst) {
             return Err("导出已取消。".into());
         }
-        if index != input.frames || index >= self.settings.validate()? {
+        let total_frames = self.settings.validate()?;
+        if index != input.frames
+            || !(1..=120).contains(&count)
+            || index
+                .checked_add(count)
+                .is_none_or(|end| end > total_frames)
+        {
             return Err("导出帧次序或数量无效。".into());
         }
-        input
-            .stdin
-            .as_mut()
-            .ok_or("编码输入已关闭。")?
-            .write_all(bytes)
-            .map_err(|e| format!("写入编码帧失败：{e}"))?;
-        input.frames += 1;
+        for _ in 0..count {
+            if self.cancelled.load(Ordering::SeqCst) {
+                return Err("导出已取消。".into());
+            }
+            input
+                .stdin
+                .as_mut()
+                .ok_or("编码输入已关闭。")?
+                .write_all(bytes)
+                .map_err(|e| format!("写入编码帧失败：{e}"))?;
+            input.frames += 1;
+        }
         Ok(())
     }
     pub fn finish(&self) -> Result<(), String> {

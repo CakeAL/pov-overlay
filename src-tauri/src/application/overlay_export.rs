@@ -53,8 +53,19 @@ impl ExportManager {
             .map(|(_, job)| Arc::clone(job))
             .ok_or_else(|| "导出任务不存在。".into())
     }
-    pub fn append(&self, owner: &str, id: &str, index: u64, bytes: &[u8]) -> Result<(), String> {
-        self.job(owner, id)?.append(index, bytes)
+    pub fn append(
+        &self,
+        owner: &str,
+        id: &str,
+        index: u64,
+        count: u64,
+        bytes: &[u8],
+    ) -> Result<(), String> {
+        self.job(owner, id)?.append(index, count, bytes)
+    }
+    pub fn selection(&self, owner: &str, id: &str) -> Result<(String, bool), String> {
+        let selection = self.job(owner, id)?.selection;
+        Ok((selection.name.into(), selection.hardware))
     }
     pub fn finish(&self, owner: &str, id: &str) -> Result<(), String> {
         let job = self.job(owner, id)?;

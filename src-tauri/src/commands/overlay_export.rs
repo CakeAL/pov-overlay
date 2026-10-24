@@ -15,6 +15,13 @@ pub async fn export_encoder_info() -> Result<EncoderInfo, String> {
         .await
         .map_err(|e| e.to_string())?
 }
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StartedExport {
+    id: String,
+    encoder: String,
+    hardware: bool,
+}
 #[tauri::command]
 pub async fn start_overlay_export(
     window: Window,
@@ -22,16 +29,22 @@ pub async fn start_overlay_export(
     path: String,
     settings: ExportSettings,
     protected_video: Option<String>,
-) -> Result<String, String> {
+) -> Result<StartedExport, String> {
     let manager = state.inner().clone();
     let owner = window.label().to_string();
     tauri::async_runtime::spawn_blocking(move || {
-        manager.start(
+        let id = manager.start(
             &owner,
             Path::new(&path),
             settings,
             protected_video.as_deref().map(Path::new),
-        )
+        )?;
+        let (encoder, hardware) = manager.selection(&owner, &id)?;
+        Ok(StartedExport {
+            id,
+            encoder,
+            hardware,
+        })
     })
     .await
     .map_err(|e| e.to_string())?
@@ -54,13 +67,20 @@ pub async fn append_overlay_frame(
     let index = header("x-frame-index")?
         .parse::<u64>()
         .map_err(|e| e.to_string())?;
+    let count = request
+        .headers()
+        .get("x-frame-count")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("1")
+        .parse::<u64>()
+        .map_err(|e| e.to_string())?;
     let bytes = match request.body() {
         InvokeBody::Raw(bytes) => bytes.clone(),
-        _ => return Err("导出帧必须为二进制 PNG。".into()),
+        _ => return Err("导出帧必须为二进制 RGBA。".into()),
     };
     let manager = state.inner().clone();
     let owner = window.label().to_string();
-    tauri::async_runtime::spawn_blocking(move || manager.append(&owner, &id, index, &bytes))
+    tauri::async_runtime::spawn_blocking(move || manager.append(&owner, &id, index, count, &bytes))
         .await
         .map_err(|e| e.to_string())?
 }

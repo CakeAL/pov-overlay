@@ -1,6 +1,6 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import type { Widget } from "../domain/types";
-import { validateExport, type ExportFormat, type ExportBackground } from "../domain/exportSettings";
+import { validateExport, type ExportFormat, type ExportBackground, type ExportSettings } from "../domain/exportSettings";
 import { playbackSample } from "../domain/playbackSample";
 import { ExportRenderer } from "../infrastructure/export/renderer";
 import { encoderInfo, chooseExportPath, startExport, appendFrame, finishExport, cancelExport, type EncoderInfo } from "../infrastructure/export/native";
@@ -20,6 +20,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   const info = ref<EncoderInfo | null>(null), error = ref("");
   const width = ref(1920), height = ref(1080), fps = ref(30), format = ref<ExportFormat>("prores4444");
   const background = ref<ExportBackground>("transparent");
+  const preferHardware = ref(true), encoderLabel = ref("");
   watch(background, value => {
     format.value = value === "green" ? "h264Mp4" : info.value?.prores4444 ? "prores4444" : "pngMov";
   });
@@ -43,7 +44,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
     if (busy.value) { open.value = true; return; }
     open.value = true;
     start.value = 0; end.value = playback.duration.value;
-    progress.value = 0; phase.value = "";
+    progress.value = 0; phase.value = ""; encoderLabel.value = "";
     await checkEncoder();
   }
   function resolution(event: Event) {
@@ -57,8 +58,8 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   async function run() {
     if (busy.value || !ready.value || !info.value) return;
     const track = timeline.preparedTrack.value!;
-    const settings = { width: Number(width.value), height: Number(height.value), fps: Number(fps.value),
-      durationSeconds: Number(end.value) - Number(start.value), format: format.value, background: background.value };
+    const settings: ExportSettings = { width: Number(width.value), height: Number(height.value), fps: Number(fps.value),
+      durationSeconds: Number(end.value) - Number(start.value), format: format.value, background: background.value, preferHardware: preferHardware.value };
     let renderer: ExportRenderer | null = null;
     error.value = "";
     try {
@@ -75,16 +76,30 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
       const offset = alignment.offset.value, refresh = telemetry.refreshSeconds.value, origin = Number(start.value);
       renderer = new ExportRenderer(settings.width, settings.height, playback.ratio.value, widgets, settings.background);
       await document.fonts.ready;
-      job = await startExport(path, settings, media.asset.value?.path);
+      settings.frame = renderer.region;
+      const started = await startExport(path, settings, media.asset.value?.path);
+      job = started.id;
+      encoderLabel.value = started.hardware ? "硬件编码" : "软件编码";
       phase.value = "正在渲染"; progress.value = 0;
+      let pending: { index: number; count: number; bytes: Uint8Array } | null = null;
+      const flush = async () => {
+        if (!pending || cancelled) return;
+        await appendFrame(job!, pending.index, pending.bytes, pending.count);
+        pending = null;
+      };
       for (let index = 0; index < frames; index++) {
         if (cancelled) throw new Error("导出已取消。");
         const elapsed = origin + index / settings.fps;
-        const png = await renderer.frame(playbackSample(track, elapsed, offset, refresh), elapsed);
+        const bytes = await renderer.frame(playbackSample(track, elapsed, offset, refresh), elapsed);
         if (cancelled) throw new Error("导出已取消。");
-        await appendFrame(job, index, png);
+        if (pending && (pending.bytes !== bytes || pending.count >= 120)) await flush();
+        if (pending) pending.count++;
+        else pending = { index, count: 1, bytes };
         progress.value = (index + 1) / frames;
+        if (pending.count >= 120) await flush();
       }
+      await flush();
+      if (cancelled) throw new Error("导出已取消。");
       phase.value = "正在封装";
       await finishExport(job);
       job = null;
@@ -99,6 +114,6 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
     }
   }
   onBeforeUnmount(() => { if (job) void cancel(); });
-  return { open, checking, busy, info, error, width, height, fps, format, background, start, end, progress, phase,
+  return { open, checking, busy, info, error, width, height, fps, format, background, preferHardware, encoderLabel, start, end, progress, phase,
     ready, mismatch, show, checkEncoder, resolution, cancel, run };
 }

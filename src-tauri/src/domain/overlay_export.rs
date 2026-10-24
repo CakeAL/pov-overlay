@@ -23,6 +23,16 @@ pub enum ExportBackground {
     Green,
 }
 
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+pub struct FrameRegion {
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
+}
+fn default_hardware() -> bool {
+    true
+}
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettings {
@@ -33,6 +43,10 @@ pub struct ExportSettings {
     pub format: ExportFormat,
     #[serde(default)]
     pub background: ExportBackground,
+    #[serde(default = "default_hardware")]
+    pub prefer_hardware: bool,
+    #[serde(default)]
+    pub frame: Option<FrameRegion>,
 }
 impl ExportSettings {
     pub fn validate(&self) -> Result<u64, String> {
@@ -58,6 +72,14 @@ impl ExportSettings {
         {
             return Err("H.264 MP4 不保留透明通道，请选择绿幕或 MOV 格式。".into());
         }
+        let frame = self.region();
+        if frame.width == 0
+            || frame.height == 0
+            || u64::from(frame.x) + u64::from(frame.width) > u64::from(self.width)
+            || u64::from(frame.y) + u64::from(frame.height) > u64::from(self.height)
+        {
+            return Err("导出帧区域超出画布范围。".into());
+        }
         Ok((self.duration_seconds * self.fps).ceil() as u64)
     }
     pub fn encoder(&self) -> &'static str {
@@ -67,16 +89,18 @@ impl ExportSettings {
             ExportFormat::H264Mp4 => "libx264",
         }
     }
-    pub fn validate_png(&self, bytes: &[u8]) -> Result<(), String> {
-        let limit = u64::from(self.width) * u64::from(self.height) * 4 + 1_048_576;
-        if bytes.len() < 33
-            || bytes.len() as u64 > limit
-            || &bytes[..8] != b"\x89PNG\r\n\x1a\n"
-            || &bytes[12..16] != b"IHDR"
-            || u32::from_be_bytes(bytes[16..20].try_into().unwrap()) != self.width
-            || u32::from_be_bytes(bytes[20..24].try_into().unwrap()) != self.height
-        {
-            return Err("导出帧的 PNG 数据或尺寸无效。".into());
+    pub fn region(&self) -> FrameRegion {
+        self.frame.unwrap_or(FrameRegion {
+            x: 0,
+            y: 0,
+            width: self.width,
+            height: self.height,
+        })
+    }
+    pub fn validate_rgba(&self, bytes: &[u8]) -> Result<(), String> {
+        let frame = self.region();
+        if bytes.len() as u64 != u64::from(frame.width) * u64::from(frame.height) * 4 {
+            return Err("导出帧的 RGBA 数据长度或尺寸无效。".into());
         }
         Ok(())
     }

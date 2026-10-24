@@ -3,7 +3,7 @@ import { ref, toRefs, watch } from "vue";
 import { X } from "lucide-vue-next";
 import { useEditorContext } from "../../editor/context";
 const { videoExport, playback } = useEditorContext();
-const { open, checking, busy, info, error, width, height, fps, format, background, start, end, progress, phase, mismatch } = toRefs(videoExport);
+const { open, checking, busy, info, error, width, height, fps, format, background, preferHardware, encoderLabel, start, end, progress, phase, mismatch } = toRefs(videoExport);
 const dialog = ref<HTMLDialogElement>();
 watch(open, (value) => {
   if (value) dialog.value?.showModal();
@@ -27,6 +27,9 @@ function close() { if (!busy.value) open.value = false; }
           <option value="prores4444" :disabled="!!info && !info.prores4444">MOV / ProRes 4444</option>
           <option value="pngMov" :disabled="!!info && !info.pngMov">MOV / PNG 无损</option>
         </select></label>
+        <label class="export-hardware" v-if="format !== 'pngMov'">
+          <input type="checkbox" v-model="preferHardware" aria-label="优先硬件编码" />优先硬件编码
+        </label>
         <label class="export-row">分辨率<select aria-label="分辨率预设" :value="`${width}x${height}`" @change="videoExport.resolution">
           <option value="1280x720">1280 × 720</option><option value="1920x1080">1920 × 1080</option>
           <option value="2560x1440">2560 × 1440</option><option value="3840x2160">3840 × 2160</option>
@@ -49,7 +52,7 @@ function close() { if (!busy.value) open.value = false; }
       <p v-if="checking" role="status">正在检查 FFmpeg…</p>
       <p v-if="error" class="export-error" role="alert">{{ error }}</p>
       <div v-if="busy || phase" class="export-progress" role="status">
-        <span>{{ phase }}<span v-if="busy"> · {{ Math.round(progress * 100) }}%</span></span>
+        <span>{{ phase }}<span v-if="encoderLabel"> · {{ encoderLabel }}</span><span v-if="busy"> · {{ Math.round(progress * 100) }}%</span></span>
         <progress v-if="busy" :value="progress" max="1" aria-label="导出进度" />
       </div>
       <footer class="export-actions">

@@ -7,9 +7,10 @@ export async function chooseExportPath(name: string, format: ExportFormat): Prom
   const extension = exportExtension(format);
   return save({ defaultPath: `${name.replace(/[\\/:*?"<>|]/g, "_") || "overlay"}.${extension}`, filters: [{ name: `${extension.toUpperCase()} 视频`, extensions: [extension] }] });
 }
+export interface StartedExport { id: string; encoder: string; hardware: boolean }
 export const startExport = (path: string, settings: ExportSettings, protectedVideo?: string) =>
-  invoke<string>("start_overlay_export", { path, settings, protectedVideo });
-export const appendFrame = (id: string, index: number, bytes: Uint8Array) =>
-  invoke<void>("append_overlay_frame", bytes, { headers: { "x-export-id": id, "x-frame-index": String(index) } });
+  invoke<StartedExport>("start_overlay_export", { path, settings, protectedVideo });
+export const appendFrame = (id: string, index: number, bytes: Uint8Array, count = 1) =>
+  invoke<void>("append_overlay_frame", bytes, { headers: { "x-export-id": id, "x-frame-index": String(index), "x-frame-count": String(count) } });
 export const finishExport = (id: string) => invoke<void>("finish_overlay_export", { id });
 export const cancelExport = (id: string) => invoke<void>("cancel_overlay_export", { id });
