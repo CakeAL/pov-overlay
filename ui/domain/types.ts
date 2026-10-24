@@ -1,3 +1,5 @@
+export const MAX_GAP_MS = 30_000;
+
 export interface Sample {
   timestampMs: number;
   latitude: number;

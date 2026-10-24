@@ -1,5 +1,5 @@
 import type { Sample, Track } from "./types";
-import { MAX_GAP_MS } from "./telemetry";
+import { MAX_GAP_MS } from "./types";
 function simplify(points: Array<{ x: number; y: number }>, epsilon = 0.6) {
   if (points.length < 3) return points;
   const keep = new Set([0, points.length - 1]),

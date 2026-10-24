@@ -31,6 +31,7 @@ export function estimateSegmentSpeed(
   positions: Sample[];
   speedValid: boolean[];
 } {
+  const count = normalizeSmoothingPoints(windowPoints);
   const original = samples.slice(start, end);
   const speedValid = original.map((_, index) => index > 0);
   const intervals = original.map((point, index) =>
@@ -54,7 +55,7 @@ export function estimateSegmentSpeed(
     if (intervals[lastIndex]! > Math.max(3 * baseline, baseline + 5))
       speedValid[lastIndex] = false;
   }
-  if (windowPoints <= 0) {
+  if (count === 0) {
     const speedsMps = original.map((point, index) =>
       speedValid[index] ? point.speedMps : 0,
     );
@@ -111,7 +112,7 @@ export function estimateSegmentSpeed(
   const lastUsable = speedValid[lastIndex]
     ? lastIndex
     : Math.max(0, lastIndex - 1);
-  const radius = (normalizeSmoothingPoints(windowPoints) - 1) / 2;
+  const radius = (count - 1) / 2;
   const speedsMps = positions.map((_, index) => {
     if (!speedValid[index]) return 0;
     const left = Math.max(0, index - radius);

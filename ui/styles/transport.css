@@ -165,16 +165,3 @@
   background: #c5d9ab;
   border-radius: 1px;
 }
-
-.footer-separator {
-  color: #c7cdbf;
-  margin: 0 5px;
-}
-
-kbd {
-  font: 8px inherit;
-  border: 1px solid #dfe4d8;
-  border-radius: 3px;
-  padding: 1px 3px;
-  line-height: 1.3;
-}

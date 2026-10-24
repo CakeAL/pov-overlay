@@ -28,8 +28,7 @@ import type { Track, VideoAsset } from "../domain/types";
 import type { EditorMessages } from "./useMessages";
 
 export function useMediaSession(messages: EditorMessages) {
-  const track = shallowRef<Track | null>(null),
-    gpxName = ref("");
+  const track = shallowRef<Track | null>(null);
   const asset = shallowRef<VideoAsset | null>(null),
     busy = ref(false);
   const joinSources = ref(true),
@@ -50,10 +49,6 @@ export function useMediaSession(messages: EditorMessages) {
       overwritten: result.overwritten,
       breaks: result.breaks,
     };
-    gpxName.value = sources.value
-      .filter((s) => s.enabled !== false)
-      .map((s) => s.name)
-      .join("、");
   }
   function restoreSources(values: TrackSource[]) {
     sources.value = values;
@@ -226,7 +221,6 @@ export function useMediaSession(messages: EditorMessages) {
     selectedImage,
     acceptImage,
     track,
-    gpxName,
     asset,
     busy,
     gpxInput,

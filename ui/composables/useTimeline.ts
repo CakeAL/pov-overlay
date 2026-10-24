@@ -1,5 +1,4 @@
 import { routePreview, coverageIntervals } from "../domain/routePreview";
-import { normalizeSmoothingPoints } from "../domain/speedEstimation";
 import { prepareMotion } from "../domain/motion";
 import type { TelemetrySettings } from "./useTelemetrySettings";
 import { computed } from "vue";
@@ -26,7 +25,7 @@ export function useTimeline(
     track.value
       ? prepareMotion(
           track.value,
-          normalizeSmoothingPoints(Number(settings.smoothingPoints.value)),
+          Number(settings.smoothingPoints.value),
           Math.max(
             0,
             Math.min(2000, Number(settings.stopThresholdKmh.value) || 0),
@@ -67,25 +66,6 @@ export function useTimeline(
             ? "当前时间无有效速度"
             : "轨迹已连接",
   );
-  const coverage = computed(() => {
-    if (
-      !track.value ||
-      !duration.value ||
-      (asset.value && !alignmentKnown.value)
-    )
-      return null;
-    const left = Math.max(0, -offset.value),
-      right = Math.min(
-        duration.value,
-        (track.value.endMs - track.value.startMs) / 1000 - offset.value,
-      );
-    return right > left
-      ? {
-          left: `${(left / duration.value) * 100}%`,
-          width: `${((right - left) / duration.value) * 100}%`,
-        }
-      : null;
-  });
   const timelineTicks = computed(() =>
     Array.from({ length: 7 }, (_, index) =>
       formatTime((duration.value * index) / 6),
@@ -132,7 +112,6 @@ export function useTimeline(
     sample,
     currentHeading,
     status,
-    coverage,
     coverageRanges,
     timelineTicks,
     routePath,

@@ -1,5 +1,6 @@
 import type { Sample, Track } from "../domain/types";
-import { distance, MAX_GAP_MS } from "../domain/telemetry";
+import { distance } from "../domain/geography";
+import { MAX_GAP_MS } from "../domain/types";
 
 const children = (node: Element, name: string) =>
   Array.from(node.children).filter((child) => child.localName === name);

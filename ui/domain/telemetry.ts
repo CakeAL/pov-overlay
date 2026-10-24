@@ -1,6 +1,5 @@
 import type { Sample, Track } from "./types";
-export const MAX_GAP_MS = 30_000;
-export { distance } from "./geography";
+import { MAX_GAP_MS } from "./types";
 import { angleBetween, cubicSpeed } from "./motion";
 export function sampleAt(track: Track, timestampMs: number): Sample | null {
   if (timestampMs < track.startMs || timestampMs > track.endMs) return null;

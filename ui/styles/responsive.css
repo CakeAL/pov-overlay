@@ -9,9 +9,6 @@
   .panel-section {
     padding: 23px 27px;
   }
-  .inspector-heading {
-    padding: 30px 27px;
-  }
   .app-header {
     padding: 0 35px;
   }
@@ -26,26 +23,11 @@
     width: 292px;
     min-width: 292px;
   }
-  .inspector-heading {
-    padding: 23px 18px;
-  }
   .panel-section {
     padding: 18px;
   }
   .canvas-workspace {
     padding: 0 20px;
-  }
-  .canvas-tag {
-    display: none;
-  }
-  .workspace-footer {
-    font-size: 12px;
-  }
-  .workspace-footer > span:last-child {
-    display: none;
-  }
-  .header-workspace > span {
-    display: none;
   }
   .stage-wrap {
     min-height: 200px;
@@ -75,10 +57,6 @@
   .panel-section {
     border-right: 1px solid var(--line);
   }
-  .inspector-heading,
-  .inspector-footer {
-    display: none;
-  }
   .canvas-workspace {
     height: 620px;
     flex: none;
@@ -94,24 +72,13 @@
   .canvas-actions .action-divider {
     margin: 0 6px;
   }
-  .header-divider,
-  .header-workspace,
-  .local-badge {
-    display: none;
-  }
   .app-header {
     height: 60px;
     min-height: 60px;
     padding: 0 15px;
   }
-  .brand {
-    font-size: 21px;
-  }
   .transport-panel {
     margin-top: 12px;
-  }
-  .workspace-footer {
-    min-height: 34px;
   }
   .canvas-caption {
     left: 12px;
@@ -120,20 +87,6 @@
   }
   .canvas-options > div {
     gap: 10px;
-  }
-  .empty-content h3 {
-    letter-spacing: 1px;
-  }
-  .empty-content p {
-    margin-bottom: 12px;
-  }
-  .empty-video-icon {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 12px;
-  }
-  .empty-content > span {
-    margin-top: 9px;
   }
   .message-banner {
     padding: 9px 15px;

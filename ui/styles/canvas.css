@@ -34,13 +34,6 @@
   margin: 0;
 }
 
-.canvas-tag {
-  font-size: 12px;
-  letter-spacing: 1px;
-  color: #a7afa0;
-  margin-left: 5px;
-}
-
 .canvas-actions {
   display: flex;
   align-items: center;
@@ -69,11 +62,6 @@
   gap: 8px;
   font-size: 12px;
   color: #909a87;
-}
-
-.aspect-label > span {
-  color: #bbc2b4;
-  margin: 0 2px;
 }
 
 .canvas-options > div {
@@ -135,20 +123,6 @@
   overflow: hidden;
 }
 
-.contour-art {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  inset: 0;
-  opacity: 0.12;
-}
-
-.contour-art path {
-  stroke: #9bad8b;
-  stroke-width: 0.7;
-  fill: none;
-}
-
 .empty-content {
   position: relative;
   display: flex;
@@ -156,51 +130,6 @@
   align-items: center;
   transform: translateY(-10%);
   pointer-events: auto;
-}
-
-.empty-video-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  color: #95a58e;
-  border: 1px solid #64745b77;
-  background: #6c7a6114;
-  border-radius: 13px;
-  margin-bottom: 18px;
-  transform: rotate(-6deg);
-}
-
-.empty-video-icon svg {
-  transform: rotate(6deg);
-}
-
-.empty-content h3 {
-  color: #dce5d6;
-  font-size: clamp(12px, 2cqw, 22px);
-  font-weight: 450;
-  letter-spacing: 3px;
-  margin: 0 0 12px;
-}
-
-.empty-content p {
-  color: #8c9a83;
-  font-size: clamp(8px, 1.1cqw, 12px);
-  margin: 0 0 22px;
-}
-
-.empty-content > .hk-btn {
-  background: #d9eac5 !important;
-  font-size: 12px !important;
-  color: #3d5132 !important;
-  min-height: 32px !important;
-}
-
-.empty-content > span {
-  font-size: clamp(7px, 0.9cqw, 9px);
-  color: #73816b;
-  margin-top: 13px;
 }
 
 .safe-area {
@@ -298,11 +227,6 @@
   background: #8daf63;
 }
 
-.caption-separator {
-  color: #bbc3b3;
-  margin: 0 4px;
-}
-
 .drop-target {
   position: absolute;
   inset: 0;
@@ -322,11 +246,6 @@
   font-size: 18px;
   font-weight: 500;
   letter-spacing: 2px;
-}
-
-.drop-target > span {
-  font-size: 12px;
-  color: #97b27e;
 }
 
 .is-drag-over {

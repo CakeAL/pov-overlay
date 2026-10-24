@@ -1,6 +1,6 @@
 import type { Sample, Track, TrackSource } from "./types";
 import { distance } from "./geography";
-import { MAX_GAP_MS } from "./telemetry";
+import { MAX_GAP_MS } from "./types";
 import { correctTrackTime } from "./trackTime";
 type Owned = Sample & { owner: string; originalSegment: number };
 /** Later imports replace earlier samples throughout their continuous coverage, not by alternating fixes. */

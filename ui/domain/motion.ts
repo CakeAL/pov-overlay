@@ -1,7 +1,7 @@
 import type { Sample, Track } from "./types";
 import { distance } from "./geography";
 import { estimateSegmentSpeed } from "./speedEstimation";
-const MAX_GAP_MS = 30_000;
+import { MAX_GAP_MS } from "./types";
 const rad = (v: number) => (v * Math.PI) / 180;
 export function bearing(a: Sample, b: Sample): number | null {
   if (distance(a, b) < 0.5) return null;
@@ -61,24 +61,14 @@ export function prepareMotion(
       p.speedValid = estimate.speedValid[local]!;
       p.speedMps = estimate.speedsMps[local]!;
       if (
+        local > 0 &&
         p.speedValid &&
         p.speedMps >= stopThresholdMps &&
         estimate.movementSpeedsMps[local]! >= stopThresholdMps
       ) {
-        if (local > 0)
-          heading =
-            bearing(
-              estimate.positions[local - 1]!,
-              estimate.positions[local]!,
-            ) ?? heading;
-        else if (
-          local + 1 < estimate.positions.length &&
-          estimate.movementSpeedsMps[local + 1]! >= stopThresholdMps
-        )
-          heading = bearing(
-            estimate.positions[local]!,
-            estimate.positions[local + 1]!,
-          );
+        heading =
+          bearing(estimate.positions[local - 1]!, estimate.positions[local]!) ??
+          heading;
       }
       p.headingDeg = heading;
     }

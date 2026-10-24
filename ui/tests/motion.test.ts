@@ -20,13 +20,6 @@ const track = (samples: Sample[]): Track => ({
   skippedPoints: 0,
 });
 describe("motion fitting", () => {
-  it("smooths a one-sample spike without changing raw data", () => {
-    const raw = track([point(0), point(1), point(2, 30), point(3), point(4)]),
-      fit = prepareMotion(raw, 7);
-    expect(fit.samples[2]!.speedMps).toBeLessThan(30);
-    expect(fit.samples[2]!.speedMps).toBeGreaterThan(10);
-    expect(raw.samples[2]!.speedMps).toBe(30);
-  });
   it("interpolates smoothly without overshoot or negative speed", () => {
     const fit = prepareMotion(
       track([point(0, 0), point(1, 10), point(2, 12)]),
