@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { Settings2, Check, Plus } from "lucide-vue-next";
+import { Settings2, Check, Plus, Bold, Italic } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
+import { FONT_FAMILIES } from "../../domain/widgetTypography";
 const { layout } = useEditorContext();
 const { selected } = toRefs(layout);
 const { remember, resetSelected, updatePosition, updateScale } = layout;
+function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: string | number | boolean | undefined) {
+  if (!selected.value || selected.value.locked) return;
+  remember();
+  selected.value.typography = { ...selected.value.typography, [key]: value };
+}
 </script>
 
 <template>
@@ -41,6 +47,12 @@ const { remember, resetSelected, updatePosition, updateScale } = layout;
           @change="updatePosition('y', $event)"
         /><span>%</span></label
       >
+    </div>
+    <div class="typography-fields">
+      <label>字体<select aria-label="元素字体" :disabled="selected.locked" :value="selected.typography?.fontFamily ?? ''" @change="typography('fontFamily', ($event.target as HTMLSelectElement).value || undefined)"><option value="">模板字体</option><option v-for="font in FONT_FAMILIES" :key="font" :value="font">{{ font }}</option></select></label>
+      <div class="font-controls"><label>字号<input aria-label="元素字号" type="number" min="8" max="200" placeholder="自动" :disabled="selected.locked" :value="selected.typography?.fontSize" @change="typography('fontSize', ($event.target as HTMLInputElement).value ? Math.max(8, Math.min(200, Number(($event.target as HTMLInputElement).value))) : undefined)" /></label>
+      <button :disabled="selected.locked" :aria-pressed="selected.typography?.bold === true" aria-label="加粗" @click="typography('bold', !selected.typography?.bold)"><Bold :size="16" /></button>
+      <button :disabled="selected.locked" :aria-pressed="selected.typography?.italic === true" aria-label="斜体" @click="typography('italic', !selected.typography?.italic)"><Italic :size="16" /></button></div>
     </div>
     <label class="slider-label"
       >大小 <span>{{ Math.round(selected.scale * 100) }}%</span></label

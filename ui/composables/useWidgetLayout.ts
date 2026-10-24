@@ -147,6 +147,7 @@ export function useWidgetLayout(
   function resetSelected() {
     if (!selected.value) return;
     remember();
+    delete selected.value.typography;
     Object.assign(
       selected.value,
       defaultWidgets().find((widget) => widget.id === selected.value!.id) ?? {

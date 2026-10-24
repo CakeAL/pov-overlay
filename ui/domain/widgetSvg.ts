@@ -1,3 +1,4 @@
+import { styleWidgetSvg } from "./widgetTypography";
 import type { Sample, Widget } from "./types";
 import { formatCoordinate } from "./telemetry";
 import { bindSvg } from "./svgBindings";
@@ -6,7 +7,7 @@ export const svgDataUrl = (source: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
 export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number): string {
   if (widget.kind === "svg")
-    return bindSvg(widget.svg?.source ?? "", sample, elapsed, widget.color);
+    return styleWidgetSvg(bindSvg(widget.svg?.source ?? "", sample, elapsed, widget.color), widget.typography);
   const width = widgetDimensions(widget, ratio).width * 1000;
   const height = width / widgetAspect(widget);
   const s = widget.scale;
@@ -34,5 +35,5 @@ export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number
         <text x="${86 * s}" y="${center + 15 * s}">${formatCoordinate(sample?.longitude, "lon")}</text>
       </g>`;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" height="100%" fill="white" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">${body}</svg>`;
+  return styleWidgetSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" height="100%" fill="white" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">${body}</svg>`, widget.typography);
 }

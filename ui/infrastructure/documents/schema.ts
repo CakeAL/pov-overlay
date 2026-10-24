@@ -75,6 +75,12 @@ export function validateWidgets(v: unknown): Widget[] {
       color,
       visible: bool(w.visible),
       locked: bool(w.locked),
+      typography: w.typography == null ? undefined : (() => {
+        const t = object(w.typography);
+        const fontFamily = t.fontFamily == null ? undefined : text(t.fontFamily, 120);
+        if (fontFamily && !/^[\w ,.-]{1,120}$/.test(fontFamily)) throw new Error("字体名称无效。");
+        return { fontFamily, fontSize: t.fontSize == null ? undefined : num(t.fontSize, 8, 200), bold: t.bold == null ? undefined : bool(t.bold), italic: t.italic == null ? undefined : bool(t.italic) };
+      })(),
       widthRatio: w.widthRatio == null ? undefined : num(w.widthRatio, 0.01, 1),
       svg:
         w.kind === "svg"
