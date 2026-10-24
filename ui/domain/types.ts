@@ -82,4 +82,6 @@ export interface TrackSource {
   name: string;
   track: Track;
   enabled?: boolean;
+  /** Reinterpret incorrectly UTC-tagged local clocks using this fixed offset. */
+  utcLabelOffsetMinutes?: number | null;
 }

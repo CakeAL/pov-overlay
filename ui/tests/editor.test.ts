@@ -161,3 +161,48 @@ it("preserves unresolved video references when a restored project is saved again
   expect(again.offset).toBe(2.5);
   expect(again.currentTime).toBe(3);
 });
+
+it("recalculates video alignment from corrected GPX times without accumulating shifts", async () => {
+  const editor = session(),
+    gps = track();
+  editor.media.acceptTrack({ track: gps, name: "ride.gpx" });
+  await editor.media.acceptVideo(video(gps.startMs - 8 * 3600_000 + 12_500));
+  const id = editor.media.sources[0]!.id;
+  editor.media.setSourceTimeZone(id, 480);
+  expect(editor.media.track!.startMs).toBe(gps.startMs - 8 * 3600_000);
+  expect(editor.alignment.offset).toBe(12.5);
+  expect(editor.timeline.sample?.latitude).toBeCloseTo(31.000125, 8);
+  editor.media.setSourceTimeZone(id, 540);
+  editor.media.setSourceTimeZone(id, 480);
+  expect(editor.alignment.offset).toBe(12.5);
+  editor.media.setSourceTimeZone(id, null);
+  expect(editor.media.track!.startMs).toBe(gps.startMs);
+  expect(editor.media.sources[0]!.track.samples[0]!.timestampMs).toBe(
+    gps.startMs,
+  );
+});
+
+it("restores per-source time zones in projects and leaves them unchanged when applying presets", async () => {
+  const editor = session(),
+    gps = track();
+  editor.media.acceptTrack({ track: gps, name: "ride.gpx" });
+  editor.media.setSourceTimeZone(editor.media.sources[0]!.id, 480);
+  await nextTick();
+  editor.playback.seek(4);
+  const saved = JSON.stringify(editor.documents.project());
+  editor.media.setSourceTimeZone(editor.media.sources[0]!.id, null);
+  await editor.documents.load(saved, "project");
+  await nextTick();
+  expect(editor.media.sources[0]!.utcLabelOffsetMinutes).toBe(480);
+  expect(editor.media.sources[0]!.track.startMs).toBe(gps.startMs);
+  expect(editor.media.track!.startMs).toBe(gps.startMs - 8 * 3600_000);
+  expect(editor.timeline.sample?.timestampMs).toBe(
+    gps.startMs - 8 * 3600_000 + 4000,
+  );
+  expect(editor.playback.duration).toBe(20);
+  await editor.documents.load(
+    JSON.stringify(editor.documents.preset()),
+    "preset",
+  );
+  expect(editor.media.sources[0]!.utcLabelOffsetMinutes).toBe(480);
+});

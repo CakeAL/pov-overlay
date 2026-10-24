@@ -23,6 +23,7 @@ import {
 } from "../infrastructure/images";
 import type { ImageAsset, TrackSource } from "../domain/types";
 import { mergeTracks } from "../domain/mergeTracks";
+import { correctTrackTime } from "../domain/trackTime";
 import type { Track, VideoAsset } from "../domain/types";
 import type { EditorMessages } from "./useMessages";
 
@@ -74,6 +75,21 @@ export function useMediaSession(messages: EditorMessages) {
         s.id === id ? { ...s, enabled: s.enabled === false } : s,
       ),
     );
+  }
+  function setSourceTimeZone(id: string, utcLabelOffsetMinutes: number | null) {
+    const source = sources.value.find((source) => source.id === id);
+    if (!source) return;
+    try {
+      correctTrackTime(source.track, utcLabelOffsetMinutes);
+      restoreSources(
+        sources.value.map((source) =>
+          source.id === id ? { ...source, utcLabelOffsetMinutes } : source,
+        ),
+      );
+      messages.error.value = "";
+    } catch (reason) {
+      messages.report(reason);
+    }
   }
   watch(joinSources, rebuild);
   async function acceptVideo(result: VideoAsset) {
@@ -201,6 +217,7 @@ export function useMediaSession(messages: EditorMessages) {
     restoreSources,
     removeSource,
     toggleSource,
+    setSourceTimeZone,
     image,
     imageInput,
     backgroundMode,

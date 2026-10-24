@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Route, Check, Plus, FileVideo } from "lucide-vue-next";
 import { toRefs } from "vue";
+import TrackTimeZoneField from "./TrackTimeZoneField.vue";
 import { useEditorContext } from "../../editor/context";
 import { dateText, timeZone } from "../../lib/format";
 import { formatTime } from "../../domain/telemetry";
@@ -45,21 +46,30 @@ const { routePath, routePoint } = toRefs(timeline);
       />
     </button>
     <div class="track-sources">
-      <div v-for="source in sources" :key="source.id" class="track-source">
-        <label
-          ><input
-            type="checkbox"
-            :checked="source.enabled !== false"
-            :aria-label="`启用 ${source.name}`"
-            @change="media.toggleSource(source.id)"
-          /><span>{{ source.name }}</span></label
-        ><button
-          :aria-label="`移除 ${source.name}`"
-          @click="media.removeSource(source.id)"
-        >
-          ×
-        </button>
+      <div v-for="source in sources" :key="source.id" class="track-source-item">
+        <div class="track-source">
+          <label
+            ><input
+              type="checkbox"
+              :checked="source.enabled !== false"
+              :aria-label="`启用 ${source.name}`"
+              @change="media.toggleSource(source.id)"
+            /><span>{{ source.name }}</span></label
+          ><button
+            :aria-label="`移除 ${source.name}`"
+            @click="media.removeSource(source.id)"
+          >
+            ×
+          </button>
+        </div>
+        <TrackTimeZoneField
+          :source="source"
+          @change="media.setSourceTimeZone(source.id, $event)"
+        />
       </div>
+      <p v-if="sources.length" class="field-hint">
+        本地时间被误标为 UTC（Z）时，选择实际记录时区。校正会更新视频对齐。
+      </p>
     </div>
     <label v-if="sources.length > 1" class="field-label"
       ><input
@@ -146,8 +156,9 @@ const { routePath, routePoint } = toRefs(timeline);
       <div>
         <span>GPX 起始时间</span><strong>{{ dateText(track.startMs) }}</strong
         ><small
-          >{{ formatTime((track.endMs - track.startMs) / 1000) }} ·
-          {{ timeZone }}</small
+          >{{ formatTime((track.endMs - track.startMs) / 1000) }} · 显示时区：{{
+            timeZone
+          }}</small
         >
       </div>
     </div>

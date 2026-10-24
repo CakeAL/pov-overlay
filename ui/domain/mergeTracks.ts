@@ -1,6 +1,7 @@
 import type { Sample, Track, TrackSource } from "./types";
 import { distance } from "./geography";
 import { MAX_GAP_MS } from "./telemetry";
+import { correctTrackTime } from "./trackTime";
 type Owned = Sample & { owner: string; originalSegment: number };
 /** Later imports replace earlier samples throughout their continuous coverage, not by alternating fixes. */
 export function mergeTracks(
@@ -12,7 +13,10 @@ export function mergeTracks(
   let skipped = 0;
   const active = sources.filter((s) => s.enabled !== false);
   for (const source of active) {
-    const samples = source.track.samples,
+    const samples = correctTrackTime(
+        source.track,
+        source.utcLabelOffsetMinutes,
+      ).samples,
       ranges: Array<[number, number]> = [];
     for (let start = 0; start < samples.length; ) {
       let end = start + 1;

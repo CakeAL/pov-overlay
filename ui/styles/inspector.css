@@ -563,3 +563,28 @@ h1 {
   stroke-linecap: round;
   stroke-width: 2;
 }
+
+.track-source-item {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e9e0;
+}
+.track-source-item .track-source {
+  border-bottom: 0;
+}
+.track-time-zone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+}
+.track-time-zone select {
+  min-width: 0;
+  max-width: 100%;
+  padding: 5px;
+  border: 1px solid #d0d7cb;
+  border-radius: 4px;
+  background: white;
+  font: inherit;
+}

@@ -74,3 +74,59 @@ describe("project and preset validation", () => {
     expect(() => parseDocument(JSON.stringify(p), "project")).toThrow();
   });
 });
+
+it("validates source time-zone corrections and defaults older projects to file times", () => {
+  const startMs = Date.parse("2026-10-22T18:39:45Z");
+  const source = {
+    id: "ride",
+    name: "ride.gpx",
+    track: {
+      name: "ride",
+      distanceMeters: 0,
+      skippedPoints: 0,
+      samples: [0, 1000].map((dt) => ({
+        timestampMs: startMs + dt,
+        latitude: 31,
+        longitude: 121,
+        elevation: null,
+        speedMps: 0,
+        segment: 0,
+      })),
+    },
+  };
+  const project = {
+    ...preset(),
+    type: "pov-overlay/project",
+    tracks: [source],
+    image: null,
+    video: null,
+    backgroundMode: "none",
+    currentTime: 0,
+    offset: 0,
+    alignmentKnown: false,
+    syncMode: "none",
+  };
+  expect(
+    parseDocument(JSON.stringify(project), "project").tracks[0]!
+      .utcLabelOffsetMinutes,
+  ).toBeNull();
+  const corrected = {
+    ...project,
+    tracks: [{ ...source, utcLabelOffsetMinutes: 480 }],
+  };
+  const restored = parseDocument(JSON.stringify(corrected), "project")
+    .tracks[0]!;
+  expect(restored.utcLabelOffsetMinutes).toBe(480);
+  expect(restored.track.startMs).toBe(startMs);
+  for (const invalid of [900, -780, 8.5, "480", 481]) {
+    expect(() =>
+      parseDocument(
+        JSON.stringify({
+          ...project,
+          tracks: [{ ...source, utcLabelOffsetMinutes: invalid }],
+        }),
+        "project",
+      ),
+    ).toThrow("GPX 时区偏移无效");
+  }
+});

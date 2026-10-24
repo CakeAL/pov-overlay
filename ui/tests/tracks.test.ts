@@ -97,3 +97,33 @@ describe("route preview geometry", () => {
     expect(preview.path).not.toContain("Infinity");
   });
 });
+
+describe("GPX UTC label correction", () => {
+  it.each([480, -210, 345])(
+    "applies UTC offset %s minutes without mutating samples",
+    (offset) => {
+      const start = Date.parse("2026-10-22T18:39:45.123Z");
+      const original = source("a", [p(start / 1000), p(start / 1000 + 1)]);
+      const result = mergeTracks([
+        { ...original, utcLabelOffsetMinutes: offset },
+      ]);
+      expect(result.track!.startMs).toBe(start - offset * 60_000);
+      expect(result.track!.endMs - result.track!.startMs).toBe(1000);
+      expect(original.track.startMs).toBe(start);
+      expect(original.track.samples[0]!.timestampMs).toBe(start);
+      expect(result.track!.distanceMeters).toBeGreaterThan(0);
+    },
+  );
+  it("corrects each source before sorting and replacing overlapping samples", () => {
+    const first = source("a", [p(0), p(1), p(2), p(3)]);
+    const second = {
+      ...source("b", [p(28801.5, 0.000015), p(28802.5, 0.000025)]),
+      utcLabelOffsetMinutes: 480,
+    };
+    const merged = mergeTracks([first, second]);
+    expect(merged.track!.samples.map((p) => p.timestampMs)).toEqual([
+      0, 1000, 1500, 2500, 3000,
+    ]);
+    expect(merged.overwritten).toBe(1);
+  });
+});

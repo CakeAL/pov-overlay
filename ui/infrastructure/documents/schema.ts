@@ -6,6 +6,7 @@ import type {
   VideoAsset,
 } from "../../domain/types";
 import { sanitizeSvg } from "../svg";
+import { correctTrackTime, validTrackTimeOffset } from "../../domain/trackTime";
 export interface PresetDocument {
   type: "pov-overlay/preset";
   version: 1;
@@ -132,11 +133,21 @@ export function parseDocument(
     throw new Error("轨迹列表无效。");
   const tracks = d.tracks.map((value) => {
     const s = object(value);
+    const utcLabelOffsetMinutes =
+      s.utcLabelOffsetMinutes == null ? null : s.utcLabelOffsetMinutes;
+    if (
+      utcLabelOffsetMinutes !== null &&
+      !validTrackTimeOffset(utcLabelOffsetMinutes)
+    )
+      throw new Error("GPX 时区偏移无效。");
+    const track = validateTrack(s.track);
+    correctTrackTime(track, utcLabelOffsetMinutes);
     return {
       id: text(s.id),
       name: text(s.name),
-      track: validateTrack(s.track),
+      track,
       enabled: s.enabled == null ? true : bool(s.enabled),
+      utcLabelOffsetMinutes,
     };
   });
   const ids = tracks.map((t) => t.id);
