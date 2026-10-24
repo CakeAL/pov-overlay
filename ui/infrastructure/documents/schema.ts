@@ -186,6 +186,10 @@ export function parseDocument(
       track,
       enabled: s.enabled == null ? true : bool(s.enabled),
       utcLabelOffsetMinutes,
+      elevationOverride: s.elevationOverride == null ? undefined : (() => {
+        if (!Array.isArray(s.elevationOverride) || s.elevationOverride.length !== track.samples.length) throw new Error('替换海拔点数无效。');
+        return s.elevationOverride.map(value => value == null ? null : num(value, -12000, 10000));
+      })(),
     };
   });
   const ids = tracks.map((t) => t.id);

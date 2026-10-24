@@ -5,7 +5,7 @@ edition = "2024"
 
 [features]
 default = []
-map-rendering = ["dep:galileo", "dep:geojson", "dep:image", "dep:anyhow"]
+map-rendering = ["dep:galileo", "dep:geojson", "dep:anyhow"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -24,7 +24,7 @@ srtlib = "0.2"
 anyhow = { version = "1", optional = true }
 galileo = { git = "https://github.com/Maximkaaa/galileo.git", rev = "907e047875f28199715bdce2c09868c604e34ffd", features = ["geojson"], optional = true }
 geojson = { version = "0.24", optional = true }
-image = { version = "0.25", optional = true }
+image = { version = "0.25", default-features = false, features = ["png", "webp"] }
 
 [dev-dependencies]
 tempfile = "3"

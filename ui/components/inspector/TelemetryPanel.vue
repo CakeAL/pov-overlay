@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ElevationPanel from "./ElevationPanel.vue";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 const { telemetry, timeline } = useEditorContext();
@@ -47,5 +48,6 @@ const windows = Array.from({ length: 30 }, (_, index) => index * 2 + 3);
         >{{ currentHeading == null ? "—" : `${currentHeading.toFixed(1)}°` }}</strong
       >
     </div>
+    <ElevationPanel />
   </section>
 </template>

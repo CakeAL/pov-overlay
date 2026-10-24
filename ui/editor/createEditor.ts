@@ -1,3 +1,4 @@
+import { useElevation } from "../composables/useElevation";
 import { useVideoExport } from "../composables/useVideoExport";
 import { useTrackProfile } from "../composables/useTrackProfile";
 import { useTelemetrySettings } from "../composables/useTelemetrySettings";
@@ -18,6 +19,7 @@ import { useEditorShortcuts } from "../composables/useEditorShortcuts";
 export function createEditor() {
   const messages = useMessages();
   const media = useMediaSession(messages);
+  const elevation = useElevation(media, messages);
   const alignment = useAlignment(media.track, media.activeVideo, messages);
   const playback = usePlayback(media, messages);
   const viewport = useCanvasViewport(playback.ratio);
@@ -39,6 +41,7 @@ export function createEditor() {
   useEditorShortcuts(layout, playback, viewport);
   return reactive({
     documents,
+    elevation,
     videoExport,
     messages,
     media,

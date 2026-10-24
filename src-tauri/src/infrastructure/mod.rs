@@ -16,3 +16,7 @@ pub mod export_codec;
 pub mod document_library;
 
 pub mod map_tiles;
+
+pub mod terrain;
+
+pub mod tile_cache;

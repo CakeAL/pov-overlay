@@ -92,6 +92,7 @@ export interface TrackSource {
   name: string;
   track: Track;
   enabled?: boolean;
+  elevationOverride?: (number | null)[];
   /** Reinterpret incorrectly UTC-tagged local clocks using this fixed offset. */
   utcLabelOffsetMinutes?: number | null;
 }
