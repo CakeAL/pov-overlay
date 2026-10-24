@@ -1,0 +1,10 @@
+[package]
+name = "pov-core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+gpx = "=0.10.0"
+geo = "0.31.0"
+serde = { version = "1", features = ["derive"] }
+time = { version = "0.3.44", features = ["parsing", "formatting"] }

@@ -1,0 +1,23 @@
+import { defineConfig } from "vitest/config";
+import vue from "@vitejs/plugin-vue";
+import vueJsx from "@vitejs/plugin-vue-jsx";
+export default defineConfig({
+  plugins: [vue(), vueJsx()],
+  clearScreen: false,
+  server: { port: 1420, strictPort: true },
+  envPrefix: ["VITE_", "TAURI_ENV_*"],
+  build: { target: ["es2022", "chrome105", "safari15"] },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: [
+          "import",
+          "global-builtin",
+          "color-functions",
+          "if-function",
+        ],
+      },
+    },
+  },
+  test: { environment: "happy-dom", include: ["ui/tests/**/*.test.ts"] },
+});

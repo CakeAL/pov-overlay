@@ -1518,22 +1518,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pov-overlay"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "env_logger",
- "galileo",
- "geo",
- "geojson",
- "gpx",
- "image 0.25.8",
- "srtlib",
- "time",
- "tokio",
-]
-
-[[package]]
 name = "half"
 version = "2.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3081,6 +3065,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b73949432f5e2a09657003c25bca5e19a0e9c84f8058ca374f49e0ebe605af77"
 dependencies = [
  "zerovec",
+]
+
+[[package]]
+name = "pov-overlay"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "env_logger",
+ "galileo",
+ "geo",
+ "geojson",
+ "gpx",
+ "image 0.25.8",
+ "srtlib",
+ "time",
+ "tokio",
 ]
 
 [[package]]
