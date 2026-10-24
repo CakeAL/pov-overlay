@@ -75,8 +75,7 @@ const { dropActive } = toRefs(drop);
         :sample="sample"
       />
       <div v-if="dropActive" class="drop-target">
-        <Upload :size="30" /><strong>松开以导入素材</strong
-        ><span>GPX 轨迹 / 预览视频</span>
+        <Upload :size="30" /><strong>松开以导入素材</strong>
       </div>
     </div>
     <div class="canvas-caption">
@@ -85,8 +84,7 @@ const { dropActive } = toRefs(drop);
         >{{ status }}</span
       ><span v-if="stageSize.width"
         >{{ Math.round(stageSize.width) }} ×
-        {{ Math.round(stageSize.height) }}
-        <span class="caption-separator">·</span> 预览尺寸</span
+        {{ Math.round(stageSize.height) }}</span
       >
     </div>
   </div>

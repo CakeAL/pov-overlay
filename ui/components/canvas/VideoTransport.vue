@@ -35,6 +35,7 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
           class="play-button"
           :aria-label="playing ? '暂停' : '播放'"
           :disabled="!duration"
+          :title="playing ? '暂停（Space）' : '播放（Space）'"
           @click="togglePlay"
         >
           <Pause v-if="playing" :size="17" fill="currentColor" /><Play
@@ -93,10 +94,10 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
           @input="seek(Number(($event.target as HTMLInputElement).value))"
         />
       </div>
-      <div class="timeline-legend">
+      <div v-if="coverageRanges.length" class="timeline-legend">
         <span><i></i> GPX 覆盖范围</span
         ><span>{{
-          absoluteTime && sample ? dateText(absoluteTime) : "等待有效轨迹时间"
+          absoluteTime != null && sample ? dateText(absoluteTime) : ""
         }}</span>
       </div>
     </div>

@@ -2,7 +2,6 @@
 import CanvasToolbar from "./CanvasToolbar.vue";
 import PreviewCanvas from "./PreviewCanvas.vue";
 import VideoTransport from "./VideoTransport.vue";
-import EditorFooter from "./EditorFooter.vue";
 </script>
 
 <template>
@@ -12,6 +11,5 @@ import EditorFooter from "./EditorFooter.vue";
     <PreviewCanvas />
 
     <VideoTransport />
-    <EditorFooter />
   </section>
 </template>

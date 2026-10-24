@@ -2,8 +2,7 @@
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 const { telemetry, timeline } = useEditorContext();
-const { smoothingPoints, refreshSeconds, stopThresholdKmh } =
-  toRefs(telemetry);
+const { smoothingPoints, refreshSeconds, stopThresholdKmh } = toRefs(telemetry);
 const { currentHeading } = toRefs(timeline);
 const windows = Array.from({ length: 30 }, (_, index) => index * 2 + 3);
 </script>
@@ -13,6 +12,7 @@ const windows = Array.from({ length: 30 }, (_, index) => index * 2 + 3);
     <label class="setting-row"
       >速度平滑窗口（点）<select
         aria-label="速度平滑窗口（点）"
+        title="居中窗口：当前点及前后各半；首尾按实际可用点计算。"
         v-model.number="smoothingPoints"
       >
         <option :value="0">关闭</option>
@@ -29,9 +29,6 @@ const windows = Array.from({ length: 30 }, (_, index) => index * 2 + 3);
         step="0.01"
         v-model.number="refreshSeconds"
     /></label>
-    <p class="field-hint">
-      {{ smoothingPoints === 0 ? "使用原始点速度。" : `当前点及前后各 ${(smoothingPoints - 1) / 2} 点，以累计路程除以实际时间计算速度。` }}
-    </p>
     <label class="setting-row">
       速度归零阈值（km/h）<input
         aria-label="速度归零阈值（km/h）"
@@ -39,15 +36,16 @@ const windows = Array.from({ length: 30 }, (_, index) => index * 2 + 3);
         min="0"
         max="2000"
         step="0.1"
+        title="低于阈值时显示 0 并保持航向；0 关闭归零。"
         v-model.number="stopThresholdKmh"
       />
     </label>
-    <p class="field-hint">低于阈值时显示 0，并保持最后有效航向；0 关闭归零。</p>
     <div class="setting-row">
-      航向<strong data-testid="heading">{{
-        currentHeading == null ? "—" : `${currentHeading.toFixed(1)}°`
-      }}</strong>
+      航向<strong
+        title="正北 0°，顺时针增加；静止时保持最后有效航向。"
+        data-testid="heading"
+        >{{ currentHeading == null ? "—" : `${currentHeading.toFixed(1)}°` }}</strong
+      >
     </div>
-    <p class="field-hint">正北 0°，顺时针增加；静止时保持最后有效航向。</p>
   </section>
 </template>

@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import {
-  GripVertical,
   Gauge,
+  CodeXml,
   MapPin,
   Eye,
   EyeOff,
   LockKeyhole,
   UnlockKeyhole,
-  MousePointer2,
 } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
@@ -25,14 +24,13 @@ function addItem(event: Event) {
 
 <template>
   <section class="panel-section layers-section">
-    <div class="section-title">
-      <span><span class="section-index">03</span> 画布元素</span
-      ><span class="muted"
-        >{{ widgets.filter((widget) => widget.visible).length }} 个可见</span
-      >
-    </div>
+    <div class="section-title">画布元素</div>
     <div class="element-actions">
-      <button class="text-button" @click="svgElements.chooseSvg">
+      <button
+        class="text-button"
+        title="支持 {$Speed}、{$Latitude}、{$Longitude}、{$Elevation}、{$Heading}、{$Distance}、{$Elapsed}、{$Color} 等字段。"
+        @click="svgElements.chooseSvg"
+      >
         导入 SVG</button
       ><button class="text-button" @click="svgElements.addTelemetryStrip">
         添加数据条
@@ -85,20 +83,11 @@ function addItem(event: Event) {
       }"
     >
       <button class="layer-select" @click="selectedId = widget.id">
-        <GripVertical :size="13" class="layer-grip" /><span class="layer-icon"
+        <span class="layer-icon"
           ><Gauge v-if="widget.kind === 'speed'" :size="18" /><MapPin
-            v-else
-            :size="18" /></span
-        ><span
-          ><strong>{{ widget.label }}</strong
-          ><small>{{
-            widget.kind === "svg"
-              ? "SVG"
-              : widget.kind === "speed"
-                ? "速度"
-                : "经纬度"
-          }}</small></span
-        >
+            v-else-if="widget.kind === 'coordinates'"
+            :size="18" /><CodeXml v-else :size="18" /></span
+        ><strong>{{ widget.label }}</strong>
       </button>
       <button
         class="icon-button"
@@ -120,12 +109,5 @@ function addItem(event: Event) {
         />
       </button>
     </div>
-    <p class="field-hint">
-      SVG
-      字段：{$Speed}、{$Latitude}、{$Longitude}、{$Elevation}、{$Heading}、{$Distance}、{$Elapsed}、{$Color}
-    </p>
-    <p class="section-hint">
-      <MousePointer2 :size="12" /> 在右侧画布拖动元素，自由排布。
-    </p>
   </section>
 </template>

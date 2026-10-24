@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link2, Settings2, ChevronRight } from "lucide-vue-next";
+import { Settings2, ChevronRight } from "lucide-vue-next";
 import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
@@ -14,7 +14,7 @@ const { autoAlign, setManualOffset, applyManualTime } = alignment;
 <template>
   <section v-if="asset" class="panel-section sync-section">
     <div class="section-title">
-      <span><span class="section-index">02</span> 时间同步</span
+      <span>时间同步</span
       ><span
         v-if="syncMode !== 'none'"
         class="status-pill"
@@ -22,20 +22,9 @@ const { autoAlign, setManualOffset, applyManualTime } = alignment;
         ><span></span>{{ syncMode === "auto" ? "自动对齐" : "手动对齐" }}</span
       >
     </div>
-    <div class="sync-description">
-      <Link2 :size="17" />
-      <p>
-        {{
-          syncMode === "auto"
-            ? "已根据视频时间元数据对齐 GPX。"
-            : !track || !asset
-              ? "导入轨迹与视频后，自动匹配起始时间。"
-              : alignmentKnown
-                ? "已应用自定义时间偏移。"
-                : "视频没有可用的拍摄时间，请手动设置。"
-        }}
-      </p>
-    </div>
+    <p v-if="!track || !alignmentKnown" class="field-hint" role="status">
+      {{ !track ? "请导入 GPX" : "缺少拍摄时间，请设置视频起始时间或偏移。" }}
+    </p>
     <div class="offset-control">
       <span>视频起点在 GPX 的位置</span
       ><label
@@ -83,13 +72,12 @@ const { autoAlign, setManualOffset, applyManualTime } = alignment;
           恢复自动对齐
         </button>
       </div>
-      <p class="field-hint">
-        {{ asset?.timeSource || "未检测到拍摄时间；不会使用文件修改时间。" }}
-      </p>
-      <p v-if="asset?.capturedAtMs != null" class="field-hint">
-        元数据：{{
-          dateText(asset.capturedAtMs)
-        }}。若视频经过剪辑或设备时钟不准，可在此校正。
+      <p class="field-hint" :title="asset.timeSource ?? undefined">
+        {{
+          asset.capturedAtMs == null
+            ? "未检测到拍摄时间"
+            : `元数据：${dateText(asset.capturedAtMs)}`
+        }}
       </p>
     </div>
   </section>

@@ -7,7 +7,6 @@ const { track, busy } = toRefs(media);
 <template>
   <div class="empty-stage">
     <div v-if="!track" class="empty-content">
-      <p>导入 GPX 或预览素材</p>
       <button class="text-button" :disabled="busy" @click="media.chooseGpx">
         选择 GPX
       </button>

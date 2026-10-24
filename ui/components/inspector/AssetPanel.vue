@@ -6,7 +6,7 @@ import { useEditorContext } from "../../editor/context";
 import { dateText, timeZone } from "../../lib/format";
 import { formatTime } from "../../domain/telemetry";
 const { media, playback, timeline } = useEditorContext();
-const { track, asset, gpxName, busy, gpxInput, videoInput } = toRefs(media);
+const { track, asset, busy, gpxInput, videoInput } = toRefs(media);
 const { chooseGpx, chooseVideo, selectedFile, chooseImage, selectedImage } =
   media;
 const { image, imageInput, backgroundMode, sources, joinSources, mergeInfo } =
@@ -17,10 +17,7 @@ const { routePath, routePoint } = toRefs(timeline);
 
 <template>
   <section class="panel-section">
-    <div class="section-title">
-      <span><span class="section-index">01</span> 素材</span
-      ><span class="muted">可选视频或图片</span>
-    </div>
+    <div class="section-title">素材</div>
     <button
       class="asset-card"
       :class="{ imported: track }"
@@ -30,16 +27,11 @@ const { routePath, routePoint } = toRefs(timeline);
     >
       <span class="asset-icon track-icon"><Route :size="20" /></span
       ><span class="asset-copy"
-        ><strong>{{
-          sources.length
-            ? `已导入 ${sources.length} 段 GPX（继续添加）`
-            : "导入 GPX 轨迹"
-        }}</strong
-        ><small>{{
-          track
-            ? `${track.samples.length.toLocaleString()} 个轨迹点 · ${(track.distanceMeters / 1000).toFixed(2)} km`
-            : "GPX 轨迹文件"
-        }}</small></span
+        ><strong>{{ sources.length ? "添加 GPX" : "导入 GPX" }}</strong
+        ><small v-if="track"
+          >{{ track.samples.length.toLocaleString() }} 个轨迹点 ·
+          {{ (track.distanceMeters / 1000).toFixed(2) }} km</small
+        ></span
       ><Check v-if="track" :size="15" class="success-icon" /><Plus
         v-else
         :size="17"
@@ -67,9 +59,6 @@ const { routePath, routePoint } = toRefs(timeline);
           @change="media.setSourceTimeZone(source.id, $event)"
         />
       </div>
-      <p v-if="sources.length" class="field-hint">
-        本地时间被误标为 UTC（Z）时，选择实际记录时区。校正会更新视频对齐。
-      </p>
     </div>
     <label v-if="sources.length > 1" class="field-label"
       ><input
@@ -78,8 +67,7 @@ const { routePath, routePoint } = toRefs(timeline);
       />连接相邻文件的连续点</label
     >
     <p v-if="sources.length > 1" class="field-hint">
-      按绝对时间排序，后导入覆盖重叠时段。已替换
-      {{ mergeInfo.overwritten }} 点，保留 {{ mergeInfo.breaks }} 处断点。
+      已替换 {{ mergeInfo.overwritten }} 点 · {{ mergeInfo.breaks }} 处断点
     </p>
     <button
       class="asset-card"
@@ -91,9 +79,7 @@ const { routePath, routePoint } = toRefs(timeline);
       <span class="asset-icon video-icon"><FileVideo :size="20" /></span
       ><span class="asset-copy"
         ><strong>{{ asset?.name || "导入预览视频" }}</strong
-        ><small>{{
-          asset ? `${formatTime(videoDuration)} · 仅用于画布预览` : "MP4 / MOV"
-        }}</small></span
+        ><small v-if="asset">{{ formatTime(videoDuration) }}</small></span
       ><Check v-if="asset" :size="15" class="success-icon" /><Plus
         v-else
         :size="17"
@@ -107,7 +93,7 @@ const { routePath, routePoint } = toRefs(timeline);
     >
       <span class="asset-copy"
         ><strong>{{ image?.name || "导入背景图" }}</strong
-        ><small>PNG / JPEG / WebP / GIF / AVIF</small></span
+        ><small v-if="image">{{ image.width }} × {{ image.height }}</small></span
       ><Plus :size="17" />
     </button>
     <input
@@ -156,7 +142,7 @@ const { routePath, routePoint } = toRefs(timeline);
       <div>
         <span>GPX 起始时间</span><strong>{{ dateText(track.startMs) }}</strong
         ><small
-          >{{ formatTime((track.endMs - track.startMs) / 1000) }} · 显示时区：{{
+          >{{ formatTime((track.endMs - track.startMs) / 1000) }} · {{
             timeZone
           }}</small
         >

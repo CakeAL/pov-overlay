@@ -10,7 +10,10 @@ function selected(event: Event) {
 </script>
 
 <template>
-  <label class="track-time-zone">
+  <label
+    class="track-time-zone"
+    title="本地时间被误标为 UTC（Z）时，选择实际记录时区。校正会更新视频对齐。"
+  >
     <span>UTC 标注校正</span>
     <select
       :aria-label="`${props.source.name} 的记录时区`"

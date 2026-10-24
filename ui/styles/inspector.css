@@ -514,7 +514,8 @@ h1 {
   margin: 12px 0;
   font-size: 14px;
 }
-.setting-row input {
+.setting-row input,
+.setting-row select {
   width: 80px;
   min-width: 0;
   border: 1px solid #d0d7cb;
@@ -522,6 +523,8 @@ h1 {
   padding: 6px 8px;
   text-align: right;
   background: white;
+  font: inherit;
+  color: inherit;
 }
 .field-hint {
   font-size: 12px;

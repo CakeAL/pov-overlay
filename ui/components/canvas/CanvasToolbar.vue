@@ -46,14 +46,14 @@ const { undo, redo, resetLayout } = layout;
         asset && sourceSize.width
           ? `${sourceSize.width} × ${sourceSize.height}`
           : "16 : 9"
-      }}
-      <span>·</span> 自适应</span
+      }}</span
     >
     <div>
       <label
         ><HSwitch v-model="showSafeArea" size="sm" label="安全边距" /></label
       ><label
-        ><HSwitch v-model="snapEnabled" size="sm" label="智能吸附"
+        title="对齐画布或其他元素；按 Alt 临时关闭吸附。"
+        ><HSwitch v-model="snapEnabled" size="sm" label="吸附"
       /></label>
     </div>
   </div>
