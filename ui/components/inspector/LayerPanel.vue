@@ -10,46 +10,18 @@ import {
 } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
-import { TELEMETRY_ITEMS } from "../../domain/telemetryItems";
+import ElementCatalog from "./ElementCatalog.vue";
 const { layout, svgElements } = useEditorContext();
 const { widgets, selectedId } = toRefs(layout);
 const { svgInput } = toRefs(svgElements);
 const { toggleVisible, toggleLock } = layout;
-function addItem(event: Event) {
-  const input = event.target as HTMLSelectElement;
-  svgElements.addTelemetryItem(input.value);
-  input.value = "";
-}
 </script>
 
 <template>
   <section class="panel-section layers-section">
     <div class="section-title">画布元素</div>
+    <ElementCatalog />
     <div class="element-actions">
-      <button
-        class="text-button"
-        title="支持 {$Speed}、{$Latitude}、{$Longitude}、{$Elevation}、{$Heading}、{$Distance}、{$Elapsed}、{$Color} 等字段。"
-        @click="svgElements.chooseSvg"
-      >
-        导入 SVG</button
-      ><button class="text-button" @click="svgElements.addTelemetryStrip">
-        添加数据条
-      </button>
-      <select
-        class="data-item-select"
-        aria-label="添加数据项"
-        value=""
-        @change="addItem"
-      >
-        <option value="" disabled>添加数据项</option>
-        <option
-          v-for="item in TELEMETRY_ITEMS"
-          :key="item.key"
-          :value="item.key"
-        >
-          {{ item.label }}
-        </option>
-      </select>
       <button
         v-if="svgElements.canSplitTelemetryStrip"
         class="text-button"

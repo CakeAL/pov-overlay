@@ -513,3 +513,11 @@
   color: inherit;
   font: inherit;
 }
+
+.catalog-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+.catalog-tabs button { flex: 1; padding: 8px 4px; font-size: 14px; border-bottom: 2px solid transparent; }
+.catalog-tabs button[aria-selected="true"] { color: #455f30; border-bottom-color: #7e9f58; }
+.catalog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.catalog-grid > button { display: flex; align-items: center; gap: 7px; padding: 12px 9px; border: 1px solid var(--line); border-radius: 6px; text-align: left; }
+.catalog-grid > button:hover { background: #f2f6eb; border-color: #9bb780; }
+.catalog-tools { display: flex; justify-content: space-between; gap: 10px; margin: 12px 0; }
