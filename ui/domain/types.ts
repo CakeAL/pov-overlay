@@ -63,3 +63,5 @@ export function defaultWidgets(): Widget[] {
     },
   ];
 }
+
+export interface ImageAsset {name:string;url:string;width:number;height:number}

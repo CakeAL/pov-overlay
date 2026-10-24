@@ -1,4 +1,4 @@
-import { nextTick, onBeforeUnmount, ref, shallowRef } from "vue";
+import { nextTick, onBeforeUnmount, ref, shallowRef, computed } from "vue";
 import {
   importBrowserGpx,
   importBrowserVideo,
@@ -8,6 +8,8 @@ import {
   releaseVideo,
   VIDEO_EXTENSIONS,
 } from "../infrastructure/media";
+import {readImageFile,readNativeImage,IMAGE_EXTENSIONS} from "../infrastructure/images";
+import type {ImageAsset} from "../domain/types";
 import type { Track, VideoAsset } from "../domain/types";
 import type { EditorMessages } from "./useMessages";
 
@@ -16,6 +18,10 @@ export function useMediaSession(messages: EditorMessages) {
     gpxName = ref("");
   const asset = shallowRef<VideoAsset | null>(null),
     busy = ref(false);
+  const image = shallowRef<ImageAsset|null>(null);
+  const imageInput = ref<HTMLInputElement>();
+  const backgroundMode = ref<"none"|"image"|"video">("none");
+  const activeVideo = computed(()=>backgroundMode.value === "video" ? asset.value : null);
   const gpxInput = ref<HTMLInputElement>(),
     videoInput = ref<HTMLInputElement>();
   function acceptTrack(result: { track: Track; name: string }) {
@@ -27,6 +33,7 @@ export function useMediaSession(messages: EditorMessages) {
   async function acceptVideo(result: VideoAsset) {
     const previous = asset.value;
     asset.value = result;
+    backgroundMode.value = "video";
     await nextTick();
     releaseVideo(previous);
   }
@@ -62,6 +69,9 @@ export function useMediaSession(messages: EditorMessages) {
       if (result) await acceptVideo(result);
     });
   }
+  function acceptImage(value:ImageAsset){image.value=value;backgroundMode.value="image";}
+  async function chooseImage(){if(!native){imageInput.value?.click();return;} await runImport(async()=>{const value=await readNativeImage();if(value)acceptImage(value);});}
+  async function selectedImage(event:Event){const input=event.target as HTMLInputElement;const file=input.files?.[0];try{if(file)await runImport(async()=>acceptImage(await readImageFile(file)));}finally{input.value="";}}
   async function selectedFile(event: Event, kind: "gpx" | "video") {
     const input = event.target as HTMLInputElement,
       file = input.files?.[0];
@@ -80,6 +90,7 @@ export function useMediaSession(messages: EditorMessages) {
       for (const file of files) {
         if (/\.gpx$/i.test(file.name))
           acceptTrack(await importBrowserGpx(file));
+        else if(IMAGE_EXTENSIONS.includes(file.name.split(".").at(-1)?.toLowerCase()??"")) acceptImage(await readImageFile(file));
         else if (
           VIDEO_EXTENSIONS.includes(
             file.name.split(".").at(-1)?.toLowerCase() ?? "",
@@ -96,6 +107,7 @@ export function useMediaSession(messages: EditorMessages) {
         if (/\.gpx$/i.test(path)) {
           const result = await importNativeGpx(path);
           if (result) acceptTrack(result);
+        } else if(IMAGE_EXTENSIONS.includes(path.split(".").at(-1)?.toLowerCase()??"")){const result=await readNativeImage(path);if(result)acceptImage(result);
         } else {
           const result = await importNativeVideo(path);
           if (result) await acceptVideo(result);
@@ -105,6 +117,7 @@ export function useMediaSession(messages: EditorMessages) {
   }
   onBeforeUnmount(() => releaseVideo(asset.value));
   return {
+    image,imageInput,backgroundMode,activeVideo,chooseImage,selectedImage,acceptImage,
     track,
     gpxName,
     asset,

@@ -13,7 +13,7 @@ import { useEditorShortcuts } from "../composables/useEditorShortcuts";
 export function createEditor() {
   const messages = useMessages();
   const media = useMediaSession(messages);
-  const alignment = useAlignment(media.track, media.asset, messages);
+  const alignment = useAlignment(media.track, media.activeVideo, messages);
   const playback = usePlayback(media, messages);
   const viewport = useCanvasViewport(playback.ratio);
   const layout = useWidgetLayout(playback.ratio, viewport.stage);

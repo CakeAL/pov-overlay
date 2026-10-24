@@ -23,3 +23,8 @@ pub async fn load_video(app: tauri::AppHandle, path: String) -> Result<VideoMeta
         .map_err(|error| error.to_string())?;
     Ok(video)
 }
+
+#[tauri::command]
+pub async fn load_image(path:String)->Result<crate::application::image_import::ImageAsset,String>{
+ tauri::async_runtime::spawn_blocking(move||crate::application::image_import::import_image(Path::new(&path))).await.map_err(|error|error.to_string())?
+}

@@ -9,7 +9,7 @@ export function useTimeline(
   playback: Playback,
   alignment: Alignment,
 ) {
-  const { track, asset } = media;
+  const { track, activeVideo:asset } = media;
   const { currentTime, duration } = playback;
   const { offset, alignmentKnown } = alignment;
   const absoluteTime = computed(() =>

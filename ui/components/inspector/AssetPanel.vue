@@ -6,7 +6,8 @@ import { dateText, timeZone } from "../../lib/format";
 import { formatTime } from "../../domain/telemetry";
 const { media, playback, timeline } = useEditorContext();
 const { track, asset, gpxName, busy, gpxInput, videoInput } = toRefs(media);
-const { chooseGpx, chooseVideo, selectedFile } = media;
+const { chooseGpx, chooseVideo, selectedFile,chooseImage,selectedImage } = media;
+const {image,imageInput,backgroundMode}=toRefs(media);
 const { videoDuration } = toRefs(playback);
 const { routePath } = toRefs(timeline);
 </script>
@@ -15,7 +16,7 @@ const { routePath } = toRefs(timeline);
   <section class="panel-section">
     <div class="section-title">
       <span><span class="section-index">01</span> 素材</span
-      ><span class="muted">{{ Number(!!track) + Number(!!asset) }} / 2</span>
+      ><span class="muted">可选视频或图片</span>
     </div>
     <button
       class="asset-card"
@@ -57,6 +58,9 @@ const { routePath } = toRefs(timeline);
         :size="17"
       />
     </button>
+    <button class="asset-card" :disabled="busy" @click="chooseImage" data-testid="import-image"><span class="asset-copy"><strong>{{image?.name || '导入背景图'}}</strong><small>PNG / JPEG / WebP / GIF / AVIF</small></span><Plus :size="17"/></button>
+    <input ref="imageInput" class="file-input" data-testid="image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" @change="selectedImage"/>
+    <label class="field-label background-selector">背景<select aria-label="预览背景" v-model="backgroundMode"><option value="none">无背景</option><option value="image" :disabled="!image">图片</option><option value="video" :disabled="!asset">视频</option></select></label>
     <input
       ref="gpxInput"
       data-testid="gpx-file"
