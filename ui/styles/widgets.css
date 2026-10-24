@@ -7,7 +7,7 @@
   touch-action: none;
   z-index: 2;
   outline: 1px solid transparent;
-  outline-offset: 3px;
+  outline-offset: 0;
   backdrop-filter: blur(8px);
 }
 
@@ -25,7 +25,7 @@
 
 .selection-label {
   position: absolute;
-  left: -4px;
+  left: 0;
   bottom: calc(100% + 5px);
   background: #c7f284;
   color: #3c4c2d;
@@ -55,26 +55,26 @@
 }
 
 .selection-corner.tl {
-  top: -6px;
-  left: -6px;
+  top: -3px;
+  left: -3px;
 }
 
 .selection-corner.tr {
-  top: -6px;
-  right: -6px;
+  top: -3px;
+  right: -3px;
 }
 
 .selection-corner.bl {
-  bottom: -6px;
-  left: -6px;
+  bottom: -3px;
+  left: -3px;
 }
 
 .resize-handle {
   position: absolute;
   width: 10px;
   height: 10px !important;
-  right: -7px;
-  bottom: -7px;
+  right: -5px;
+  bottom: -5px;
   cursor: nwse-resize !important;
   background: #e6f4d4 !important;
   border: 1px solid #82a861 !important;
