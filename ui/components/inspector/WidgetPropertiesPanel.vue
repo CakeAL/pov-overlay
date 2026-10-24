@@ -2,6 +2,7 @@
 import { Settings2, Check, Plus, Bold, Italic } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
+import MapProperties from "./MapProperties.vue";
 import RouteProperties from "./RouteProperties.vue";
 import { FONT_FAMILIES } from "../../domain/widgetTypography";
 const { layout } = useEditorContext();
@@ -21,6 +22,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
       ><button class="text-button" @click="resetSelected">重置</button>
     </div>
     <RouteProperties />
+    <MapProperties />
     <div class="position-fields">
       <label
         >X

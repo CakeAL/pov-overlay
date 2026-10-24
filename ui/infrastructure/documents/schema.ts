@@ -60,7 +60,7 @@ export function validateWidgets(v: unknown): Widget[] {
       id = text(w.id);
     if (ids.has(id)) throw new Error("元素 ID 重复。");
     ids.add(id);
-    if (!["speed", "coordinates", "svg", "route"].includes(String(w.kind)))
+    if (!["speed", "coordinates", "svg", "route", "minimap"].includes(String(w.kind)))
       throw new Error("元素类型无效。");
     const color = text(w.color);
     if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error("颜色无效。");
@@ -75,6 +75,11 @@ export function validateWidgets(v: unknown): Widget[] {
       color,
       visible: bool(w.visible),
       locked: bool(w.locked),
+      map: w.map == null ? undefined : (() => {
+        const m = object(w.map);
+        if (m.shape != null && m.shape !== 'circle' && m.shape !== 'square') throw new Error('地图形状无效。');
+        return { zoom: m.zoom == null ? undefined : num(m.zoom, 2, 19), shape: m.shape as 'circle' | 'square' | undefined, headingUp: m.headingUp == null ? undefined : bool(m.headingUp), showRoute: m.showRoute == null ? undefined : bool(m.showRoute) };
+      })(),
       route: w.route == null ? undefined : (() => {
         const r = object(w.route);
         if (r.mode != null && r.mode !== 'full' && r.mode !== 'local') throw new Error('路线范围无效。');

@@ -1,10 +1,11 @@
+import { renderWidgetSvg } from "../renderWidget";
 import { overlayContext } from "../../domain/overlayContext";
 import type { Track } from "../../domain/types";
 import { exportRegion, type FrameRegion } from "../../domain/exportRegion";
 import type { ExportBackground } from "../../domain/exportSettings";
 import type { Sample, Widget } from "../../domain/types";
 import { widgetDimensions } from "../../domain/widgetGeometry";
-import { svgDataUrl, widgetSvg } from "../../domain/widgetSvg";
+import { svgDataUrl } from "../../domain/widgetSvg";
 function image(source: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -32,7 +33,7 @@ export class ExportRenderer {
   async frame(sample: Sample | null, elapsed: number): Promise<Uint8Array> {
     const visible = this.widgets.filter(widget => widget.visible);
     const context = overlayContext(this.track, this.track ? this.track.startMs + (this.offset + elapsed) * 1000 : 0, sample);
-    const sources = visible.map(widget => widgetSvg(widget, sample, elapsed, this.ratio, context));
+    const sources = await Promise.all(visible.map(widget => renderWidgetSvg(widget, sample, elapsed, this.ratio, context)));
     const key = JSON.stringify(sources);
     if (key === this.previousKey && this.previousFrame) return this.previousFrame;
     const images = await Promise.all(visible.map(async (widget, i) => {

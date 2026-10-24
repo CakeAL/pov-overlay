@@ -3,6 +3,7 @@ import { LockKeyhole } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 import type { Widget, Sample } from "../../domain/types";
+import MapReadout from "./MapReadout.vue";
 import SvgReadout from "./SvgReadout.vue";
 import BuiltinReadout from "./BuiltinReadout.vue";
 defineProps<{ widget: Widget; sample: Sample | null }>();
@@ -32,8 +33,9 @@ const { widgetStyle, startDrag, moveDrag, endDrag } = layout;
     <span v-if="selectedId === widget.id" class="selection-label"
       >{{ widget.label }} <LockKeyhole v-if="widget.locked" :size="9"
     /></span>
+    <MapReadout v-if="widget.kind === 'minimap'" :widget="widget" :sample="sample" />
     <BuiltinReadout
-      v-if="widget.kind !== 'svg'"
+      v-else-if="widget.kind !== 'svg'"
       :widget="widget"
       :sample="sample"
     />

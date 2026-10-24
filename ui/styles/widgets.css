@@ -102,3 +102,5 @@
 .empty-stage {
   background: transparent;
 }
+.map-status { display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; height: 100%; background: #26342b; border-radius: 8px; font-size: 14px; }
+.map-status button { color: #c7f284; }

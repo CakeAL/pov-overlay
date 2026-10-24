@@ -14,3 +14,5 @@ pub mod overlay_encoder;
 pub mod export_codec;
 
 pub mod document_library;
+
+pub mod map_tiles;

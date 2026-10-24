@@ -21,6 +21,7 @@ const items = computed(() => catalogItems(category.value));
       <button v-for="item in items" :key="item.key" @click="svgElements.addTelemetryItem(item.key)"><span class="catalog-preview"><img :src="preview(item.source)" alt="" /></span><span>{{ item.label }}</span></button>
     </div>
     <button v-if="category === 'navigation'" class="catalog-route" @click="svgElements.addRoute">添加路线</button>
+    <button v-if="category === 'navigation'" class="catalog-route" title="联网加载 OpenStreetMap 瓦片" @click="svgElements.addMinimap">添加 OpenStreetMap 小地图</button>
     <div class="catalog-tools">
       <button class="text-button" @click="svgElements.chooseSvg"><Upload :size="14" />导入 SVG</button>
       <button class="text-button" @click="svgElements.addTelemetryStrip">添加组合</button>
