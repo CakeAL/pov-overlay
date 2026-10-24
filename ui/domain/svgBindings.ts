@@ -46,7 +46,7 @@ export function bindSvg(
     (_, field: string) => values[field] ?? "—",
   );
   return bound.replace(
-    /(transform|x|y|cx|cy|r|rx|ry|width|height|opacity|stroke-width|font-size)=(['"])(.*?)\2/g,
+    /(transform|x|y|cx|cy|r|rx|ry|width|height|opacity|stroke-width|stroke-dasharray|stroke-dashoffset|pathLength|font-size)=(['"])(.*?)\2/g,
     (_, name: string, quote: string, value: string) =>
       `${name}=${quote}${value.replaceAll("—", "0")}${quote}`,
   );
