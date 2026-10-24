@@ -1,3 +1,5 @@
+import { overlayContext } from "../../domain/overlayContext";
+import type { Track } from "../../domain/types";
 import { exportRegion, type FrameRegion } from "../../domain/exportRegion";
 import type { ExportBackground } from "../../domain/exportSettings";
 import type { Sample, Widget } from "../../domain/types";
@@ -19,7 +21,7 @@ export class ExportRenderer {
   private previousKey = "";
   private previousFrame: Uint8Array | null = null;
   readonly region: FrameRegion;
-  constructor(private width: number, private height: number, private ratio: number, private widgets: Widget[], private background: ExportBackground = "transparent") {
+  constructor(private width: number, private height: number, private ratio: number, private widgets: Widget[], private background: ExportBackground = "transparent", private track: Track | null = null, private offset = 0) {
     this.region = exportRegion(width, height, ratio, widgets);
     this.canvas.width = this.region.width;
     this.canvas.height = this.region.height;
@@ -29,7 +31,8 @@ export class ExportRenderer {
   }
   async frame(sample: Sample | null, elapsed: number): Promise<Uint8Array> {
     const visible = this.widgets.filter(widget => widget.visible);
-    const sources = visible.map(widget => widgetSvg(widget, sample, elapsed, this.ratio));
+    const context = overlayContext(this.track, this.track ? this.track.startMs + (this.offset + elapsed) * 1000 : 0, sample);
+    const sources = visible.map(widget => widgetSvg(widget, sample, elapsed, this.ratio, context));
     const key = JSON.stringify(sources);
     if (key === this.previousKey && this.previousFrame) return this.previousFrame;
     const images = await Promise.all(visible.map(async (widget, i) => {

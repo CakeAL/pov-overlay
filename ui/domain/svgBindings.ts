@@ -1,3 +1,4 @@
+import type { OverlayContext } from "./overlayContext";
 import type { Sample } from "./types";
 import { formatTime } from "./telemetry";
 export function bindSvg(
@@ -5,6 +6,7 @@ export function bindSvg(
   sample: Sample | null,
   elapsed: number,
   color: string,
+  context: OverlayContext = {},
 ): string {
   const number = (value: number | null | undefined, digits: number) =>
     value == null || !Number.isFinite(value) ? "—" : value.toFixed(digits);
@@ -18,9 +20,14 @@ export function bindSvg(
     Elevation: number(sample?.elevation, 1),
     Heading: number(sample?.headingDeg, 1),
     Distance: number(
-      sample?.distanceMeters == null ? null : sample.distanceMeters / 1000,
+      (context.progress?.distanceMeters ?? sample?.distanceMeters) == null ? null : (context.progress?.distanceMeters ?? sample!.distanceMeters!) / 1000,
       2,
     ),
+    RemainingDistance: number(context.progress ? context.progress.remainingMeters / 1000 : null, 2),
+    TotalDistance: number(context.progress ? context.progress.totalMeters / 1000 : null, 2),
+    RemainingTime: context.progress ? formatTime(context.progress.remainingSeconds) : "—",
+    TotalTime: context.progress ? formatTime(context.progress.totalSeconds) : "—",
+    Progress: number(context.progress ? context.progress.fraction * 100 : null, 1),
     Elapsed: formatTime(elapsed),
     Timestamp: sample ? new Date(sample.timestampMs).toISOString() : "—",
     Color: /^#[0-9a-f]{6}$/i.test(color) ? color : "#ffffff",

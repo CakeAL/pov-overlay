@@ -1,3 +1,4 @@
+import { overlayContext } from "../domain/overlayContext";
 import { routePreview, coverageIntervals } from "../domain/routePreview";
 import { prepareMotion } from "../domain/motion";
 import type { TelemetrySettings } from "./useTelemetrySettings";
@@ -39,6 +40,7 @@ export function useTimeline(
       return null;
     return playbackSample(preparedTrack.value, currentTime.value, offset.value, settings.refreshSeconds.value);
   });
+  const context = computed(() => overlayContext(preparedTrack.value, absoluteTime.value ?? 0, sample.value));
   const currentHeading = computed(() => sample.value?.headingDeg ?? null);
   const status = computed(() =>
     !track.value
@@ -93,6 +95,7 @@ export function useTimeline(
   });
 
   return {
+    context,
     preparedTrack,
     absoluteTime,
     sample,

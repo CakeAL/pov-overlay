@@ -81,3 +81,14 @@ export const TELEMETRY_ITEMS: TelemetryItem[] = [
     `<text x="0" y="28" font-size="19">速度</text><text x="0" y="67" font-size="27">{$Speed}</text><text x="71" y="67" font-size="16">km/h</text>`,
   ),
 ];
+
+const journeyItem = (key: string, label: string, field: string, unit = '') => item(key, label, 0, 0, 220, 80, `<text x="2" y="23" font-size="17">${label}</text><text x="2" y="64" font-size="28">{\$${field}}${unit}</text>`);
+export const JOURNEY_ITEMS = [
+  journeyItem('currentDistance', '当前里程', 'Distance', ' km'),
+  journeyItem('remainingDistance', '剩余里程', 'RemainingDistance', ' km'),
+  journeyItem('remainingTime', '剩余时间', 'RemainingTime'),
+  journeyItem('totalDistance', '总里程', 'TotalDistance', ' km'),
+  journeyItem('totalTime', '总时长', 'TotalTime'),
+  journeyItem('progress', '行程进度', 'Progress', '%'),
+];
+export const ALL_TELEMETRY_ITEMS = [...TELEMETRY_ITEMS, ...JOURNEY_ITEMS];

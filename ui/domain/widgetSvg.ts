@@ -1,3 +1,4 @@
+import type { OverlayContext } from "./overlayContext";
 import { styleWidgetSvg } from "./widgetTypography";
 import type { Sample, Widget } from "./types";
 import { formatCoordinate } from "./telemetry";
@@ -5,9 +6,9 @@ import { bindSvg } from "./svgBindings";
 import { widgetAspect, widgetDimensions } from "./widgetGeometry";
 export const svgDataUrl = (source: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
-export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number): string {
+export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number, context: OverlayContext = {}): string {
   if (widget.kind === "svg")
-    return styleWidgetSvg(bindSvg(widget.svg?.source ?? "", sample, elapsed, widget.color), widget.typography);
+    return styleWidgetSvg(bindSvg(widget.svg?.source ?? "", sample, elapsed, widget.color, context), widget.typography);
   const width = widgetDimensions(widget, ratio).width * 1000;
   const height = width / widgetAspect(widget);
   const s = widget.scale;

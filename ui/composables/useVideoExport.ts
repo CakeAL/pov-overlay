@@ -74,7 +74,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
       const widgets: Widget[] = JSON.parse(JSON.stringify(layout.widgets.value));
       if (!widgets.some(widget => widget.visible)) throw new Error("请先显示至少一个画布元素。");
       const offset = alignment.offset.value, refresh = telemetry.refreshSeconds.value, origin = Number(start.value);
-      renderer = new ExportRenderer(settings.width, settings.height, playback.ratio.value, widgets, settings.background);
+      renderer = new ExportRenderer(settings.width, settings.height, playback.ratio.value, widgets, settings.background, track, offset);
       await document.fonts.ready;
       settings.frame = renderer.region;
       const started = await startExport(path, settings, media.asset.value?.path);

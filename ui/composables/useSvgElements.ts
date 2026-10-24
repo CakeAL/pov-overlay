@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { native } from "../infrastructure/media";
 import { sanitizeSvg } from "../infrastructure/svg";
 import { TELEMETRY_STRIP } from "../domain/telemetryStrip";
-import { TELEMETRY_ITEMS, type TelemetryItem } from "../domain/telemetryItems";
+import { TELEMETRY_ITEMS, ALL_TELEMETRY_ITEMS, type TelemetryItem } from "../domain/telemetryItems";
 import type { Widget } from "../domain/types";
 import type { WidgetLayout } from "./useWidgetLayout";
 import type { EditorMessages } from "./useMessages";
@@ -117,7 +117,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
     insert(TELEMETRY_ITEMS.map((item) => makeItem(item, parent)));
   }
   function addTelemetryItem(key: string) {
-    const item = TELEMETRY_ITEMS.find((item) => item.key === key);
+    const item = ALL_TELEMETRY_ITEMS.find((item) => item.key === key);
     if (!item) return;
     const widget = makeItem(item, stripAnchor());
     widget.x = 0.05;
