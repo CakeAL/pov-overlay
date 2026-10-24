@@ -38,5 +38,5 @@ export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number
         <text x="${86 * s}" y="${center + 15 * s}">${formatCoordinate(sample?.longitude, "lon")}</text>
       </g>`;
   }
-  return styleWidgetSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" height="100%" fill="white" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">${body}</svg>`, widget.typography);
+  return styleWidgetSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" height="100%" fill="white" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">${body}</svg>`, widget.typography?.fontSize == null ? widget.typography : { ...widget.typography, fontSize: widget.typography.fontSize * s });
 }

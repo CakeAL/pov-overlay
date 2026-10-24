@@ -11,6 +11,8 @@
   backdrop-filter: blur(8px);
 }
 
+.overlay-widget:focus-visible { outline-offset: 0; }
+
 .overlay-widget.selected {
   outline-color: #c7f284;
 }
