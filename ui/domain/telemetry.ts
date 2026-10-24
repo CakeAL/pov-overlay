@@ -17,7 +17,19 @@ export function sampleAt(track: Track, timestampMs: number): Sample | null {
   while (low <= high) {
     const middle = (low + high) >>> 1;
     const sample = track.samples[middle]!;
-    if (sample.timestampMs === timestampMs) return stationary(sample);
+    if (sample.timestampMs === timestampMs) {
+      const before = track.samples[middle - 1],
+        after = track.samples[middle + 1];
+      const hasBefore =
+        before &&
+        before.segment === sample.segment &&
+        sample.timestampMs - before.timestampMs <= MAX_GAP_MS;
+      const hasAfter =
+        after &&
+        after.segment === sample.segment &&
+        after.timestampMs - sample.timestampMs <= MAX_GAP_MS;
+      return hasBefore || hasAfter ? stationary(sample) : null;
+    }
     if (sample.timestampMs < timestampMs) low = middle + 1;
     else high = middle - 1;
   }
@@ -45,6 +57,7 @@ export function sampleAt(track: Track, timestampMs: number): Sample | null {
           ? mix(a.elevation, b.elevation)
           : null,
       speedMps: cubicSpeed(a, b, progress),
+      speedValid: a.speedValid !== false && b.speedValid !== false,
       headingDeg: angleBetween(a.headingDeg, b.headingDeg, progress),
       distanceMeters:
         a.distanceMeters != null && b.distanceMeters != null

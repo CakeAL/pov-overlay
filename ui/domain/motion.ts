@@ -58,8 +58,10 @@ export function prepareMotion(
         local = i - start;
       if (i > start) total += distance(points[i - 1]!, p);
       p.distanceMeters = total;
+      p.speedValid = local > 0;
       p.speedMps = estimate.speedsMps[local]!;
       if (
+        p.speedValid &&
         p.speedMps >= stopThresholdMps &&
         estimate.movementSpeedsMps[local]! >= stopThresholdMps
       ) {

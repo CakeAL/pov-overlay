@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createApp, h, nextTick } from "vue";
 import { provideEditor } from "../editor/context";
@@ -205,4 +206,27 @@ it("restores per-source time zones in projects and leaves them unchanged when ap
     "preset",
   );
   expect(editor.media.sources[0]!.utcLabelOffsetMinutes).toBe(480);
+});
+
+it("hides stale snapshots immediately when crossing a gap or the end of coverage", async () => {
+  const editor = session();
+  const gps = track();
+  gps.samples = [
+    { ...gps.samples[0]!, timestampMs: gps.startMs },
+    { ...gps.samples[1]!, timestampMs: gps.startMs + 1020 },
+    { ...gps.samples[0]!, timestampMs: gps.startMs + 1100, segment: 1 },
+    { ...gps.samples[1]!, timestampMs: gps.startMs + 2200, segment: 1 },
+  ];
+  gps.endMs = gps.startMs + 2200;
+  editor.media.joinSources = false;
+  editor.media.acceptTrack({ track: gps, name: "gaps.gpx" });
+  await editor.media.acceptVideo(video(gps.startMs));
+  editor.playback.seek(1.01);
+  expect(editor.timeline.sample).not.toBeNull();
+  editor.playback.seek(1.05);
+  expect(editor.timeline.sample).toBeNull();
+  editor.playback.seek(1.11);
+  expect(editor.timeline.sample?.segment).toBe(1);
+  editor.playback.seek(2.21);
+  expect(editor.timeline.sample).toBeNull();
 });

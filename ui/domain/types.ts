@@ -8,6 +8,8 @@ export interface Sample {
   headingDeg?: number | null;
   distanceMeters?: number;
   speedSlope?: number;
+  /** Derived validity: coordinates can exist before speed has two observations. */
+  speedValid?: boolean;
 }
 export interface Track {
   name: string;

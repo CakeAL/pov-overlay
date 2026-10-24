@@ -158,3 +158,20 @@ it("retains real sustained high speed and measures road distance around a bend",
   );
   expect(turn.samples[1]!.speedMps).toBeCloseTo(10, 4);
 });
+
+it("does not borrow speed before the second fix of a new segment", () => {
+  const prepared = prepareMotion(
+    measuredTrack([metersPoint(0, 0), metersPoint(1, 1), metersPoint(2, 2)]),
+    3,
+  );
+  expect(sampleAt(prepared, 0)!.speedValid).toBe(false);
+  expect(sampleAt(prepared, 500)!.speedValid).toBe(false);
+  expect(sampleAt(prepared, 1000)!.speedValid).toBe(true);
+  expect(sampleAt(prepared, 0)!.headingDeg).toBeNull();
+  const isolated = prepareMotion(
+    measuredTrack([metersPoint(0, 0), metersPoint(60, 1), metersPoint(61, 2)]),
+    3,
+  );
+  expect(sampleAt(isolated, 0)).toBeNull();
+  expect(sampleAt(isolated, 60_000)!.speedValid).toBe(false);
+});

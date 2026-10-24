@@ -43,11 +43,16 @@ export function useTimeline(
       0.01,
       Math.min(10, Number(settings.refreshSeconds.value) || 0.1),
     );
+    const now =
+      preparedTrack.value.startMs + (offset.value + currentTime.value) * 1000;
+    const current = sampleAt(preparedTrack.value, now);
+    if (!current) return null;
     const t = Math.floor((currentTime.value + 1e-8) / interval) * interval;
-    return sampleAt(
+    const quantized = sampleAt(
       preparedTrack.value,
       preparedTrack.value.startMs + (offset.value + t) * 1000,
     );
+    return quantized?.segment === current.segment ? quantized : current;
   });
   const currentHeading = computed(() => sample.value?.headingDeg ?? null);
   const status = computed(() =>
@@ -57,7 +62,9 @@ export function useTimeline(
         ? "待设置视频时间"
         : !sample.value
           ? "当前时间无 GPX 数据"
-          : "轨迹已连接",
+          : sample.value.speedValid === false
+            ? "当前时间无有效速度"
+            : "轨迹已连接",
   );
   const coverage = computed(() => {
     if (

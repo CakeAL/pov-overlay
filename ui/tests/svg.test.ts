@@ -52,3 +52,23 @@ it("uses valid numeric fallbacks in transforms when a heading is unavailable", (
   const svg = sanitizeSvg(TELEMETRY_STRIP);
   expect(bindSvg(svg.source, null, 0, "#ffffff")).toContain("rotate(0 65 65)");
 });
+
+it("keeps coordinates available while missing speed renders as missing rather than zero", () => {
+  const sample = {
+    timestampMs: 0,
+    latitude: 31,
+    longitude: 121,
+    elevation: null,
+    speedMps: 0.6 / 3.6,
+    segment: 0,
+    speedValid: false,
+  };
+  expect(
+    bindSvg(
+      "<svg><text>{$Speed} {$Latitude} {$HasData} {$HasSpeed}</text></svg>",
+      sample,
+      0,
+      "#ffffff",
+    ),
+  ).toContain("— 31.000000 1 0");
+});
