@@ -5,3 +5,5 @@ pub mod track_import;
 pub mod video_import;
 
 pub mod image_import;
+
+pub mod documents;

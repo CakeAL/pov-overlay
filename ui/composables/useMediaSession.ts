@@ -9,7 +9,7 @@ import {
   VIDEO_EXTENSIONS,
 } from "../infrastructure/media";
 import {readImageFile,readNativeImage,IMAGE_EXTENSIONS} from "../infrastructure/images";
-import type {ImageAsset} from "../domain/types";
+import type {ImageAsset,TrackSource} from "../domain/types";
 import type { Track, VideoAsset } from "../domain/types";
 import type { EditorMessages } from "./useMessages";
 
@@ -18,6 +18,7 @@ export function useMediaSession(messages: EditorMessages) {
     gpxName = ref("");
   const asset = shallowRef<VideoAsset | null>(null),
     busy = ref(false);
+  const sources=shallowRef<TrackSource[]>([]);
   const image = shallowRef<ImageAsset|null>(null);
   const imageInput = ref<HTMLInputElement>();
   const backgroundMode = ref<"none"|"image"|"video">("none");
@@ -25,6 +26,7 @@ export function useMediaSession(messages: EditorMessages) {
   const gpxInput = ref<HTMLInputElement>(),
     videoInput = ref<HTMLInputElement>();
   function acceptTrack(result: { track: Track; name: string }) {
+    sources.value=[{id:crypto.randomUUID(),name:result.name,track:result.track}];
     track.value = result.track;
     gpxName.value = result.name;
     if (result.track.skippedPoints)
@@ -117,6 +119,7 @@ export function useMediaSession(messages: EditorMessages) {
   }
   onBeforeUnmount(() => releaseVideo(asset.value));
   return {
+    sources,
     image,imageInput,backgroundMode,activeVideo,chooseImage,selectedImage,acceptImage,
     track,
     gpxName,

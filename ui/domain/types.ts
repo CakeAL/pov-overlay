@@ -18,6 +18,7 @@ export interface Track {
   skippedPoints: number;
 }
 export interface VideoAsset {
+  path?:string;
   name: string;
   url: string;
   capturedAtMs: number | null;
@@ -70,3 +71,5 @@ export function defaultWidgets(): Widget[] {
 }
 
 export interface ImageAsset {name:string;url:string;width:number;height:number}
+
+export interface TrackSource {id:string;name:string;track:Track}
