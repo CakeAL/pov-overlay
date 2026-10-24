@@ -10,6 +10,7 @@ export const SVG_FIELDS = [
   "Timestamp",
   "Color",
   "HasData",
+  "HasSpeed",
   "HasHeading",
 ] as const;
 export function sanitizeSvg(source: string): {

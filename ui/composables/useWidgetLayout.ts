@@ -1,3 +1,4 @@
+import { widgetAspect, widgetDimensions } from "../domain/widgetGeometry";
 import { computed, ref, watch, type Ref } from "vue";
 import { defaultWidgets, type Widget } from "../domain/types";
 import { snapLayout, type SnapGuides } from "../domain/layoutSnapping";
@@ -41,16 +42,7 @@ export function useWidgetLayout(
     widgets.value = defaultWidgets();
     selectedId.value = "speed";
   }
-  function dimensions(widget: Widget) {
-    const width =
-      (widget.widthRatio ?? (widget.kind === "speed" ? 0.19 : 0.3)) *
-      widget.scale;
-    const height =
-      (width * ratio.value) /
-      (widget.svg?.aspectRatio ?? (widget.kind === "speed" ? 1.55 : 3.35));
-    const fit = Math.min(1, 1 / width, 1 / height);
-    return { width: width * fit, height: height * fit };
-  }
+  const dimensions = (widget: Widget) => widgetDimensions(widget, ratio.value);
   function clampWidget(widget: Widget) {
     const size = dimensions(widget);
     widget.x = Math.max(0, Math.min(1 - size.width, widget.x));
@@ -70,9 +62,7 @@ export function useWidgetLayout(
       left: `${widget.x * 100}%`,
       top: `${widget.y * 100}%`,
       width: `${size.width * 100}%`,
-      aspectRatio: String(
-        widget.svg?.aspectRatio ?? (widget.kind === "speed" ? 1.55 : 3.35),
-      ),
+      aspectRatio: String(widgetAspect(widget)),
       backdropFilter: widget.opacity > 0 ? "blur(8px)" : "none",
       "--widget-accent": widget.color,
       "--widget-alpha": String(widget.opacity / 100),

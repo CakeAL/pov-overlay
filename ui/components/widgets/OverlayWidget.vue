@@ -4,8 +4,7 @@ import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 import type { Widget, Sample } from "../../domain/types";
 import SvgReadout from "./SvgReadout.vue";
-import SpeedReadout from "./SpeedReadout.vue";
-import CoordinateReadout from "./CoordinateReadout.vue";
+import BuiltinReadout from "./BuiltinReadout.vue";
 defineProps<{ widget: Widget; sample: Sample | null }>();
 const { layout } = useEditorContext();
 const { selectedId } = toRefs(layout);
@@ -33,9 +32,9 @@ const { widgetStyle, startDrag, moveDrag, endDrag } = layout;
     <span v-if="selectedId === widget.id" class="selection-label"
       >{{ widget.label }} <LockKeyhole v-if="widget.locked" :size="9"
     /></span>
-    <SpeedReadout v-if="widget.kind === 'speed'" :sample="sample" />
-    <CoordinateReadout
-      v-else-if="widget.kind === 'coordinates'"
+    <BuiltinReadout
+      v-if="widget.kind !== 'svg'"
+      :widget="widget"
       :sample="sample"
     />
     <SvgReadout v-else :widget="widget" :sample="sample" />
