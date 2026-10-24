@@ -1,6 +1,6 @@
 import DOMPurify from "dompurify";
 export const SVG_FIELDS = [
-  "Speed",
+  "Speed", "SpeedRatio", "SpeedPercent", "SpeedAngle", "SpeedColor",
   "Latitude",
   "Longitude",
   "Elevation",

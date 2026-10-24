@@ -8,6 +8,7 @@ export interface JourneyProgress {
   fraction: number;
 }
 export interface OverlayContext {
+  speedMaxKmh?: number;
   track?: Track | null;
   timestampMs?: number;
   progress?: JourneyProgress | null;

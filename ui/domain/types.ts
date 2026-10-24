@@ -46,6 +46,7 @@ export interface Widget {
   locked: boolean;
   svg?: { source: string; aspectRatio: number };
   widthRatio?: number;
+  speedMaxKmh?: number;
   typography?: { fontFamily?: string; fontSize?: number; bold?: boolean; italic?: boolean };
 }
 export function defaultWidgets(): Widget[] {

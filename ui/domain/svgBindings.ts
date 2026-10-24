@@ -10,11 +10,17 @@ export function bindSvg(
 ): string {
   const number = (value: number | null | undefined, digits: number) =>
     value == null || !Number.isFinite(value) ? "—" : value.toFixed(digits);
+  const speed = sample && sample.speedValid !== false ? Math.max(0, sample.speedMps * 3.6) : 0;
+  const speedRatio = Math.min(1, speed / Math.max(1, context.speedMaxKmh ?? 60));
   const values: Record<string, string> = {
     Speed: number(
       sample && sample.speedValid !== false ? sample.speedMps * 3.6 : null,
       1,
     ),
+    SpeedRatio: speedRatio.toFixed(5),
+    SpeedPercent: (speedRatio * 100).toFixed(3),
+    SpeedAngle: (-90 + speedRatio * 180).toFixed(3),
+    SpeedColor: speedRatio < 0.5 ? '#a7db76' : speedRatio < 0.8 ? '#f3cf69' : '#f27d72',
     Latitude: number(sample?.latitude, 6),
     Longitude: number(sample?.longitude, 6),
     Elevation: number(sample?.elevation, 1),

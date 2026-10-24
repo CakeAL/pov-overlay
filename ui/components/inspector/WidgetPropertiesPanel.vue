@@ -48,6 +48,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
         /><span>%</span></label
       >
     </div>
+    <label v-if="selected.svg?.source.includes('{$SpeedRatio}') || selected.svg?.source.includes('{$SpeedPercent}') || selected.svg?.source.includes('{$SpeedAngle}')" class="setting-row">速度满刻度<input aria-label="速度满刻度 km/h" type="number" min="1" max="2000" :value="selected.speedMaxKmh ?? 60" :disabled="selected.locked" @focus="remember" @change="selected.speedMaxKmh = Math.max(1, Math.min(2000, Number(($event.target as HTMLInputElement).value) || 60))" /></label>
     <div class="typography-fields">
       <label>字体<select aria-label="元素字体" :disabled="selected.locked" :value="selected.typography?.fontFamily ?? ''" @change="typography('fontFamily', ($event.target as HTMLSelectElement).value || undefined)"><option value="">模板字体</option><option v-for="font in FONT_FAMILIES" :key="font" :value="font">{{ font }}</option></select></label>
       <div class="font-controls"><label>字号<input aria-label="元素字号" type="number" min="8" max="200" placeholder="自动" :disabled="selected.locked" :value="selected.typography?.fontSize" @change="typography('fontSize', ($event.target as HTMLInputElement).value ? Math.max(8, Math.min(200, Number(($event.target as HTMLInputElement).value))) : undefined)" /></label>

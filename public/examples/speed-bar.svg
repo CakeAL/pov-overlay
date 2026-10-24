@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100">
+  <g fill="white" font-family="sans-serif"><text x="4" y="45" font-size="42">{$Speed}</text><text x="215" y="43" font-size="20">km/h</text></g>
+  <rect x="4" y="65" width="312" height="20" rx="4" fill="#ffffff33"/>
+  <g transform="translate(4 65) scale({$SpeedRatio} 1)" opacity="{$HasSpeed}"><rect width="312" height="20" rx="4" fill="{$SpeedColor}"/></g>
+</svg>

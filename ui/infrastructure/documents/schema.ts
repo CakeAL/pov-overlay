@@ -75,6 +75,7 @@ export function validateWidgets(v: unknown): Widget[] {
       color,
       visible: bool(w.visible),
       locked: bool(w.locked),
+      speedMaxKmh: w.speedMaxKmh == null ? undefined : num(w.speedMaxKmh, 1, 2000),
       typography: w.typography == null ? undefined : (() => {
         const t = object(w.typography);
         const fontFamily = t.fontFamily == null ? undefined : text(t.fontFamily, 120);
