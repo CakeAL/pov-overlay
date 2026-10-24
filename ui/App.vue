@@ -2,6 +2,7 @@
 import { toRefs } from "vue";
 import { provideEditor } from "./editor/context";
 import ExportDialog from "./components/export/ExportDialog.vue";
+import DocumentLibrary from "./components/shell/DocumentLibrary.vue";
 import AppHeader from "./components/shell/AppHeader.vue";
 import StatusBanner from "./components/shell/StatusBanner.vue";
 import InspectorSidebar from "./components/inspector/InspectorSidebar.vue";
@@ -21,6 +22,7 @@ const { dropActive } = toRefs(drop);
   >
     <AppHeader />
     <ExportDialog />
+    <DocumentLibrary />
     <StatusBanner kind="error" :message="error" @close="error = ''" />
     <StatusBanner kind="notice" :message="notice" @close="notice = ''" />
     <main class="workspace"><InspectorSidebar /><PreviewWorkspace /></main>

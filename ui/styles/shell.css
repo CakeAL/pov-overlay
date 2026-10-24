@@ -181,3 +181,7 @@
     padding: 5px;
   }
 }
+.library-entries { max-height: 50vh; overflow-y: auto; min-height: 120px; }
+.library-entries > button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.library-entries strong { flex: 1; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.library-entries time { color: #7d8876; font-size: 12px; }

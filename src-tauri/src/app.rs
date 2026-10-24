@@ -12,6 +12,9 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             crate::commands::materials::load_gpx,
+            crate::commands::documents::list_library_documents,
+            crate::commands::documents::read_library_document,
+            crate::commands::documents::save_library_document,
             crate::commands::documents::read_document,
             crate::commands::documents::write_document,
             crate::commands::documents::read_svg,

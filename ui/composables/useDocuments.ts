@@ -11,7 +11,7 @@ import {
   type ProjectDocument,
 } from "../infrastructure/documents/schema";
 import {
-  readNativeDocument,
+  readNativeDocument, listLibrary, readLibrary, type LibraryEntry,
   saveDocument,
 } from "../infrastructure/documents/files";
 import {
@@ -32,6 +32,7 @@ export function useDocuments(
     busy = ref(false),
     projectInput = ref<HTMLInputElement>(),
     presetInput = ref<HTMLInputElement>();
+  const libraryOpen = ref(false), libraryKind = ref<'preset' | 'project'>('project'), entries = ref<LibraryEntry[]>([]);
   let pending: ProjectDocument | null = null;
   let unresolvedVideo: ProjectDocument["video"] = null;
   function preset(): PresetDocument {
@@ -160,7 +161,7 @@ export function useDocuments(
     if (kind === "preset") applyPreset(parseDocument(json, "preset"));
     else await applyProject(parseDocument(json, "project"));
   }
-  async function choose(kind: "preset" | "project") {
+  async function importFile(kind: "preset" | "project") {
     if (!native) {
       (kind === "preset" ? presetInput : projectInput).value?.click();
       return;
@@ -170,6 +171,17 @@ export function useDocuments(
       if (json !== null) await load(json, kind);
     });
   }
+  async function choose(kind: 'preset' | 'project') {
+    if (!native) return importFile(kind);
+    libraryKind.value = kind;
+    entries.value = [];
+    libraryOpen.value = true;
+    await action(async () => { entries.value = await listLibrary(kind); });
+  }
+  async function openEntry(id: string) {
+    await action(async () => { await load(await readLibrary(libraryKind.value, id), libraryKind.value); libraryOpen.value = false; });
+  }
+  async function importExternal() { await importFile(libraryKind.value); libraryOpen.value = false; }
   async function selected(event: Event, kind: "preset" | "project") {
     const input = event.target as HTMLInputElement,
       file = input.files?.[0];
@@ -189,11 +201,12 @@ export function useDocuments(
       const data = kind === "preset" ? preset() : project();
       if (kind === "preset") parseDocument(JSON.stringify(data), "preset");
       else parseDocument(JSON.stringify(data), "project");
-      const safe = name.value.replace(/[\\/:*?"<>|]/g, "_") || "untitled";
+      const safe = name.value.replace(/[\\/:*?"<>|]/g, "_").replace(/^\.+/, "_").slice(0, 60) || "untitled";
       if (
         await saveDocument(
           `${safe}.${kind === "preset" ? "preset" : "pov"}.json`,
           JSON.stringify(data),
+          kind,
         )
       )
         messages.notice.value =
@@ -202,6 +215,7 @@ export function useDocuments(
   }
   return {
     name,
+    libraryOpen, libraryKind, entries, openEntry, importExternal,
     busy,
     projectInput,
     presetInput,
