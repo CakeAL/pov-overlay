@@ -78,9 +78,21 @@ export function releaseVideo(asset: VideoAsset | null) {
   if (asset?.url.startsWith("blob:")) URL.revokeObjectURL(asset.url);
 }
 
-export async function importNativeGpxFiles():Promise<Array<{track:Track;name:string}>>{
- const selection=await open({multiple:true,filters:[{name:'GPX 轨迹',extensions:['gpx']}]});
- const results:Array<{track:Track;name:string}>=[];
- for(const path of Array.isArray(selection)?selection:typeof selection==='string'?[selection]:[]){const value=await importNativeGpx(path);if(value)results.push(value);}
- return results;
+export async function importNativeGpxFiles(): Promise<
+  Array<{ track: Track; name: string }>
+> {
+  const selection = await open({
+    multiple: true,
+    filters: [{ name: "GPX 轨迹", extensions: ["gpx"] }],
+  });
+  const results: Array<{ track: Track; name: string }> = [];
+  for (const path of Array.isArray(selection)
+    ? selection
+    : typeof selection === "string"
+      ? [selection]
+      : []) {
+    const value = await importNativeGpx(path);
+    if (value) results.push(value);
+  }
+  return results;
 }

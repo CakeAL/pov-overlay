@@ -170,3 +170,15 @@
     min-height: 210px;
   }
 }
+@media (max-width: 780px) {
+  .app-header {
+    height: auto;
+    min-height: 60px;
+    flex-shrink: 0;
+    padding: 10px;
+    gap: 8px;
+  }
+}
+input[type="checkbox"] {
+  accent-color: var(--green);
+}

@@ -29,3 +29,16 @@ fn reports_file_and_parse_failures_through_application_services() {
     assert!(import_track(&missing).unwrap_err().contains("无法解析 GPX"));
     assert!(import_video(&missing).is_err());
 }
+
+#[test]
+fn saves_documents_atomically_and_preserves_existing_content_on_invalid_json() {
+    use pov_overlay_desktop::application::documents::{read_json, write_json};
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("ride.json");
+    write_json(&path, r#"{"version":1}"#).unwrap();
+    write_json(&path, r#"{"version":2}"#).unwrap();
+    assert!(read_json(&path).unwrap().contains(":2"));
+    assert!(write_json(&path, "invalid JSON").is_err());
+    assert!(read_json(&path).unwrap().contains(":2"));
+    assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 1);
+}

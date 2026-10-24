@@ -13,7 +13,7 @@ import WidgetPropertiesPanel from "./WidgetPropertiesPanel.vue";
 
       <SyncPanel />
 
-      <TelemetryPanel/>
+      <TelemetryPanel />
       <LayerPanel />
 
       <WidgetPropertiesPanel />

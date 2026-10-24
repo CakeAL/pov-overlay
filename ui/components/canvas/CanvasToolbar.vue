@@ -15,7 +15,6 @@ const { undo, redo, resetLayout } = layout;
     <div class="canvas-heading">
       <span class="canvas-heading-icon"><Layers :size="18" /></span>
       <h2>预览画布</h2>
-
     </div>
     <div class="canvas-actions">
       <button

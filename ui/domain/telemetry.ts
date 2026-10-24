@@ -1,7 +1,7 @@
 import type { Sample, Track } from "./types";
 export const MAX_GAP_MS = 30_000;
-export {distance} from "./geography";
-import {angleBetween,cubicSpeed} from "./motion";
+export { distance } from "./geography";
+import { angleBetween, cubicSpeed } from "./motion";
 export function sampleAt(track: Track, timestampMs: number): Sample | null {
   if (timestampMs < track.startMs || timestampMs > track.endMs) return null;
   let low = 0,
@@ -35,9 +35,12 @@ export function sampleAt(track: Track, timestampMs: number): Sample | null {
       a.elevation !== null && b.elevation !== null
         ? mix(a.elevation, b.elevation)
         : null,
-    speedMps: cubicSpeed(a,b,progress),
-    headingDeg: angleBetween(a.headingDeg,b.headingDeg,progress),
-    distanceMeters: a.distanceMeters!=null&&b.distanceMeters!=null?mix(a.distanceMeters,b.distanceMeters):undefined,
+    speedMps: cubicSpeed(a, b, progress),
+    headingDeg: angleBetween(a.headingDeg, b.headingDeg, progress),
+    distanceMeters:
+      a.distanceMeters != null && b.distanceMeters != null
+        ? mix(a.distanceMeters, b.distanceMeters)
+        : undefined,
     segment: a.segment,
   };
 }

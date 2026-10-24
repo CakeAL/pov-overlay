@@ -1,5 +1,5 @@
-import type {Sample} from "./types";
-const EARTH_RADIUS = 6_371_088;
+import type { Sample } from "./types";
+const EARTH_RADIUS = 6_371_008.8;
 const radians = (value: number) => (value * Math.PI) / 180;
 export function distance(
   a: Pick<Sample, "latitude" | "longitude">,

@@ -50,8 +50,20 @@ export function useAlignment(
 
   watch(
     [track, asset],
-    ([nextTrack,nextAsset], [previousTrack,previousAsset]) => {
-      if(nextAsset===previousAsset&&nextAsset&&previousTrack&&nextTrack&&syncMode.value==='manual'&&alignmentKnown.value){offset.value=(previousTrack.startMs+offset.value*1000-nextTrack.startMs)/1000;return;}
+    ([nextTrack, nextAsset], [previousTrack, previousAsset]) => {
+      if (
+        nextAsset === previousAsset &&
+        nextAsset &&
+        previousTrack &&
+        nextTrack &&
+        syncMode.value === "manual" &&
+        alignmentKnown.value
+      ) {
+        offset.value =
+          (previousTrack.startMs + offset.value * 1000 - nextTrack.startMs) /
+          1000;
+        return;
+      }
       offset.value = 0;
       alignmentKnown.value = false;
       syncMode.value = "none";

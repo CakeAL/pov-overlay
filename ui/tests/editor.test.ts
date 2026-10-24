@@ -114,3 +114,50 @@ describe("editor feature coordination", () => {
     expect(second.layout.widgets[0]!.x).toBe(0.055);
   });
 });
+
+it("restores project time after background and track watchers settle", async () => {
+  const editor = session();
+  editor.media.acceptTrack({ track: track(), name: "ride.gpx" });
+  await nextTick();
+  editor.playback.seek(5.25);
+  const data = editor.documents.project();
+  editor.playback.seek(0);
+  await editor.documents.load(JSON.stringify(data), "project");
+  await nextTick();
+  expect(editor.playback.currentTime).toBe(5.25);
+  expect(editor.media.sources).toHaveLength(1);
+});
+it("runs the independent GPX clock without a video element", async () => {
+  let callback: FrameRequestCallback | undefined;
+  vi.stubGlobal("requestAnimationFrame", (fn: FrameRequestCallback) => {
+    callback = fn;
+    return 1;
+  });
+  vi.stubGlobal("cancelAnimationFrame", () => {});
+  const editor = session();
+  editor.media.acceptTrack({ track: track(), name: "ride.gpx" });
+  await nextTick();
+  await editor.playback.togglePlay();
+  callback!(performance.now() + 500);
+  expect(editor.playback.currentTime).toBeGreaterThan(0.45);
+  expect(editor.playback.playing).toBe(true);
+  await editor.playback.togglePlay();
+  expect(editor.playback.playing).toBe(false);
+});
+
+it("preserves unresolved video references when a restored project is saved again", async () => {
+  const editor = session();
+  editor.media.acceptTrack({ track: track(), name: "ride.gpx" });
+  await editor.media.acceptVideo(video(editor.media.track!.startMs + 2000));
+  editor.alignment.setManualOffset(inputEvent("2.5"));
+  editor.playback.seek(3);
+  const saved = editor.documents.project();
+  await editor.documents.load(JSON.stringify(saved), "project");
+  await nextTick();
+  const again = editor.documents.project();
+  expect(again.video?.name).toBe("ride.mp4");
+  expect(again.video?.duration).toBe(8);
+  expect(again.backgroundMode).toBe("video");
+  expect(again.offset).toBe(2.5);
+  expect(again.currentTime).toBe(3);
+});

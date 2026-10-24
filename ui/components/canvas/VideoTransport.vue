@@ -12,11 +12,12 @@ import { useEditorContext } from "../../editor/context";
 import { formatTime } from "../../domain/telemetry";
 import { dateText } from "../../lib/format";
 const { media, playback, alignment, timeline } = useEditorContext();
-const { activeVideo:asset } = toRefs(media);
+const { activeVideo: asset } = toRefs(media);
 const { duration, currentTime, playing, muted } = toRefs(playback);
 const { seek, togglePlay } = playback;
 const { alignmentKnown, offsetLabel } = toRefs(alignment);
-const { timelineTicks, coverageRanges, absoluteTime, sample } = toRefs(timeline);
+const { timelineTicks, coverageRanges, absoluteTime, sample } =
+  toRefs(timeline);
 </script>
 
 <template>
@@ -68,7 +69,12 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } = toRefs(timeline)
       </div>
       <div class="timeline-rail">
         <div class="timeline-background"></div>
-        <div v-for="(range,index) in coverageRanges" :key="index" class="timeline-gpx" :style="range"></div>
+        <div
+          v-for="(range, index) in coverageRanges"
+          :key="index"
+          class="timeline-gpx"
+          :style="range"
+        ></div>
         <div
           class="timeline-progress"
           :style="{

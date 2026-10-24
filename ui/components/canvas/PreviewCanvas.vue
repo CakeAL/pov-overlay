@@ -6,7 +6,7 @@ import EmptyCanvas from "./EmptyCanvas.vue";
 import OverlayWidget from "../widgets/OverlayWidget.vue";
 const { media, playback, viewport, layout, timeline, drop } =
   useEditorContext();
-const { activeVideo:asset,image,backgroundMode } = toRefs(media);
+const { activeVideo: asset, image, backgroundMode } = toRefs(media);
 const { video, muted, currentTime, playing } = toRefs(playback);
 const { loadedMetadata, videoError } = playback;
 const { stageWrap, stage, stageSize } = toRefs(viewport);
@@ -46,7 +46,12 @@ const { dropActive } = toRefs(drop);
         @ended="playing = false"
         @error="videoError"
       />
-      <img v-else-if="backgroundMode === 'image' && image" class="background-image" :src="image.url" alt="预览背景图"/>
+      <img
+        v-else-if="backgroundMode === 'image' && image"
+        class="background-image"
+        :src="image.url"
+        alt="预览背景图"
+      />
       <EmptyCanvas v-else />
       <div v-if="showSafeArea" class="safe-area" aria-hidden="true">
         <i v-for="i in 4" :key="i"></i>

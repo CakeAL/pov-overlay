@@ -332,4 +332,24 @@
 .is-drag-over {
   border-color: #98b86d !important;
 }
-.background-image {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}.background-selector {display:flex;justify-content:space-between;align-items:center;margin-top:16px}.background-selector select {padding:7px 12px;border:1px solid #d0d7cb;border-radius:5px;background:white;font:inherit}
+.background-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.background-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+.background-selector select {
+  padding: 7px 12px;
+  border: 1px solid #d0d7cb;
+  border-radius: 5px;
+  background: white;
+  font: inherit;
+}

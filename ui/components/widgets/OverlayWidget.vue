@@ -34,8 +34,11 @@ const { widgetStyle, startDrag, moveDrag, endDrag } = layout;
       >{{ widget.label }} <LockKeyhole v-if="widget.locked" :size="9"
     /></span>
     <SpeedReadout v-if="widget.kind === 'speed'" :sample="sample" />
-    <CoordinateReadout v-else-if="widget.kind === 'coordinates'" :sample="sample" />
-    <SvgReadout v-else :widget="widget" :sample="sample"/>
+    <CoordinateReadout
+      v-else-if="widget.kind === 'coordinates'"
+      :sample="sample"
+    />
+    <SvgReadout v-else :widget="widget" :sample="sample" />
     <template v-if="selectedId === widget.id && !widget.locked"
       ><i class="selection-corner tl"></i><i class="selection-corner tr"></i
       ><i class="selection-corner bl"></i

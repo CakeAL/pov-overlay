@@ -5,9 +5,9 @@ export interface Sample {
   elevation: number | null;
   speedMps: number;
   segment: number;
-  headingDeg?:number|null;
-  distanceMeters?:number;
-  speedSlope?:number;
+  headingDeg?: number | null;
+  distanceMeters?: number;
+  speedSlope?: number;
 }
 export interface Track {
   name: string;
@@ -18,7 +18,7 @@ export interface Track {
   skippedPoints: number;
 }
 export interface VideoAsset {
-  path?:string;
+  path?: string;
   name: string;
   url: string;
   capturedAtMs: number | null;
@@ -38,8 +38,8 @@ export interface Widget {
   color: string;
   visible: boolean;
   locked: boolean;
-  svg?:{source:string;aspectRatio:number};
-  widthRatio?:number;
+  svg?: { source: string; aspectRatio: number };
+  widthRatio?: number;
 }
 export function defaultWidgets(): Widget[] {
   return [
@@ -70,6 +70,16 @@ export function defaultWidgets(): Widget[] {
   ];
 }
 
-export interface ImageAsset {name:string;url:string;width:number;height:number}
+export interface ImageAsset {
+  name: string;
+  url: string;
+  width: number;
+  height: number;
+}
 
-export interface TrackSource {id:string;name:string;track:Track;enabled?:boolean}
+export interface TrackSource {
+  id: string;
+  name: string;
+  track: Track;
+  enabled?: boolean;
+}

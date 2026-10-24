@@ -212,5 +212,79 @@
   color: #728459;
   border-bottom: 1px solid #dae5ce;
 }
-.app-header {height:54px;min-height:54px;padding:0 24px}.header-workspace {font-size:15px;color:#25312e}.panel-section {line-height:1.5}.text-input,.position-fields input,.offset-control input {font-size:14px}.asset-copy strong,.section-title {font-size:14px}.hk-label,.hk-switch-label {font-size:13px!important}.canvas-options,.canvas-caption,.workspace-footer {font-size:12px}
-.project-name {font:inherit;font-size:15px;min-width:100px;max-width:240px;width:25%;background:transparent;border:0;padding:6px}.document-actions {display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}.document-actions button {font-size:14px;padding:6px 10px;border:1px solid #d6dfce!important;border-radius:5px;background:#fff!important}.app-header {gap:16px}@media(max-width:780px){.app-header{height:auto;min-height:60px;flex-wrap:wrap;padding:10px}.project-name{max-width:none;width:100%}.document-actions{margin-left:0;gap:6px}.document-actions button{font-size:12px;padding:5px}}
+.app-header {
+  height: 54px;
+  min-height: 54px;
+  padding: 0 24px;
+}
+.header-workspace {
+  font-size: 15px;
+  color: #25312e;
+}
+.panel-section {
+  line-height: 1.5;
+}
+.text-input,
+.position-fields input,
+.offset-control input {
+  font-size: 14px;
+}
+.asset-copy strong,
+.section-title {
+  font-size: 14px;
+}
+.hk-label,
+.hk-switch-label {
+  font-size: 13px !important;
+}
+.canvas-options,
+.canvas-caption,
+.workspace-footer {
+  font-size: 12px;
+}
+.project-name {
+  font: inherit;
+  font-size: 15px;
+  min-width: 100px;
+  max-width: 240px;
+  width: 25%;
+  background: transparent;
+  border: 0;
+  padding: 6px;
+}
+.document-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+.document-actions button {
+  font-size: 14px;
+  padding: 6px 10px;
+  border: 1px solid #d6dfce !important;
+  border-radius: 5px;
+  background: #fff !important;
+}
+.app-header {
+  gap: 16px;
+}
+@media (max-width: 780px) {
+  .app-header {
+    height: auto;
+    min-height: 60px;
+    flex-wrap: wrap;
+    padding: 10px;
+  }
+  .project-name {
+    max-width: none;
+    width: 100%;
+  }
+  .document-actions {
+    margin-left: 0;
+    gap: 6px;
+  }
+  .document-actions button {
+    font-size: 12px;
+    padding: 5px;
+  }
+}

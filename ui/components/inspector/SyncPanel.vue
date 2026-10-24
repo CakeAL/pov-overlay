@@ -5,14 +5,14 @@ import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 import { dateText, timeZone } from "../../lib/format";
 const { media, alignment } = useEditorContext();
-const { track, asset } = toRefs(media);
+const { track, activeVideo: asset } = toRefs(media);
 const { offset, alignmentKnown, syncMode, showTiming, manualStart } =
   toRefs(alignment);
 const { autoAlign, setManualOffset, applyManualTime } = alignment;
 </script>
 
 <template>
-  <section class="panel-section sync-section">
+  <section v-if="asset" class="panel-section sync-section">
     <div class="section-title">
       <span><span class="section-index">02</span> 时间同步</span
       ><span

@@ -6,3 +6,5 @@ pub mod subtitles;
 pub mod video;
 
 pub mod documents;
+
+pub mod images;
