@@ -25,7 +25,7 @@ export interface VideoAsset {
   warning: string | null;
   duration: number;
 }
-export type WidgetKind = "speed" | "coordinates";
+export type WidgetKind = "speed" | "coordinates" | "svg";
 export interface Widget {
   id: string;
   kind: WidgetKind;
@@ -37,6 +37,8 @@ export interface Widget {
   color: string;
   visible: boolean;
   locked: boolean;
+  svg?:{source:string;aspectRatio:number};
+  widthRatio?:number;
 }
 export function defaultWidgets(): Widget[] {
   return [
@@ -47,7 +49,7 @@ export function defaultWidgets(): Widget[] {
       x: 0.055,
       y: 0.69,
       scale: 1,
-      opacity: 88,
+      opacity: 0,
       color: "#c7f284",
       visible: true,
       locked: false,
@@ -59,7 +61,7 @@ export function defaultWidgets(): Widget[] {
       x: 0.645,
       y: 0.79,
       scale: 1,
-      opacity: 88,
+      opacity: 0,
       color: "#c7f284",
       visible: true,
       locked: false,

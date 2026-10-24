@@ -3,6 +3,7 @@ import { LockKeyhole } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 import type { Widget, Sample } from "../../domain/types";
+import SvgReadout from "./SvgReadout.vue";
 import SpeedReadout from "./SpeedReadout.vue";
 import CoordinateReadout from "./CoordinateReadout.vue";
 defineProps<{ widget: Widget; sample: Sample | null }>();
@@ -33,7 +34,8 @@ const { widgetStyle, startDrag, moveDrag, endDrag } = layout;
       >{{ widget.label }} <LockKeyhole v-if="widget.locked" :size="9"
     /></span>
     <SpeedReadout v-if="widget.kind === 'speed'" :sample="sample" />
-    <CoordinateReadout v-else :sample="sample" />
+    <CoordinateReadout v-else-if="widget.kind === 'coordinates'" :sample="sample" />
+    <SvgReadout v-else :widget="widget" :sample="sample"/>
     <template v-if="selectedId === widget.id && !widget.locked"
       ><i class="selection-corner tl"></i><i class="selection-corner tr"></i
       ><i class="selection-corner bl"></i

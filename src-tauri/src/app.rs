@@ -3,6 +3,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             crate::commands::materials::load_gpx,
+            crate::commands::materials::read_svg,
             crate::commands::materials::load_image,
             crate::commands::materials::load_video
         ])

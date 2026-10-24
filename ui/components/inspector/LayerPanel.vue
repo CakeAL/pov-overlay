@@ -11,8 +11,9 @@ import {
 } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
-const { layout } = useEditorContext();
+const { layout,svgElements } = useEditorContext();
 const { widgets, selectedId } = toRefs(layout);
+const {svgInput}=toRefs(svgElements);
 const { toggleVisible, toggleLock } = layout;
 </script>
 
@@ -24,6 +25,8 @@ const { toggleVisible, toggleLock } = layout;
         >{{ widgets.filter((widget) => widget.visible).length }} 个可见</span
       >
     </div>
+    <div class="element-actions"><button class="text-button" @click="svgElements.chooseSvg">导入 SVG</button><button class="text-button" @click="svgElements.addTelemetryStrip">添加数据条</button><button class="text-button" :disabled="!selectedId" @click="svgElements.removeSelected">删除元素</button></div>
+    <input ref="svgInput" class="file-input" data-testid="svg-file" type="file" accept=".svg,image/svg+xml" @change="svgElements.selectedSvg"/>
     <div
       v-for="widget in widgets"
       :key="widget.id"
@@ -41,7 +44,7 @@ const { toggleVisible, toggleLock } = layout;
         ><span
           ><strong>{{ widget.label }}</strong
           ><small>{{
-            widget.kind === "speed" ? "SPEED" : "COORDINATES"
+            widget.kind === "svg" ? "SVG" : widget.kind === "speed" ? "速度" : "经纬度"
           }}</small></span
         >
       </button>
@@ -65,6 +68,7 @@ const { toggleVisible, toggleLock } = layout;
         />
       </button>
     </div>
+    <p class="field-hint">SVG 字段：{$Speed}、{$Latitude}、{$Longitude}、{$Elevation}、{$Heading}、{$Distance}、{$Elapsed}、{$Color}</p>
     <p class="section-hint">
       <MousePointer2 :size="12" /> 在右侧画布拖动元素，自由排布。
     </p>

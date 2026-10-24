@@ -1,4 +1,5 @@
 import {useTelemetrySettings} from "../composables/useTelemetrySettings";
+import {useSvgElements} from "../composables/useSvgElements";
 import { reactive } from "vue";
 import { useMessages } from "../composables/useMessages";
 import { useMediaSession } from "../composables/useMediaSession";
@@ -19,6 +20,7 @@ export function createEditor() {
   const viewport = useCanvasViewport(playback.ratio);
   const layout = useWidgetLayout(playback.ratio, viewport.stage);
   const telemetry = useTelemetrySettings();
+  const svgElements=useSvgElements(layout,messages);
   const timeline = useTimeline(media, playback, alignment,telemetry);
   const drop = useFileDrop(media);
   useEditorShortcuts(layout, playback, viewport);
@@ -29,7 +31,7 @@ export function createEditor() {
     playback,
     viewport,
     layout,
-    timeline,telemetry,
+    timeline,telemetry,svgElements,
     drop,
   });
 }

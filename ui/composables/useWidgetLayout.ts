@@ -41,10 +41,10 @@ export function useWidgetLayout(
     selectedId.value = "speed";
   }
   function dimensions(widget: Widget) {
-    const width = (widget.kind === "speed" ? 0.19 : 0.3) * widget.scale;
+    const width = (widget.widthRatio??(widget.kind === "speed" ? 0.19 : 0.3)) * widget.scale;
     return {
       width,
-      height: (width * ratio.value) / (widget.kind === "speed" ? 1.55 : 3.35),
+      height: (width * ratio.value) / (widget.svg?.aspectRatio??(widget.kind === "speed" ? 1.55 : 3.35)),
     };
   }
   function clampWidget(widget: Widget) {
@@ -66,7 +66,8 @@ export function useWidgetLayout(
       left: `${widget.x * 100}%`,
       top: `${widget.y * 100}%`,
       width: `${size.width * 100}%`,
-      aspectRatio: widget.kind === "speed" ? "1.55" : "3.35",
+      aspectRatio: String(widget.svg?.aspectRatio??(widget.kind === "speed" ? 1.55 : 3.35)),
+      backdropFilter:widget.opacity>0?"blur(8px)":"none",
       "--widget-accent": widget.color,
       "--widget-alpha": String(widget.opacity / 100),
       "--widget-scale": String(widget.scale),
@@ -115,7 +116,7 @@ export function useWidgetLayout(
         0.65,
         Math.min(
           1.65,
-          drag.scale + dx / (widget.kind === "speed" ? 0.19 : 0.3),
+          drag.scale + dx / (widget.widthRatio??(widget.kind === "speed" ? 0.19 : 0.3)),
         ),
       );
     else {
@@ -155,7 +156,7 @@ export function useWidgetLayout(
     remember();
     Object.assign(
       selected.value,
-      defaultWidgets().find((widget) => widget.id === selected.value!.id),
+      defaultWidgets().find((widget) => widget.id === selected.value!.id)??{x:0.05,y:0.05,scale:1,opacity:0,color:"#ffffff"},
     );
   }
   function toggleLock(widget: Widget) {
