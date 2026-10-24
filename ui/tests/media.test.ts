@@ -1,6 +1,6 @@
 import { Blob } from "node:buffer";
 import { describe, expect, it } from "vitest";
-import { readMp4CreationTime } from "../lib/media";
+import { readMp4CreationTime } from "../infrastructure/mp4";
 function box(name: string, payload: Uint8Array, large = false) {
   const data = new Uint8Array(payload.length + (large ? 16 : 8)),
     view = new DataView(data.buffer);

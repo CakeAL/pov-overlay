@@ -1,0 +1,123 @@
+import { nextTick, onBeforeUnmount, ref, shallowRef } from "vue";
+import {
+  importBrowserGpx,
+  importBrowserVideo,
+  importNativeGpx,
+  importNativeVideo,
+  native,
+  releaseVideo,
+  VIDEO_EXTENSIONS,
+} from "../infrastructure/media";
+import type { Track, VideoAsset } from "../domain/types";
+import type { EditorMessages } from "./useMessages";
+
+export function useMediaSession(messages: EditorMessages) {
+  const track = shallowRef<Track | null>(null),
+    gpxName = ref("");
+  const asset = shallowRef<VideoAsset | null>(null),
+    busy = ref(false);
+  const gpxInput = ref<HTMLInputElement>(),
+    videoInput = ref<HTMLInputElement>();
+  function acceptTrack(result: { track: Track; name: string }) {
+    track.value = result.track;
+    gpxName.value = result.name;
+    if (result.track.skippedPoints)
+      messages.notice.value = `已忽略 ${result.track.skippedPoints} 个缺少时间戳或重复的轨迹点。`;
+  }
+  async function acceptVideo(result: VideoAsset) {
+    const previous = asset.value;
+    asset.value = result;
+    await nextTick();
+    releaseVideo(previous);
+  }
+  async function runImport(action: () => Promise<void>) {
+    if (busy.value) return;
+    busy.value = true;
+    messages.clear();
+    try {
+      await action();
+    } catch (reason) {
+      messages.report(reason);
+    } finally {
+      busy.value = false;
+    }
+  }
+  async function chooseGpx() {
+    if (!native) {
+      gpxInput.value?.click();
+      return;
+    }
+    await runImport(async () => {
+      const result = await importNativeGpx();
+      if (result) acceptTrack(result);
+    });
+  }
+  async function chooseVideo() {
+    if (!native) {
+      videoInput.value?.click();
+      return;
+    }
+    await runImport(async () => {
+      const result = await importNativeVideo();
+      if (result) await acceptVideo(result);
+    });
+  }
+  async function selectedFile(event: Event, kind: "gpx" | "video") {
+    const input = event.target as HTMLInputElement,
+      file = input.files?.[0];
+    try {
+      if (file)
+        await runImport(async () => {
+          if (kind === "gpx") acceptTrack(await importBrowserGpx(file));
+          else await acceptVideo(await importBrowserVideo(file));
+        });
+    } finally {
+      input.value = "";
+    }
+  }
+  async function importFiles(files: File[]) {
+    await runImport(async () => {
+      for (const file of files) {
+        if (/\.gpx$/i.test(file.name))
+          acceptTrack(await importBrowserGpx(file));
+        else if (
+          VIDEO_EXTENSIONS.includes(
+            file.name.split(".").at(-1)?.toLowerCase() ?? "",
+          )
+        )
+          await acceptVideo(await importBrowserVideo(file));
+        else throw new Error("请选择 GPX 轨迹或视频文件。");
+      }
+    });
+  }
+  async function importPaths(paths: string[]) {
+    await runImport(async () => {
+      for (const path of paths) {
+        if (/\.gpx$/i.test(path)) {
+          const result = await importNativeGpx(path);
+          if (result) acceptTrack(result);
+        } else {
+          const result = await importNativeVideo(path);
+          if (result) await acceptVideo(result);
+        }
+      }
+    });
+  }
+  onBeforeUnmount(() => releaseVideo(asset.value));
+  return {
+    track,
+    gpxName,
+    asset,
+    busy,
+    gpxInput,
+    videoInput,
+    chooseGpx,
+    chooseVideo,
+    selectedFile,
+    importFiles,
+    importPaths,
+    acceptTrack,
+    acceptVideo,
+  };
+}
+export type MediaSession = ReturnType<typeof useMediaSession>;

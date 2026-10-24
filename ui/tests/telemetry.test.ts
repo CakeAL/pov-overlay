@@ -1,10 +1,10 @@
+import { parseGpx } from "../infrastructure/gpx";
 import { describe, expect, it } from "vitest";
 import {
   alignmentOffset,
   formatCoordinate,
-  parseGpx,
   sampleAt,
-} from "../lib/telemetry";
+} from "../domain/telemetry";
 const start = Date.parse("2026-10-24T00:00:00Z");
 const point = (seconds: number, lat = 31 + seconds * 0.00001, lon = 121) =>
   `<trkpt lat="${lat}" lon="${lon}"><time>${new Date(start + seconds * 1000).toISOString()}</time></trkpt>`;

@@ -3,12 +3,26 @@ name = "pov-overlay-desktop"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+map-rendering = ["dep:galileo", "dep:geojson", "dep:image", "dep:anyhow"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-pov-core = { path = "../crates/pov-core" }
 tauri = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+gpx = "=0.10.0"
+geo = "0.31.0"
+time = { version = "0.3.44", features = ["parsing", "formatting"] }
+srtlib = "0.2"
+anyhow = { version = "1", optional = true }
+galileo = { git = "https://github.com/Maximkaaa/galileo.git", rev = "907e047875f28199715bdce2c09868c604e34ffd", features = ["geojson"], optional = true }
+geojson = { version = "0.24", optional = true }
+image = { version = "0.25", optional = true }
+
+[dev-dependencies]
+tempfile = "3"

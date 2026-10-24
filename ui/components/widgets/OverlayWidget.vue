@@ -1,0 +1,47 @@
+<script setup lang="ts">
+import { LockKeyhole } from "lucide-vue-next";
+import { toRefs } from "vue";
+import { useEditorContext } from "../../editor/context";
+import type { Widget, Sample } from "../../domain/types";
+import SpeedReadout from "./SpeedReadout.vue";
+import CoordinateReadout from "./CoordinateReadout.vue";
+defineProps<{ widget: Widget; sample: Sample | null }>();
+const { layout } = useEditorContext();
+const { selectedId } = toRefs(layout);
+const { widgetStyle, startDrag, moveDrag, endDrag } = layout;
+</script>
+
+<template>
+  <div
+    :data-testid="`widget-${widget.id}`"
+    class="overlay-widget"
+    :class="[
+      widget.kind,
+      { selected: selectedId === widget.id, locked: widget.locked },
+    ]"
+    :style="widgetStyle(widget)"
+    tabindex="0"
+    :aria-label="`${widget.label}组件，可拖动定位`"
+    @focus="selectedId = widget.id"
+    @pointerdown="startDrag($event, widget)"
+    @pointermove="moveDrag"
+    @pointerup="endDrag"
+    @pointercancel="endDrag"
+    @lostpointercapture="endDrag"
+  >
+    <span v-if="selectedId === widget.id" class="selection-label"
+      >{{ widget.label }} <LockKeyhole v-if="widget.locked" :size="9"
+    /></span>
+    <SpeedReadout v-if="widget.kind === 'speed'" :sample="sample" />
+    <CoordinateReadout v-else :sample="sample" />
+    <template v-if="selectedId === widget.id && !widget.locked"
+      ><i class="selection-corner tl"></i><i class="selection-corner tr"></i
+      ><i class="selection-corner bl"></i
+      ><button
+        class="resize-handle"
+        :aria-label="`缩放${widget.label}`"
+        @pointerdown.stop="startDrag($event, widget, 'resize')"
+      ></button
+    ></template>
+  </div>
+</template>
