@@ -58,7 +58,7 @@ export function prepareMotion(
         local = i - start;
       if (i > start) total += distance(points[i - 1]!, p);
       p.distanceMeters = total;
-      p.speedValid = local > 0;
+      p.speedValid = estimate.speedValid[local]!;
       p.speedMps = estimate.speedsMps[local]!;
       if (
         p.speedValid &&

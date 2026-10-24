@@ -230,3 +230,20 @@ it("hides stale snapshots immediately when crossing a gap or the end of coverage
   editor.playback.seek(2.21);
   expect(editor.timeline.sample).toBeNull();
 });
+
+it("does not keep a valid quantized speed when the actual time enters an invalid tail interval", async () => {
+  const editor = session(),
+    gps = track();
+  gps.samples = [0, 1, 1.02, 2].map((seconds, i) => ({
+    ...gps.samples[0]!,
+    timestampMs: gps.startMs + seconds * 1000,
+    latitude: 31 + (i === 3 ? 0.01 : seconds * 0.00001),
+  }));
+  gps.endMs = gps.startMs + 2000;
+  editor.media.acceptTrack({ track: gps, name: "tail.gpx" });
+  await nextTick();
+  editor.playback.seek(1.02);
+  expect(editor.timeline.sample?.speedValid).toBe(true);
+  editor.playback.seek(1.05);
+  expect(editor.timeline.sample?.speedValid).toBe(false);
+});

@@ -125,8 +125,12 @@ it("does not amplify a millisecond GPS fix into a large speed spike", () => {
   ]);
   expect(raw.samples[2]!.speedMps).toBeGreaterThan(900);
   const fit = prepareMotion(raw, 3);
-  for (let time = 0; time <= 4000; time += 100)
-    expect(sampleAt(fit, time)!.speedMps).toBeCloseTo(10, 4);
+  expect(sampleAt(fit, 0)!.speedValid).toBe(false);
+  for (let time = 1000; time <= 4000; time += 100) {
+    const speed = sampleAt(fit, time)!.speedMps;
+    expect(speed).toBeGreaterThanOrEqual(9.9);
+    expect(speed).toBeLessThan(11.1);
+  }
 });
 it("rejects an isolated GPS excursion without altering the source or inventing a turn", () => {
   const raw = measuredTrack(
@@ -174,4 +178,48 @@ it("does not borrow speed before the second fix of a new segment", () => {
   );
   expect(sampleAt(isolated, 0)).toBeNull();
   expect(sampleAt(isolated, 60_000)!.speedValid).toBe(false);
+});
+
+it("does not let an unsupported terminal jump inflate the preceding window", () => {
+  const clean = measuredTrack(
+    Array.from({ length: 7 }, (_, i) => metersPoint(i, 2 * i)),
+  );
+  const jump = measuredTrack(
+    Array.from({ length: 7 }, (_, i) => metersPoint(i, i === 6 ? 1000 : 2 * i)),
+  );
+  const normal = prepareMotion(clean, 3),
+    bad = prepareMotion(jump, 3);
+  for (let time = 1000; time <= 5000; time += 100)
+    expect(sampleAt(bad, time)!.speedMps).toBeCloseTo(
+      sampleAt(normal, time)!.speedMps,
+      4,
+    );
+  expect(sampleAt(bad, 5500)!.speedValid).toBe(false);
+  expect(sampleAt(bad, 6000)!.speedValid).toBe(false);
+  expect(sampleAt(bad, 6001)).toBeNull();
+  expect(sampleAt(prepareMotion(jump, 0), 6000)!.speedValid).toBe(false);
+});
+it("keeps a stationary start at zero without borrowing later movement", () => {
+  const prepared = prepareMotion(
+    measuredTrack([
+      metersPoint(0, 0),
+      metersPoint(1, 0),
+      metersPoint(2, 0),
+      metersPoint(3, 10),
+      metersPoint(4, 20),
+    ]),
+    3,
+  );
+  expect(sampleAt(prepared, 0)!.speedValid).toBe(false);
+  expect(sampleAt(prepared, 1000)!.speedMps).toBe(0);
+  expect(sampleAt(prepared, 1500)!.speedMps).toBe(0);
+  expect(sampleAt(prepared, 2000)!.speedMps).toBe(0);
+});
+it("retains a supported gradual acceleration through the last fix", () => {
+  const prepared = prepareMotion(
+    measuredTrack([0, 1, 3, 6, 10, 15].map((east, i) => metersPoint(i, east))),
+    3,
+  );
+  expect(sampleAt(prepared, 5000)!.speedValid).toBe(true);
+  expect(sampleAt(prepared, 5000)!.speedMps).toBeCloseTo(4, 4);
 });

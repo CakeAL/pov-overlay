@@ -12,19 +12,47 @@ export function estimateSegmentSpeed(
   start: number,
   end: number,
   windowSeconds: number,
-): { speedsMps: number[]; movementSpeedsMps: number[]; positions: Sample[] } {
+): {
+  speedsMps: number[];
+  movementSpeedsMps: number[];
+  positions: Sample[];
+  speedValid: boolean[];
+} {
   const original = samples.slice(start, end);
-  if (windowSeconds <= 0) {
-    const speedsMps = original.map((point) => point.speedMps);
-    return { speedsMps, movementSpeedsMps: speedsMps, positions: original };
-  }
-  const positions = original.slice();
+  const speedValid = original.map((_, index) => index > 0);
   const intervals = original.map((point, index) =>
     index
       ? distance(original[index - 1]!, point) /
         ((point.timestampMs - original[index - 1]!.timestampMs) / 1000)
       : 0,
   );
+  // At the end there is no return fix to confirm an excursion. Mark an abrupt,
+  // unsupported final interval unavailable instead of manufacturing a speed.
+  const lastIndex = original.length - 1;
+  if (lastIndex >= 3) {
+    const recent = intervals
+      .slice(Math.max(1, lastIndex - 5), lastIndex)
+      .sort((a, b) => a - b);
+    const middle = Math.floor(recent.length / 2);
+    const baseline =
+      recent.length % 2
+        ? recent[middle]!
+        : (recent[middle - 1]! + recent[middle]!) / 2;
+    if (intervals[lastIndex]! > Math.max(3 * baseline, baseline + 5))
+      speedValid[lastIndex] = false;
+  }
+  if (windowSeconds <= 0) {
+    const speedsMps = original.map((point, index) =>
+      speedValid[index] ? point.speedMps : 0,
+    );
+    return {
+      speedsMps,
+      movementSpeedsMps: speedsMps,
+      positions: original,
+      speedValid,
+    };
+  }
+  const positions = original.slice();
   // A real fast section is retained. Reject only an isolated out-and-back detour
   // whose two legs greatly exceed both surrounding motion and the direct bridge.
   for (let i = 1; i + 1 < original.length; i++) {
@@ -65,9 +93,9 @@ export function estimateSegmentSpeed(
     cumulative[index] = cumulative[index - 1]! + meters;
     return meters / ((point.timestampMs - previous.timestampMs) / 1000);
   });
-  if (positions.length > 1) movementSpeedsMps[0] = movementSpeedsMps[1]!;
-  const first = positions[0]!.timestampMs,
-    last = positions.at(-1)!.timestampMs;
+  // The first fix has no observed motion interval yet.
+  movementSpeedsMps[0] = 0;
+  const first = positions[0]!.timestampMs;
   const leftCursor = { index: 0 },
     rightCursor = { index: 0 };
   function distanceAt(time: number, cursor: { index: number }): number {
@@ -86,17 +114,15 @@ export function estimateSegmentSpeed(
     );
   }
   const widthMs = Math.max(1000, windowSeconds * 1000);
-  const speedsMps = positions.map((point) => {
-    let left = Math.max(first, point.timestampMs - widthMs / 2);
-    let right = Math.min(last, point.timestampMs + widthMs / 2);
-    // Keep a full window near the endpoints where enough data exists.
-    if (left === first) right = Math.min(last, first + widthMs);
-    if (right === last) left = Math.max(first, last - widthMs);
+  const speedsMps = positions.map((point, index) => {
+    if (!speedValid[index]) return 0;
+    const right = point.timestampMs;
+    const left = Math.max(first, right - widthMs);
     return Math.max(
       0,
       (distanceAt(right, rightCursor) - distanceAt(left, leftCursor)) /
         Math.max(1, (right - left) / 1000),
     );
   });
-  return { speedsMps, movementSpeedsMps, positions };
+  return { speedsMps, movementSpeedsMps, positions, speedValid };
 }

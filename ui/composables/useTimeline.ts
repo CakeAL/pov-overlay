@@ -52,7 +52,10 @@ export function useTimeline(
       preparedTrack.value,
       preparedTrack.value.startMs + (offset.value + t) * 1000,
     );
-    return quantized?.segment === current.segment ? quantized : current;
+    return quantized?.segment === current.segment &&
+      !(current.speedValid === false && quantized.speedValid !== false)
+      ? quantized
+      : current;
   });
   const currentHeading = computed(() => sample.value?.headingDeg ?? null);
   const status = computed(() =>
