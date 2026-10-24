@@ -111,8 +111,8 @@
   border-bottom: 1px solid #dae5ce;
 }
 .app-header {
-  height: 54px;
-  min-height: 54px;
+  height: 42px;
+  min-height: 42px;
   padding: 0 24px;
 }
 .panel-section {
@@ -153,7 +153,7 @@
 }
 .document-actions button {
   font-size: 14px;
-  padding: 6px 10px;
+  padding: 4px 10px;
   border: 1px solid #d6dfce !important;
   border-radius: 5px;
   background: #fff !important;
@@ -185,3 +185,10 @@
 .library-entries > button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 6px; border-bottom: 1px solid var(--line); text-align: left; }
 .library-entries strong { flex: 1; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
 .library-entries time { color: #7d8876; font-size: 12px; }
+
+.file-menu { position: relative; }
+.file-menu > summary { list-style: none; cursor: pointer; padding: 5px 12px; font-size: 14px; }
+.file-menu > summary::-webkit-details-marker { display: none; }
+.file-menu-items { position: absolute; right: 0; top: 100%; z-index: 20; background: white; padding: 6px; min-width: 150px; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 24px #0002; }
+.document-actions .file-menu-items button { display: block; width: 100%; border: 0 !important; text-align: left; padding: 8px 12px; }
+.document-actions .file-menu-items button:hover { background: #f2f6eb !important; }

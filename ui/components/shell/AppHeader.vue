@@ -13,6 +13,7 @@ const { name, busy, projectInput, presetInput } = toRefs(documents);
       maxlength="256"
     />
     <div class="document-actions">
+      <details class="file-menu"><summary>文件</summary><div class="file-menu-items" @click="($event.currentTarget as HTMLElement).parentElement?.removeAttribute('open')">
       <button :disabled="busy" @click="documents.choose('project')">
         打开工程</button
       ><button :disabled="busy" @click="documents.saveCurrent('project')">
@@ -22,6 +23,7 @@ const { name, busy, projectInput, presetInput } = toRefs(documents);
       ><button :disabled="busy" @click="documents.saveCurrent('preset')">
         保存预设
       </button>
+      </div></details>
       <button :disabled="!videoExport.ready || busy" @click="videoExport.show">导出视频</button>
     </div>
     <input
