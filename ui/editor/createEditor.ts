@@ -1,3 +1,4 @@
+import {useTelemetrySettings} from "../composables/useTelemetrySettings";
 import { reactive } from "vue";
 import { useMessages } from "../composables/useMessages";
 import { useMediaSession } from "../composables/useMediaSession";
@@ -17,7 +18,8 @@ export function createEditor() {
   const playback = usePlayback(media, messages);
   const viewport = useCanvasViewport(playback.ratio);
   const layout = useWidgetLayout(playback.ratio, viewport.stage);
-  const timeline = useTimeline(media, playback, alignment);
+  const telemetry = useTelemetrySettings();
+  const timeline = useTimeline(media, playback, alignment,telemetry);
   const drop = useFileDrop(media);
   useEditorShortcuts(layout, playback, viewport);
   return reactive({
@@ -27,7 +29,7 @@ export function createEditor() {
     playback,
     viewport,
     layout,
-    timeline,
+    timeline,telemetry,
     drop,
   });
 }

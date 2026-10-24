@@ -1,20 +1,7 @@
 import type { Sample, Track } from "./types";
 export const MAX_GAP_MS = 30_000;
-const EARTH_RADIUS = 6_371_088;
-const radians = (value: number) => (value * Math.PI) / 180;
-export function distance(
-  a: Pick<Sample, "latitude" | "longitude">,
-  b: Pick<Sample, "latitude" | "longitude">,
-): number {
-  const lat = radians(b.latitude - a.latitude),
-    lon = radians(b.longitude - a.longitude);
-  const h =
-    Math.sin(lat / 2) ** 2 +
-    Math.cos(radians(a.latitude)) *
-      Math.cos(radians(b.latitude)) *
-      Math.sin(lon / 2) ** 2;
-  return 2 * EARTH_RADIUS * Math.asin(Math.sqrt(Math.min(1, h)));
-}
+export {distance} from "./geography";
+import {angleBetween,cubicSpeed} from "./motion";
 export function sampleAt(track: Track, timestampMs: number): Sample | null {
   if (timestampMs < track.startMs || timestampMs > track.endMs) return null;
   let low = 0,
@@ -48,7 +35,9 @@ export function sampleAt(track: Track, timestampMs: number): Sample | null {
       a.elevation !== null && b.elevation !== null
         ? mix(a.elevation, b.elevation)
         : null,
-    speedMps: mix(a.speedMps, b.speedMps),
+    speedMps: cubicSpeed(a,b,progress),
+    headingDeg: angleBetween(a.headingDeg,b.headingDeg,progress),
+    distanceMeters: a.distanceMeters!=null&&b.distanceMeters!=null?mix(a.distanceMeters,b.distanceMeters):undefined,
     segment: a.segment,
   };
 }

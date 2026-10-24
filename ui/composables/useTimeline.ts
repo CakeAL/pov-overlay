@@ -1,3 +1,5 @@
+import {prepareMotion} from "../domain/motion";
+import type {TelemetrySettings} from "./useTelemetrySettings";
 import { computed } from "vue";
 import { sampleAt, formatTime } from "../domain/telemetry";
 import type { MediaSession } from "./useMediaSession";
@@ -8,6 +10,7 @@ export function useTimeline(
   media: MediaSession,
   playback: Playback,
   alignment: Alignment,
+  settings:TelemetrySettings,
 ) {
   const { track, activeVideo:asset } = media;
   const { currentTime, duration } = playback;
@@ -17,13 +20,14 @@ export function useTimeline(
       ? track.value.startMs + (offset.value + currentTime.value) * 1000
       : null,
   );
-  const sample = computed(() =>
-    track.value &&
-    (!asset.value || alignmentKnown.value) &&
-    absoluteTime.value !== null
-      ? sampleAt(track.value, absoluteTime.value)
-      : null,
-  );
+  const preparedTrack = computed(()=>track.value?prepareMotion(track.value,Math.max(0,Math.min(60,Number(settings.smoothingSeconds.value)||0))):null);
+  const sample = computed(()=>{
+    if(!preparedTrack.value || (asset.value&&!alignmentKnown.value))return null;
+    const interval=Math.max(0.01,Math.min(10,Number(settings.refreshSeconds.value)||0.1));
+    const t=Math.floor((currentTime.value+1e-8)/interval)*interval;
+    return sampleAt(preparedTrack.value,preparedTrack.value.startMs+(offset.value+t)*1000);
+  });
+  const currentHeading = computed(()=>sample.value?.headingDeg??null);
   const status = computed(() =>
     !track.value
       ? "等待 GPX 轨迹"
@@ -78,5 +82,5 @@ export function useTimeline(
       .join(" ");
   });
 
-  return { absoluteTime, sample, status, coverage, timelineTicks, routePath };
+  return { absoluteTime, sample, currentHeading, status, coverage, timelineTicks, routePath };
 }

@@ -506,3 +506,4 @@ h1 {
   color: #8aa270;
   font-size: 12px;
 }
+.setting-row {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;font-size:14px}.setting-row input {width:80px;min-width:0;border:1px solid #d0d7cb;border-radius:4px;padding:6px 8px;text-align:right;background:white}.field-hint {font-size:12px;line-height:1.6}

@@ -5,6 +5,9 @@ export interface Sample {
   elevation: number | null;
   speedMps: number;
   segment: number;
+  headingDeg?:number|null;
+  distanceMeters?:number;
+  speedSlope?:number;
 }
 export interface Track {
   name: string;
