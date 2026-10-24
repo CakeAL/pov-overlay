@@ -1,5 +1,6 @@
 import type { Sample, Track } from "./types";
 import { distance } from "./geography";
+import { estimateSegmentSpeed } from "./speedEstimation";
 const MAX_GAP_MS = 30_000;
 const rad = (v: number) => (v * Math.PI) / 180;
 export function bearing(a: Sample, b: Sample): number | null {
@@ -28,7 +29,7 @@ export function angleBetween(
   if (b == null) return a;
   return (a + (((b - a + 540) % 360) - 180) * t + 360) % 360;
 }
-/** A cached, time-weighted local linear fit, followed by monotone cubic interpolation. */
+/** Cached distance-over-time speed estimates, followed by monotone cubic interpolation. */
 export function prepareMotion(
   track: Track,
   windowSeconds: number,
@@ -45,53 +46,37 @@ export function prepareMotion(
       points[end]!.timestampMs - points[end - 1]!.timestampMs <= MAX_GAP_MS
     )
       end++;
-    let heading: number | null = null,
-      lo = start,
-      hi = start;
+    const estimate = estimateSegmentSpeed(
+      track.samples,
+      start,
+      end,
+      windowSeconds,
+    );
+    let heading: number | null = null;
     for (let i = start; i < end; i++) {
       const p = points[i]!,
-        raw = track.samples;
-      if (i > start) {
-        total += distance(points[i - 1]!, p);
-      }
+        local = i - start;
+      if (i > start) total += distance(points[i - 1]!, p);
       p.distanceMeters = total;
-      if (windowSeconds > 0) {
-        const radius = windowSeconds * 500;
-        while (lo < i && raw[lo]!.timestampMs < p.timestampMs - radius) lo++;
-        while (hi < end && raw[hi]!.timestampMs <= p.timestampMs + radius) hi++;
-        let w = 0,
-          x = 0,
-          xx = 0,
-          y = 0,
-          xy = 0;
-        const stride = Math.max(1, Math.ceil((hi - lo) / 128));
-        for (let j = lo; j < hi; j += stride) {
-          const q = raw[j]!,
-            dt = (q.timestampMs - p.timestampMs) / 1000,
-            weight = Math.exp(-2 * (dt / (windowSeconds / 2)) ** 2);
-          w += weight;
-          x += weight * dt;
-          xx += weight * dt * dt;
-          y += weight * q.speedMps;
-          xy += weight * dt * q.speedMps;
-        }
-        const determinant = w * xx - x * x;
-        p.speedMps = Math.max(
-          0,
-          determinant > 1e-12
-            ? (y * xx - xy * x) / determinant
-            : w
-              ? y / w
-              : p.speedMps,
-        );
-      }
+      p.speedMps = estimate.speedsMps[local]!;
       if (
         p.speedMps >= stopThresholdMps &&
-        raw[i]!.speedMps >= stopThresholdMps
+        estimate.movementSpeedsMps[local]! >= stopThresholdMps
       ) {
-        if (i > start) heading = bearing(points[i - 1]!, p) ?? heading;
-        else if (i + 1 < end && raw[i + 1]!.speedMps >= stopThresholdMps)
-          heading = bearing(p, points[i + 1]!);
+        if (local > 0)
+          heading =
+            bearing(
+              estimate.positions[local - 1]!,
+              estimate.positions[local]!,
+            ) ?? heading;
+        else if (
+          local + 1 < estimate.positions.length &&
+          estimate.movementSpeedsMps[local + 1]! >= stopThresholdMps
+        )
+          heading = bearing(
+            estimate.positions[local]!,
+            estimate.positions[local + 1]!,
+          );
       }
       p.headingDeg = heading;
     }

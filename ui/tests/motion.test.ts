@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { prepareMotion, bearing, angleBetween } from "../domain/motion";
 import { sampleAt } from "../domain/telemetry";
+import { mergeTracks } from "../domain/mergeTracks";
 import type { Sample, Track } from "../domain/types";
 const point = (i: number, speed = 10): Sample => ({
   timestampMs: i * 1000,
@@ -40,7 +41,11 @@ describe("motion fitting", () => {
   });
   it("does not smooth across segments or GPS gaps", () => {
     const fit = prepareMotion(
-      track([point(0, 0), point(1, 0), { ...point(2, 100), segment: 1 }]),
+      track([
+        point(0, 0),
+        { ...point(1, 0), longitude: 0 },
+        { ...point(2, 100), segment: 1 },
+      ]),
       60,
     );
     expect(fit.samples[1]!.speedMps).toBe(0);
@@ -95,4 +100,61 @@ it("does not borrow a heading from future movement or previous segments while st
   expect(sampleAt(fit, 0)!.headingDeg).toBeNull();
   expect(sampleAt(fit, 500)!.headingDeg).toBeNull();
   expect(sampleAt(fit, 3500)!.headingDeg).toBeNull();
+});
+
+const metersPoint = (seconds: number, east: number, north = 0): Sample => ({
+  timestampMs: seconds * 1000,
+  latitude: ((north / 6371008.8) * 180) / Math.PI,
+  longitude: ((east / 6371008.8) * 180) / Math.PI,
+  elevation: null,
+  speedMps: 0,
+  segment: 0,
+});
+const measuredTrack = (points: Sample[]): Track =>
+  mergeTracks([
+    { id: "recording", name: "recording.gpx", track: track(points) },
+  ]).track!;
+it("does not amplify a millisecond GPS fix into a large speed spike", () => {
+  const raw = measuredTrack([
+    metersPoint(0, 0),
+    metersPoint(1, 10),
+    metersPoint(1.001, 11),
+    metersPoint(2, 20),
+    metersPoint(3, 30),
+    metersPoint(4, 40),
+  ]);
+  expect(raw.samples[2]!.speedMps).toBeGreaterThan(900);
+  const fit = prepareMotion(raw, 3);
+  for (let time = 0; time <= 4000; time += 100)
+    expect(sampleAt(fit, time)!.speedMps).toBeCloseTo(10, 4);
+});
+it("rejects an isolated GPS excursion without altering the source or inventing a turn", () => {
+  const raw = measuredTrack(
+    Array.from({ length: 7 }, (_, i) =>
+      metersPoint(i, 10 * i, i === 3 ? 100 : 0),
+    ),
+  );
+  expect(raw.samples[3]!.speedMps).toBeGreaterThan(100);
+  const fit = prepareMotion(raw, 3, 0.5);
+  expect(fit.samples[3]!.speedMps).toBeCloseTo(10, 4);
+  expect(fit.samples[3]!.headingDeg).toBeCloseTo(90, 3);
+  expect(raw.samples[3]!.latitude).toBeGreaterThan(0.0008);
+  expect(fit.samples[3]!.latitude).toBe(raw.samples[3]!.latitude);
+});
+it("retains real sustained high speed and measures road distance around a bend", () => {
+  const fast = prepareMotion(
+    measuredTrack(Array.from({ length: 7 }, (_, i) => metersPoint(i, 40 * i))),
+    3,
+  );
+  expect(fast.samples[3]!.speedMps).toBeCloseTo(40, 4);
+  const turn = prepareMotion(
+    measuredTrack([
+      metersPoint(0, 0),
+      metersPoint(1, 10),
+      metersPoint(2, 10, 10),
+      metersPoint(3, 20, 10),
+    ]),
+    3,
+  );
+  expect(turn.samples[1]!.speedMps).toBeCloseTo(10, 4);
 });

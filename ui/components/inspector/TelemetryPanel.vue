@@ -27,7 +27,8 @@ const { currentHeading } = toRefs(timeline);
         v-model.number="refreshSeconds"
     /></label>
     <p class="field-hint">
-      0 关闭平滑。局部拟合后使用单调三次曲线补足采样间隔。
+      按时间窗口内距离计算速度，过滤孤立跳点，再插值到刷新时刻。0
+      使用原始点速度。
     </p>
     <label class="setting-row">
       速度归零阈值（km/h）<input
