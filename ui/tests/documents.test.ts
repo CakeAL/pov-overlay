@@ -130,3 +130,21 @@ it("validates source time-zone corrections and defaults older projects to file t
     ).toThrow("GPX 时区偏移无效");
   }
 });
+
+it("persists the stop threshold and defaults older presets without accepting invalid thresholds", () => {
+  expect(
+    parseDocument(JSON.stringify(preset()), "preset").stopThresholdKmh,
+  ).toBe(0.5);
+  expect(
+    parseDocument(
+      JSON.stringify({ ...preset(), stopThresholdKmh: 1.2 }),
+      "preset",
+    ).stopThresholdKmh,
+  ).toBe(1.2);
+  expect(() =>
+    parseDocument(
+      JSON.stringify({ ...preset(), stopThresholdKmh: -1 }),
+      "preset",
+    ),
+  ).toThrow();
+});

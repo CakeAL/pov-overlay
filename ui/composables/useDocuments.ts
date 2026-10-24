@@ -42,6 +42,7 @@ export function useDocuments(
       widgets: JSON.parse(JSON.stringify(layout.widgets.value)),
       smoothingSeconds: telemetry.smoothingSeconds.value,
       refreshSeconds: telemetry.refreshSeconds.value,
+      stopThresholdKmh: telemetry.stopThresholdKmh.value,
       aspectRatio: playback.ratio.value,
     };
   }
@@ -90,6 +91,7 @@ export function useDocuments(
     layout.selectedId.value = data.widgets[0]?.id ?? "";
     telemetry.smoothingSeconds.value = data.smoothingSeconds;
     telemetry.refreshSeconds.value = data.refreshSeconds;
+    telemetry.stopThresholdKmh.value = data.stopThresholdKmh;
     playback.ratio.value = data.aspectRatio;
     layout.widgets.value.forEach(layout.clampWidget);
   }

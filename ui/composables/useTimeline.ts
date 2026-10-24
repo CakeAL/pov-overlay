@@ -29,6 +29,10 @@ export function useTimeline(
             0,
             Math.min(60, Number(settings.smoothingSeconds.value) || 0),
           ),
+          Math.max(
+            0,
+            Math.min(2000, Number(settings.stopThresholdKmh.value) || 0),
+          ),
         )
       : null,
   );

@@ -16,6 +16,8 @@ export interface Track {
   endMs: number;
   distanceMeters: number;
   skippedPoints: number;
+  /** Derived sampling setting; raw tracks do not store this. */
+  stopThresholdMps?: number;
 }
 export interface VideoAsset {
   path?: string;

@@ -4,12 +4,20 @@ export { distance } from "./geography";
 import { angleBetween, cubicSpeed } from "./motion";
 export function sampleAt(track: Track, timestampMs: number): Sample | null {
   if (timestampMs < track.startMs || timestampMs > track.endMs) return null;
+  const threshold = track.stopThresholdMps ?? 0;
+  const stationary = (
+    sample: Sample,
+    heldHeading = sample.headingDeg,
+  ): Sample =>
+    sample.speedMps < threshold
+      ? { ...sample, speedMps: 0, headingDeg: heldHeading }
+      : sample;
   let low = 0,
     high = track.samples.length - 1;
   while (low <= high) {
     const middle = (low + high) >>> 1;
     const sample = track.samples[middle]!;
-    if (sample.timestampMs === timestampMs) return sample;
+    if (sample.timestampMs === timestampMs) return stationary(sample);
     if (sample.timestampMs < timestampMs) low = middle + 1;
     else high = middle - 1;
   }
@@ -27,22 +35,25 @@ export function sampleAt(track: Track, timestampMs: number): Sample | null {
   const mix = (x: number, y: number) => x + (y - x) * progress;
   const delta = ((b.longitude - a.longitude + 540) % 360) - 180;
   const longitude = ((a.longitude + delta * progress + 540) % 360) - 180;
-  return {
-    timestampMs,
-    latitude: mix(a.latitude, b.latitude),
-    longitude,
-    elevation:
-      a.elevation !== null && b.elevation !== null
-        ? mix(a.elevation, b.elevation)
-        : null,
-    speedMps: cubicSpeed(a, b, progress),
-    headingDeg: angleBetween(a.headingDeg, b.headingDeg, progress),
-    distanceMeters:
-      a.distanceMeters != null && b.distanceMeters != null
-        ? mix(a.distanceMeters, b.distanceMeters)
-        : undefined,
-    segment: a.segment,
-  };
+  return stationary(
+    {
+      timestampMs,
+      latitude: mix(a.latitude, b.latitude),
+      longitude,
+      elevation:
+        a.elevation !== null && b.elevation !== null
+          ? mix(a.elevation, b.elevation)
+          : null,
+      speedMps: cubicSpeed(a, b, progress),
+      headingDeg: angleBetween(a.headingDeg, b.headingDeg, progress),
+      distanceMeters:
+        a.distanceMeters != null && b.distanceMeters != null
+          ? mix(a.distanceMeters, b.distanceMeters)
+          : undefined,
+      segment: a.segment,
+    },
+    a.headingDeg,
+  );
 }
 export function alignmentOffset(track: Track, capturedAtMs: number): number {
   return (capturedAtMs - track.startMs) / 1000;

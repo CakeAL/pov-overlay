@@ -61,3 +61,38 @@ describe("motion fitting", () => {
     expect(fit.samples[2]!.distanceMeters).toBeGreaterThan(10);
   });
 });
+
+it("zeros drift after interpolation and holds heading deterministically during stops", () => {
+  const raw = track([
+    point(0, 2),
+    point(1, 2),
+    { ...point(2, 0.1), latitude: 0.00001, longitude: 0.0001 },
+    { ...point(3, 0.1), latitude: 0.00002, longitude: 0.0001 },
+    { ...point(4, 2), latitude: 0.0001, longitude: 0.0001 },
+  ]);
+  const fit = prepareMotion(raw, 0, 0.5);
+  const stopped = sampleAt(fit, 2500)!;
+  expect(stopped.speedMps).toBe(0);
+  expect(stopped.headingDeg).toBeCloseTo(90);
+  sampleAt(fit, 4000);
+  expect(sampleAt(fit, 2500)!.headingDeg).toBeCloseTo(90);
+  expect(sampleAt(fit, 3000)!.speedMps).toBe(0);
+  expect(sampleAt(prepareMotion(raw, 0, 0), 2500)!.speedMps).toBeCloseTo(0.1);
+  expect(raw.samples[2]!.speedMps).toBe(0.1);
+});
+it("does not borrow a heading from future movement or previous segments while stationary", () => {
+  const fit = prepareMotion(
+    track([
+      point(0, 0.1),
+      point(1, 0.1),
+      point(2, 2),
+      { ...point(3, 0.1), segment: 1 },
+      { ...point(4, 0.1), segment: 1 },
+    ]),
+    0,
+    0.5,
+  );
+  expect(sampleAt(fit, 0)!.headingDeg).toBeNull();
+  expect(sampleAt(fit, 500)!.headingDeg).toBeNull();
+  expect(sampleAt(fit, 3500)!.headingDeg).toBeNull();
+});

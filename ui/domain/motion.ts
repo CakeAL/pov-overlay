@@ -29,7 +29,12 @@ export function angleBetween(
   return (a + (((b - a + 540) % 360) - 180) * t + 360) % 360;
 }
 /** A cached, time-weighted local linear fit, followed by monotone cubic interpolation. */
-export function prepareMotion(track: Track, windowSeconds: number): Track {
+export function prepareMotion(
+  track: Track,
+  windowSeconds: number,
+  stopThresholdKmh = 0,
+): Track {
+  const stopThresholdMps = Math.max(0, stopThresholdKmh) / 3.6;
   const points = track.samples.map((p) => ({ ...p }));
   let total = 0;
   for (let start = 0; start < points.length; ) {
@@ -48,9 +53,7 @@ export function prepareMotion(track: Track, windowSeconds: number): Track {
         raw = track.samples;
       if (i > start) {
         total += distance(points[i - 1]!, p);
-        heading = bearing(points[i - 1]!, p) ?? heading;
-      } else if (i + 1 < end) heading = bearing(p, points[i + 1]!);
-      p.headingDeg = heading;
+      }
       p.distanceMeters = total;
       if (windowSeconds > 0) {
         const radius = windowSeconds * 500;
@@ -82,6 +85,15 @@ export function prepareMotion(track: Track, windowSeconds: number): Track {
               : p.speedMps,
         );
       }
+      if (
+        p.speedMps >= stopThresholdMps &&
+        raw[i]!.speedMps >= stopThresholdMps
+      ) {
+        if (i > start) heading = bearing(points[i - 1]!, p) ?? heading;
+        else if (i + 1 < end && raw[i + 1]!.speedMps >= stopThresholdMps)
+          heading = bearing(p, points[i + 1]!);
+      }
+      p.headingDeg = heading;
     }
     for (let i = start; i < end; i++) {
       const p = points[i]!;
@@ -103,7 +115,7 @@ export function prepareMotion(track: Track, windowSeconds: number): Track {
     }
     start = end;
   }
-  return { ...track, samples: points };
+  return { ...track, samples: points, stopThresholdMps };
 }
 export function cubicSpeed(a: Sample, b: Sample, t: number): number {
   if (a.speedSlope == null || b.speedSlope == null)

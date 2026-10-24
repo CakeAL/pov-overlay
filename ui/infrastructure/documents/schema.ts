@@ -14,6 +14,7 @@ export interface PresetDocument {
   widgets: Widget[];
   smoothingSeconds: number;
   refreshSeconds: number;
+  stopThresholdKmh: number;
   aspectRatio: number;
 }
 export interface ProjectDocument extends Omit<PresetDocument, "type"> {
@@ -126,6 +127,8 @@ export function parseDocument(
     widgets: validateWidgets(d.widgets),
     smoothingSeconds: num(d.smoothingSeconds, 0, 60),
     refreshSeconds: num(d.refreshSeconds, 0.01, 10),
+    stopThresholdKmh:
+      d.stopThresholdKmh == null ? 0.5 : num(d.stopThresholdKmh, 0, 2000),
     aspectRatio: num(d.aspectRatio, 0.01, 100),
   };
   if (kind === "preset") return { ...base, type: "pov-overlay/preset" };
