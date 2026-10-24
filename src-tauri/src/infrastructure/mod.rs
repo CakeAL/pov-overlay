@@ -8,3 +8,5 @@ pub mod video;
 pub mod documents;
 
 pub mod images;
+
+pub mod overlay_encoder;

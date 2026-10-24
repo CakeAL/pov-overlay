@@ -2,7 +2,8 @@ import { routePreview, coverageIntervals } from "../domain/routePreview";
 import { prepareMotion } from "../domain/motion";
 import type { TelemetrySettings } from "./useTelemetrySettings";
 import { computed } from "vue";
-import { sampleAt, formatTime } from "../domain/telemetry";
+import { playbackSample } from "../domain/playbackSample";
+import { formatTime } from "../domain/telemetry";
 import type { MediaSession } from "./useMediaSession";
 import type { Playback } from "./usePlayback";
 import type { Alignment } from "./useAlignment";
@@ -36,23 +37,7 @@ export function useTimeline(
   const sample = computed(() => {
     if (!preparedTrack.value || (asset.value && !alignmentKnown.value))
       return null;
-    const interval = Math.max(
-      0.01,
-      Math.min(10, Number(settings.refreshSeconds.value) || 0.1),
-    );
-    const now =
-      preparedTrack.value.startMs + (offset.value + currentTime.value) * 1000;
-    const current = sampleAt(preparedTrack.value, now);
-    if (!current) return null;
-    const t = Math.floor((currentTime.value + 1e-8) / interval) * interval;
-    const quantized = sampleAt(
-      preparedTrack.value,
-      preparedTrack.value.startMs + (offset.value + t) * 1000,
-    );
-    return quantized?.segment === current.segment &&
-      !(current.speedValid === false && quantized.speedValid !== false)
-      ? quantized
-      : current;
+    return playbackSample(preparedTrack.value, currentTime.value, offset.value, settings.refreshSeconds.value);
   });
   const currentHeading = computed(() => sample.value?.headingDeg ?? null);
   const status = computed(() =>

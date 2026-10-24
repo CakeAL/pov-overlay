@@ -3,3 +3,5 @@ pub mod track;
 pub mod video;
 
 pub mod image;
+
+pub mod overlay_export;

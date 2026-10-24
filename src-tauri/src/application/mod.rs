@@ -7,3 +7,5 @@ pub mod video_import;
 pub mod image_import;
 
 pub mod documents;
+
+pub mod overlay_export;

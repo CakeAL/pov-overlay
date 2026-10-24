@@ -1,3 +1,4 @@
+import { useVideoExport } from "../composables/useVideoExport";
 import { useTrackProfile } from "../composables/useTrackProfile";
 import { useTelemetrySettings } from "../composables/useTelemetrySettings";
 import { useSvgElements } from "../composables/useSvgElements";
@@ -33,10 +34,12 @@ export function createEditor() {
     telemetry,
     messages,
   );
+  const videoExport = useVideoExport(timeline, layout, playback, alignment, media, telemetry, documents, messages);
   const drop = useFileDrop(media);
   useEditorShortcuts(layout, playback, viewport);
   return reactive({
     documents,
+    videoExport,
     messages,
     media,
     alignment,

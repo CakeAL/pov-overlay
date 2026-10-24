@@ -213,3 +213,5 @@ export function useDocuments(
     load,
   };
 }
+
+export type Documents = ReturnType<typeof useDocuments>;

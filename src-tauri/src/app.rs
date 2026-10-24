@@ -1,13 +1,27 @@
+use tauri::Manager;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .manage(crate::application::overlay_export::ExportManager::default())
+        .on_window_event(|window, event| {
+            if matches!(event, tauri::WindowEvent::Destroyed) {
+                window
+                    .state::<crate::application::overlay_export::ExportManager>()
+                    .cancel_window(window.label());
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             crate::commands::materials::load_gpx,
             crate::commands::documents::read_document,
             crate::commands::documents::write_document,
             crate::commands::documents::read_svg,
             crate::commands::materials::load_image,
-            crate::commands::materials::load_video
+            crate::commands::materials::load_video,
+            crate::commands::overlay_export::export_encoder_info,
+            crate::commands::overlay_export::start_overlay_export,
+            crate::commands::overlay_export::append_overlay_frame,
+            crate::commands::overlay_export::finish_overlay_export,
+            crate::commands::overlay_export::cancel_overlay_export
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 POV Overlay");

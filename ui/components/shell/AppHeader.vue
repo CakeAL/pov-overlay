@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
-const { documents } = useEditorContext();
+const { documents, videoExport } = useEditorContext();
 const { name, busy, projectInput, presetInput } = toRefs(documents);
 </script>
 <template>
@@ -22,6 +22,7 @@ const { name, busy, projectInput, presetInput } = toRefs(documents);
       ><button :disabled="busy" @click="documents.saveCurrent('preset')">
         保存预设
       </button>
+      <button :disabled="!videoExport.ready || busy" @click="videoExport.show">导出视频</button>
     </div>
     <input
       ref="projectInput"
