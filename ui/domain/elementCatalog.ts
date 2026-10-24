@@ -1,7 +1,8 @@
 import { TELEMETRY_ITEMS } from './telemetryItems';
 export const ELEMENT_CATEGORIES = [
   { key: 'motion', label: '运动', items: ['speed', 'elevation'] },
-  { key: 'position', label: '位置', items: ['heading', 'coordinates', 'distance'] },
+  { key: 'journey', label: '行程', items: ['distance'] },
+  { key: 'navigation', label: '导航', items: ['heading', 'coordinates'] },
   { key: 'time', label: '时间', items: ['elapsed'] },
 ] as const;
 export const catalogItems = (category: string) => {
