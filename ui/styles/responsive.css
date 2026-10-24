@@ -39,7 +39,7 @@
     display: none;
   }
   .workspace-footer {
-    font-size: 8px;
+    font-size: 12px;
   }
   .workspace-footer > span:last-child {
     display: none;
@@ -116,7 +116,7 @@
   .canvas-caption {
     left: 12px;
     right: 12px;
-    font-size: 8px;
+    font-size: 12px;
   }
   .canvas-options > div {
     gap: 10px;

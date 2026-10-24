@@ -30,7 +30,7 @@ const { routePath } = toRefs(timeline);
         ><small>{{
           track
             ? `${track.samples.length.toLocaleString()} 个轨迹点 · ${(track.distanceMeters / 1000).toFixed(2)} km`
-            : "速度、位置，来自你的每一段旅程"
+            : "GPX 轨迹文件"
         }}</small></span
       ><Check v-if="track" :size="15" class="success-icon" /><Plus
         v-else
@@ -50,7 +50,7 @@ const { routePath } = toRefs(timeline);
         ><small>{{
           asset
             ? `${formatTime(videoDuration)} · 仅用于画布预览`
-            : "MP4 / MOV · 文件始终留在本地"
+            : "MP4 / MOV"
         }}</small></span
       ><Check v-if="asset" :size="15" class="success-icon" /><Plus
         v-else

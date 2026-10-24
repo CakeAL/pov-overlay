@@ -49,7 +49,7 @@
   gap: 8px;
   align-items: center;
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 10px;
+  font-size: 12px;
   margin-left: 5px;
 }
 
@@ -73,7 +73,7 @@
   justify-content: space-between;
   color: #a5ad9b;
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 8px;
+  font-size: 12px;
   margin-bottom: 9px;
 }
 
@@ -150,7 +150,7 @@
   align-items: center;
   margin-top: 6px;
   color: #a3ad98;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .timeline-legend > span:first-child {

@@ -10,7 +10,7 @@
     sans-serif;
   color: #25312e;
   background: #f6f7f4;
-  font-size: 13px;
+  font-size: 14px;
   --ink: #25312e;
   --muted: #89918b;
   --line: #e4e8e1;
@@ -21,7 +21,7 @@
   --color-surface: 255 255 255;
   --color-background: 246 247 244;
   --radius-sm: 6px;
-  --text-base: 13px;
+  --text-base: 14px;
   --text-xs: 12px;
   --duration-normal: 140ms;
   --space-6: 6px;
@@ -132,7 +132,7 @@ input[type="range"] {
 
 .hk-switch-label,
 .hk-label {
-  font-size: 10px !important;
+  font-size: 12px !important;
   font-weight: 400 !important;
   color: #89947d !important;
 }

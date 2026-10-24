@@ -83,7 +83,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   color: #6d7f68;
 }
 
@@ -110,7 +110,7 @@
 }
 
 .section-index {
-  font-size: 9px;
+  font-size: 12px;
   font-family: "SFMono-Regular", Consolas, monospace;
   color: #a5ada0;
   font-weight: 400;
@@ -118,7 +118,7 @@
 
 .muted {
   color: #929a8e;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -131,7 +131,7 @@
   align-items: center;
   gap: 6px;
   padding: 0;
-  font-size: 10px;
+  font-size: 12px;
   color: #88937d;
   white-space: nowrap;
 }
@@ -173,7 +173,7 @@
   gap: 10px;
   min-height: 43px;
   color: #a5ad9c;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .workspace-footer > span {
@@ -187,7 +187,7 @@
   align-items: center;
   gap: 9px;
   padding: 11px 25px;
-  font-size: 11px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
@@ -212,3 +212,4 @@
   color: #728459;
   border-bottom: 1px solid #dae5ce;
 }
+.app-header {height:54px;min-height:54px;padding:0 24px}.header-workspace {font-size:15px;color:#25312e}.panel-section {line-height:1.5}.text-input,.position-fields input,.offset-control input {font-size:14px}.asset-copy strong,.section-title {font-size:14px}.hk-label,.hk-switch-label {font-size:13px!important}.canvas-options,.canvas-caption,.workspace-footer {font-size:12px}
