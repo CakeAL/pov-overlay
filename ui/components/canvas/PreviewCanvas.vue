@@ -56,8 +56,18 @@ const { dropActive } = toRefs(drop);
       <div v-if="showSafeArea" class="safe-area" aria-hidden="true">
         <i v-for="i in 4" :key="i"></i>
       </div>
-      <div v-if="guides.x" class="snap-guide vertical"></div>
-      <div v-if="guides.y" class="snap-guide horizontal"></div>
+      <div
+        v-if="guides.x != null"
+        class="snap-guide vertical"
+        :style="{ left: `${guides.x * 100}%` }"
+        aria-hidden="true"
+      ></div>
+      <div
+        v-if="guides.y != null"
+        class="snap-guide horizontal"
+        :style="{ top: `${guides.y * 100}%` }"
+        aria-hidden="true"
+      ></div>
       <OverlayWidget
         v-for="widget in widgets.filter((item) => item.visible)"
         :key="widget.id"

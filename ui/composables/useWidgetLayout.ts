@@ -1,5 +1,6 @@
 import { computed, ref, watch, type Ref } from "vue";
 import { defaultWidgets, type Widget } from "../domain/types";
+import { snapLayout, type SnapGuides } from "../domain/layoutSnapping";
 
 export function useWidgetLayout(
   ratio: Ref<number>,
@@ -12,7 +13,7 @@ export function useWidgetLayout(
   );
   const snapEnabled = ref(true),
     showSafeArea = ref(true),
-    guides = ref({ x: false, y: false });
+    guides = ref<SnapGuides>({ x: null, y: null });
   const undoStack = ref<string[]>([]),
     redoStack = ref<string[]>([]);
   function remember() {
@@ -115,7 +116,7 @@ export function useWidgetLayout(
     const widget = widgets.value.find((item) => item.id === drag!.id)!;
     const dx = (event.clientX - drag.startX) / drag.rect.width,
       dy = (event.clientY - drag.startY) / drag.rect.height;
-    guides.value = { x: false, y: false };
+    guides.value = { x: null, y: null };
     if (drag.mode === "resize")
       widget.scale = Math.max(
         0.65,
@@ -129,28 +130,24 @@ export function useWidgetLayout(
       widget.x = drag.x + dx;
       widget.y = drag.y + dy;
       if (snapEnabled.value && !event.altKey) {
-        const size = dimensions(widget);
-        const centerX = 0.5 - size.width / 2,
-          centerY = 0.5 - size.height / 2;
-        if (Math.abs(widget.x - centerX) * drag.rect.width < 7) {
-          widget.x = centerX;
-          guides.value.x = true;
-        }
-        if (Math.abs(widget.y - centerY) * drag.rect.height < 7) {
-          widget.y = centerY;
-          guides.value.y = true;
-        }
-        for (const edge of [0.04, 0.96 - size.width])
-          if (Math.abs(widget.x - edge) * drag.rect.width < 7) widget.x = edge;
-        for (const edge of [0.04, 0.96 - size.height])
-          if (Math.abs(widget.y - edge) * drag.rect.height < 7) widget.y = edge;
+        const result = snapLayout(
+          { x: widget.x, y: widget.y, ...dimensions(widget) },
+          widgets.value
+            .filter((other) => other.id !== widget.id && other.visible)
+            .map((other) => ({ x: other.x, y: other.y, ...dimensions(other) })),
+          drag.rect,
+          showSafeArea.value,
+        );
+        widget.x = result.x;
+        widget.y = result.y;
+        guides.value = result.guides;
       }
     }
     clampWidget(widget);
   }
   function endDrag() {
     drag = null;
-    guides.value = { x: false, y: false };
+    guides.value = { x: null, y: null };
   }
   function toggleVisible(widget: Widget) {
     remember();
