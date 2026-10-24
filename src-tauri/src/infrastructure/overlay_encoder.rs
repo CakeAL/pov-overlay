@@ -20,6 +20,7 @@ pub struct EncoderInfo {
     pub path: String,
     pub prores4444: bool,
     pub png_mov: bool,
+    pub h264_mp4: bool,
 }
 pub fn detect_encoder() -> Result<EncoderInfo, String> {
     let candidates = [
@@ -39,7 +40,11 @@ pub fn detect_encoder() -> Result<EncoderInfo, String> {
             continue;
         }
         let text = String::from_utf8_lossy(&output.stdout);
+        let h264_mp4 = text
+            .lines()
+            .any(|line| line.split_whitespace().nth(1) == Some("libx264"));
         return Ok(EncoderInfo {
+            h264_mp4,
             path: path.into(),
             prores4444: text
                 .lines()
@@ -78,9 +83,12 @@ impl OverlayEncoder {
         if !destination.is_absolute()
             || !destination
                 .extension()
-                .is_some_and(|v| v.eq_ignore_ascii_case("mov"))
+                .is_some_and(|v| v.eq_ignore_ascii_case(settings.format.extension()))
         {
-            return Err("请选择 .mov 文件的绝对输出路径。".into());
+            return Err(format!(
+                "请选择 .{} 文件的绝对输出路径。",
+                settings.format.extension()
+            ));
         }
         if let Some(video) = protected_video {
             let same = destination == video
@@ -94,7 +102,7 @@ impl OverlayEncoder {
             }
         }
         let parent = destination.parent().ok_or("输出目录无效。")?;
-        let temporary = parent.join(format!(".pov-overlay-{id}.mov"));
+        let temporary = parent.join(format!(".pov-overlay-{id}.{}", settings.format.extension()));
         fs::OpenOptions::new()
             .write(true)
             .create_new(true)
@@ -136,11 +144,23 @@ impl OverlayEncoder {
             ExportFormat::PngMov => {
                 command.args(["-pix_fmt", "rgba", "-pred", "mixed"]);
             }
+            ExportFormat::H264Mp4 => {
+                command.args([
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-preset",
+                    "medium",
+                    "-crf",
+                    "18",
+                    "-movflags",
+                    "+faststart",
+                ]);
+            }
         }
         command
             .args(["-frames:v"])
             .arg(settings.validate()?.to_string())
-            .args(["-f", "mov"])
+            .args(["-f", settings.format.extension()])
             .arg(&temporary)
             .stdin(Stdio::piped())
             .stdout(Stdio::null())

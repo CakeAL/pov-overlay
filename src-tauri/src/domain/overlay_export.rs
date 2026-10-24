@@ -5,6 +5,22 @@ use serde::{Deserialize, Serialize};
 pub enum ExportFormat {
     Prores4444,
     PngMov,
+    H264Mp4,
+}
+impl ExportFormat {
+    pub fn extension(self) -> &'static str {
+        match self {
+            Self::H264Mp4 => "mp4",
+            _ => "mov",
+        }
+    }
+}
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum ExportBackground {
+    #[default]
+    Transparent,
+    Green,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -15,6 +31,8 @@ pub struct ExportSettings {
     pub fps: f64,
     pub duration_seconds: f64,
     pub format: ExportFormat,
+    #[serde(default)]
+    pub background: ExportBackground,
 }
 impl ExportSettings {
     pub fn validate(&self) -> Result<u64, String> {
@@ -35,12 +53,18 @@ impl ExportSettings {
         {
             return Err("导出时长须大于 0 且不超过 24 小时。".into());
         }
+        if matches!(self.format, ExportFormat::H264Mp4)
+            && self.background != ExportBackground::Green
+        {
+            return Err("H.264 MP4 不保留透明通道，请选择绿幕或 MOV 格式。".into());
+        }
         Ok((self.duration_seconds * self.fps).ceil() as u64)
     }
     pub fn encoder(&self) -> &'static str {
         match self.format {
             ExportFormat::Prores4444 => "prores_ks",
             ExportFormat::PngMov => "png",
+            ExportFormat::H264Mp4 => "libx264",
         }
     }
     pub fn validate_png(&self, bytes: &[u8]) -> Result<(), String> {

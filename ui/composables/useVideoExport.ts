@@ -1,6 +1,6 @@
-import { computed, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import type { Widget } from "../domain/types";
-import { validateExport, type ExportFormat } from "../domain/exportSettings";
+import { validateExport, type ExportFormat, type ExportBackground } from "../domain/exportSettings";
 import { playbackSample } from "../domain/playbackSample";
 import { ExportRenderer } from "../infrastructure/export/renderer";
 import { encoderInfo, chooseExportPath, startExport, appendFrame, finishExport, cancelExport, type EncoderInfo } from "../infrastructure/export/native";
@@ -19,6 +19,10 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   const open = ref(false), checking = ref(false), busy = ref(false);
   const info = ref<EncoderInfo | null>(null), error = ref("");
   const width = ref(1920), height = ref(1080), fps = ref(30), format = ref<ExportFormat>("prores4444");
+  const background = ref<ExportBackground>("transparent");
+  watch(background, value => {
+    format.value = value === "green" ? "h264Mp4" : info.value?.prores4444 ? "prores4444" : "pngMov";
+  });
   const start = ref(0), end = ref(0), progress = ref(0), phase = ref("");
   let job: string | null = null, cancelled = false;
   const ready = computed(() => !!timeline.preparedTrack.value && playback.duration.value > 0
@@ -30,7 +34,8 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
       if (!native) throw new Error("视频导出请在桌面应用中使用。");
       info.value = await encoderInfo();
       if (!info.value.prores4444 && info.value.pngMov) format.value = "pngMov";
-      if (!info.value.prores4444 && !info.value.pngMov) throw new Error("当前 FFmpeg 缺少 ProRes 和 PNG 编码器。");
+      if (background.value === "green") format.value = "h264Mp4";
+      if (!info.value.prores4444 && !info.value.pngMov && !info.value.h264Mp4) throw new Error("当前 FFmpeg 缺少可用的视频编码器。");
     } catch (reason) { error.value = String(reason instanceof Error ? reason.message : reason); }
     finally { checking.value = false; }
   }
@@ -53,7 +58,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
     if (busy.value || !ready.value || !info.value) return;
     const track = timeline.preparedTrack.value!;
     const settings = { width: Number(width.value), height: Number(height.value), fps: Number(fps.value),
-      durationSeconds: Number(end.value) - Number(start.value), format: format.value };
+      durationSeconds: Number(end.value) - Number(start.value), format: format.value, background: background.value };
     let renderer: ExportRenderer | null = null;
     error.value = "";
     try {
@@ -62,13 +67,13 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
         throw new Error("导出区间超出当前时间轴。");
       if (!info.value[format.value]) throw new Error("当前 FFmpeg 不支持所选编码器。");
       busy.value = true; cancelled = false; phase.value = "准备导出";
-      const path = await chooseExportPath(documents.name.value);
+      const path = await chooseExportPath(documents.name.value, settings.format);
       if (!path || cancelled) { phase.value = ""; return; }
       playback.playing.value = false; playback.video.value?.pause();
       const widgets: Widget[] = JSON.parse(JSON.stringify(layout.widgets.value));
       if (!widgets.some(widget => widget.visible)) throw new Error("请先显示至少一个画布元素。");
       const offset = alignment.offset.value, refresh = telemetry.refreshSeconds.value, origin = Number(start.value);
-      renderer = new ExportRenderer(settings.width, settings.height, playback.ratio.value, widgets);
+      renderer = new ExportRenderer(settings.width, settings.height, playback.ratio.value, widgets, settings.background);
       await document.fonts.ready;
       job = await startExport(path, settings, media.asset.value?.path);
       phase.value = "正在渲染"; progress.value = 0;
@@ -94,6 +99,6 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
     }
   }
   onBeforeUnmount(() => { if (job) void cancel(); });
-  return { open, checking, busy, info, error, width, height, fps, format, start, end, progress, phase,
+  return { open, checking, busy, info, error, width, height, fps, format, background, start, end, progress, phase,
     ready, mismatch, show, checkEncoder, resolution, cancel, run };
 }

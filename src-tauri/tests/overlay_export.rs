@@ -1,7 +1,7 @@
 use base64::{Engine, engine::general_purpose::STANDARD};
 use pov_overlay_desktop::{
     application::overlay_export::ExportManager,
-    domain::overlay_export::{ExportFormat, ExportSettings},
+    domain::overlay_export::{ExportBackground, ExportFormat, ExportSettings},
     infrastructure::overlay_encoder::{OverlayEncoder, detect_encoder},
 };
 use std::{fs, path::Path, process::Command};
@@ -12,6 +12,7 @@ fn settings(format: ExportFormat) -> ExportSettings {
         fps: 10.0,
         duration_seconds: 0.3,
         format,
+        background: ExportBackground::Transparent,
     }
 }
 fn frame() -> Vec<u8> {
@@ -148,4 +149,40 @@ fn cancellation_and_incomplete_frames_leave_existing_file_untouched() {
             )
             .is_err()
     );
+}
+
+#[test]
+#[ignore = "需要本地 FFmpeg 和 ffprobe"]
+fn green_mp4_is_opaque_and_keeps_frame_settings() {
+    let info = detect_encoder().unwrap();
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("green.mp4");
+    let mut config = settings(ExportFormat::H264Mp4);
+    assert!(config.validate().is_err());
+    config.background = ExportBackground::Green;
+    let png = STANDARD.decode("iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAm0lEQVR4nO3QwQkAIAADMUd3cx1CJIhH/qXcGOtz/IDGD2j8gMYPaPyAxg9o/IDGD2j8gMYPaPyAxg9o/IDGD2j8gHY6MLECFKAABShAAQpQgAIUoAAFKEABClCAAhSgAAUoQAEKUIACFKAABShAAQpwP8Dz+AGNH9D4AY0f0PgBjR/Q+AGNH9D4AY0f0PgBjR/Q+AGNH9D4AWwD2p/iDmmN0DoAAAAASUVORK5CYII=").unwrap();
+    let encoder = OverlayEncoder::start(&info.path, config, &path, "green", None).unwrap();
+    for i in 0..3 {
+        encoder.append(i, &png).unwrap();
+    }
+    encoder.finish().unwrap();
+    let result = Command::new(&info.path)
+        .args(["-v", "error", "-i"])
+        .arg(&path)
+        .args([
+            "-frames:v",
+            "1",
+            "-f",
+            "rawvideo",
+            "-pix_fmt",
+            "rgba",
+            "pipe:1",
+        ])
+        .output()
+        .unwrap();
+    assert!(result.status.success());
+    assert!(result.stdout[0] < 5);
+    assert!(result.stdout[1] > 250);
+    assert!(result.stdout[2] < 5);
+    assert_eq!(result.stdout[3], 255);
 }

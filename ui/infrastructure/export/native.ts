@@ -1,10 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
-import type { ExportSettings } from "../../domain/exportSettings";
-export interface EncoderInfo { path: string; prores4444: boolean; pngMov: boolean }
+import { exportExtension, type ExportSettings, type ExportFormat } from "../../domain/exportSettings";
+export interface EncoderInfo { path: string; prores4444: boolean; pngMov: boolean; h264Mp4: boolean }
 export const encoderInfo = () => invoke<EncoderInfo>("export_encoder_info");
-export async function chooseExportPath(name: string): Promise<string | null> {
-  return save({ defaultPath: `${name.replace(/[\\/:*?"<>|]/g, "_") || "overlay"}.mov`, filters: [{ name: "MOV 视频", extensions: ["mov"] }] });
+export async function chooseExportPath(name: string, format: ExportFormat): Promise<string | null> {
+  const extension = exportExtension(format);
+  return save({ defaultPath: `${name.replace(/[\\/:*?"<>|]/g, "_") || "overlay"}.${extension}`, filters: [{ name: `${extension.toUpperCase()} 视频`, extensions: [extension] }] });
 }
 export const startExport = (path: string, settings: ExportSettings, protectedVideo?: string) =>
   invoke<string>("start_overlay_export", { path, settings, protectedVideo });

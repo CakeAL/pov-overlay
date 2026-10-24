@@ -1,3 +1,4 @@
+import type { ExportBackground } from "../../domain/exportSettings";
 import type { Sample, Widget } from "../../domain/types";
 import { widgetDimensions } from "../../domain/widgetGeometry";
 import { svgDataUrl, widgetSvg } from "../../domain/widgetSvg";
@@ -16,7 +17,7 @@ export class ExportRenderer {
   private cache = new Map<string, { source: string; image: HTMLImageElement }>();
   private previousKey = "";
   private previousPng: Uint8Array | null = null;
-  constructor(private width: number, private height: number, private ratio: number, private widgets: Widget[]) {
+  constructor(private width: number, private height: number, private ratio: number, private widgets: Widget[], private background: ExportBackground = "transparent") {
     this.canvas.width = width;
     this.canvas.height = height;
     const context = this.canvas.getContext("2d", { alpha: true });
@@ -38,6 +39,10 @@ export class ExportRenderer {
     const ctx = this.context;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.width, this.height);
+    if (this.background === "green") {
+      ctx.fillStyle = "#00ff00";
+      ctx.fillRect(0, 0, this.width, this.height);
+    }
     const designWidth = 1000, designHeight = 1000 / this.ratio;
     const scale = Math.min(this.width / designWidth, this.height / designHeight);
     ctx.setTransform(scale, 0, 0, scale, (this.width - designWidth * scale) / 2, (this.height - designHeight * scale) / 2);

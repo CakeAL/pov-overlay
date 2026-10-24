@@ -3,7 +3,7 @@ import { ref, toRefs, watch } from "vue";
 import { X } from "lucide-vue-next";
 import { useEditorContext } from "../../editor/context";
 const { videoExport, playback } = useEditorContext();
-const { open, checking, busy, info, error, width, height, fps, format, start, end, progress, phase, mismatch } = toRefs(videoExport);
+const { open, checking, busy, info, error, width, height, fps, format, background, start, end, progress, phase, mismatch } = toRefs(videoExport);
 const dialog = ref<HTMLDialogElement>();
 watch(open, (value) => {
   if (value) dialog.value?.showModal();
@@ -19,7 +19,11 @@ function close() { if (!busy.value) open.value = false; }
         <button type="button" class="icon-button" aria-label="关闭导出" :disabled="busy" @click="close"><X :size="18" /></button>
       </header>
       <fieldset :disabled="busy || checking">
+        <label class="export-row">背景<select v-model="background" aria-label="导出背景">
+          <option value="transparent">透明（Alpha）</option><option value="green">绿幕</option>
+        </select></label>
         <label class="export-row">格式<select v-model="format" aria-label="导出格式">
+          <option v-if="background === 'green'" value="h264Mp4" :disabled="!!info && !info.h264Mp4">MP4 / H.264（体积较小）</option>
           <option value="prores4444" :disabled="!!info && !info.prores4444">MOV / ProRes 4444</option>
           <option value="pngMov" :disabled="!!info && !info.pngMov">MOV / PNG 无损</option>
         </select></label>
@@ -32,7 +36,7 @@ function close() { if (!busy.value) open.value = false; }
           <label>宽度<input type="number" aria-label="导出宽度" v-model.number="width" min="64" max="7680" step="2" required /></label>
           <span>×</span><label>高度<input type="number" aria-label="导出高度" v-model.number="height" min="64" max="7680" step="2" required /></label>
         </div>
-        <p v-if="mismatch" class="export-hint">画布将等比居中，空白区域透明。</p>
+        <p v-if="mismatch" class="export-hint">画布将等比居中，空白区域{{ background === 'green' ? '为绿色' : '透明' }}。</p>
         <label class="export-row">帧率<input type="number" aria-label="导出帧率" v-model.number="fps" min="1" max="120" step="0.001" list="export-fps" required /></label>
         <datalist id="export-fps"><option v-for="value in [24,25,30,50,60]" :key="value" :value="value" /></datalist>
         <div class="export-dimensions">
@@ -41,6 +45,7 @@ function close() { if (!busy.value) open.value = false; }
         </div>
       </fieldset>
       <p class="export-hint">仅导出画布元素，背景素材不进入成片。</p>
+      <p v-if="background === 'green'" class="export-hint">绿幕需在剪辑软件中抠像，半透明边缘可能损失。</p>
       <p v-if="checking" role="status">正在检查 FFmpeg…</p>
       <p v-if="error" class="export-error" role="alert">{{ error }}</p>
       <div v-if="busy || phase" class="export-progress" role="status">
