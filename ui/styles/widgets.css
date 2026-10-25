@@ -106,3 +106,7 @@
 }
 .map-status { display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; height: 100%; background: #26342b; border-radius: 8px; font-size: 14px; }
 .map-status button { color: #c7f284; }
+.widget-context-menu { position: fixed; inset: auto; margin: 0; min-width: 178px; padding: 5px; border: 1px solid #d7dfd0; border-radius: 6px; background: white; color: #27332b; box-shadow: 0 6px 24px #0003; }
+.widget-context-menu > button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 10px; text-align: left; color: #a24635; }
+.widget-context-menu > button:hover, .widget-context-menu > button:focus-visible { background: #fff0e9; }
+.widget-context-menu kbd { margin-left: auto; font: inherit; color: #899386; }

@@ -91,6 +91,7 @@ export function useWidgetLayout(
   ) {
     selectedId.value = widget.id;
     if (widget.locked || !stage.value || event.button !== 0) return;
+    (event.currentTarget as HTMLElement).focus({ preventScroll: true });
     event.preventDefault();
     event.stopPropagation();
     remember();

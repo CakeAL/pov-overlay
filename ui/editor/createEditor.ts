@@ -1,3 +1,4 @@
+import { useWidgetMenu } from "../composables/useWidgetMenu";
 import { useElevation } from "../composables/useElevation";
 import { useVideoExport } from "../composables/useVideoExport";
 import { useTrackProfile } from "../composables/useTrackProfile";
@@ -24,6 +25,7 @@ export function createEditor() {
   const playback = usePlayback(media, messages);
   const viewport = useCanvasViewport(playback.ratio);
   const layout = useWidgetLayout(playback.ratio, viewport.stage);
+  const widgetMenu = useWidgetMenu(layout);
   const telemetry = useTelemetrySettings();
   const svgElements = useSvgElements(layout, messages);
   const timeline = useTimeline(media, playback, alignment, telemetry);
@@ -41,6 +43,7 @@ export function createEditor() {
   useEditorShortcuts(layout, playback, viewport);
   return reactive({
     documents,
+    widgetMenu,
     elevation,
     videoExport,
     messages,

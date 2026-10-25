@@ -12,12 +12,14 @@ export function useEditorShortcuts(
   const { togglePlay } = playback;
   const { stageSize } = viewport;
   function handleKey(event: KeyboardEvent) {
-    if (
-      (event.target as HTMLElement).closest(
-        'input, textarea, select, button, [contenteditable="true"]',
-      )
-    )
+    const target = event.target as HTMLElement;
+    if (target.closest('input, textarea, select, [contenteditable="true"], dialog')) return;
+    if ((event.key === 'Delete' || event.key === 'Backspace') && selected.value && viewport.stage.value?.contains(target)) {
+      event.preventDefault();
+      if (!event.repeat) layout.removeWidget(selected.value.id);
       return;
+    }
+    if (target.closest('button')) return;
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
       event.preventDefault();
       event.shiftKey ? redo() : undo();

@@ -7,7 +7,7 @@ import MapReadout from "./MapReadout.vue";
 import SvgReadout from "./SvgReadout.vue";
 import BuiltinReadout from "./BuiltinReadout.vue";
 defineProps<{ widget: Widget; sample: Sample | null }>();
-const { layout } = useEditorContext();
+const { layout, widgetMenu } = useEditorContext();
 const { selectedId } = toRefs(layout);
 const { widgetStyle, startDrag, moveDrag, endDrag } = layout;
 </script>
@@ -24,6 +24,7 @@ const { widgetStyle, startDrag, moveDrag, endDrag } = layout;
     tabindex="0"
     :aria-label="`${widget.label}组件，可拖动定位`"
     @focus="selectedId = widget.id"
+    @contextmenu="widgetMenu.open($event, widget.id)"
     @pointerdown="startDrag($event, widget)"
     @pointermove="moveDrag"
     @pointerup="endDrag"
