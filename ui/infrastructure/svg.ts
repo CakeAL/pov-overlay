@@ -6,7 +6,7 @@ export const SVG_FIELDS = [
   "Elevation",
   "Heading",
   "Distance",
-  "RemainingDistance", "TotalDistance", "RemainingTime", "TotalTime", "Progress",
+  "RemainingDistance", "TotalDistance", "RemainingTime", "TotalTime", "Progress", "ProgressRatio", "ProgressPercent", "DistanceProgress",
   "Elapsed",
   "Timestamp",
   "Color",

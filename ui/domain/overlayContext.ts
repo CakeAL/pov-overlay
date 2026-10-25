@@ -6,6 +6,7 @@ export interface JourneyProgress {
   remainingSeconds: number;
   totalSeconds: number;
   fraction: number;
+  distanceFraction?: number;
 }
 export interface OverlayContext {
   speedMaxKmh?: number;
@@ -25,11 +26,13 @@ export function overlayContext(track: Track | null, timestampMs: number, sample:
   }
   const previous = sample ?? track.samples[low - 1];
   const distanceMeters = previous?.distanceMeters ?? 0;
-  const progressTime = previous?.timestampMs ?? track.startMs;
+  const progressTime = Math.max(track.startMs, Math.min(track.endMs, Number.isFinite(timestampMs) ? timestampMs : track.startMs));
+  const totalSeconds = Math.max(0, (track.endMs - track.startMs) / 1000);
   return { track, timestampMs, progress: {
     distanceMeters, remainingMeters: Math.max(0, totalMeters - distanceMeters), totalMeters,
     remainingSeconds: Math.max(0, (track.endMs - progressTime) / 1000),
-    totalSeconds: (track.endMs - track.startMs) / 1000,
-    fraction: totalMeters > 0 ? Math.max(0, Math.min(1, distanceMeters / totalMeters)) : 0,
+    totalSeconds,
+    fraction: totalSeconds > 0 ? (progressTime - track.startMs) / (totalSeconds * 1000) : 0,
+    distanceFraction: totalMeters > 0 ? Math.max(0, Math.min(1, distanceMeters / totalMeters)) : 0,
   } };
 }

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
   <circle cx="120" cy="120" r="98" fill="none" stroke="#ffffff33" stroke-width="10"/>
-  <circle cx="120" cy="120" r="98" pathLength="100" transform="rotate(-90 120 120)" fill="none" stroke="{$Color}" stroke-width="10" stroke-dasharray="{$Progress} 100"/>
+  <circle cx="120" cy="120" r="98" pathLength="100" transform="rotate(-90 120 120)" fill="none" stroke="{$Color}" stroke-width="10" stroke-dasharray="{$ProgressPercent} 100"/>
   <g fill="white" font-family="sans-serif" text-anchor="middle"><text x="120" y="106" font-size="30">{$Progress}%</text><text x="120" y="145" font-size="18">{$RemainingDistance} km</text><text x="120" y="173" font-size="16">{$RemainingTime}</text></g>
 </svg>
