@@ -218,6 +218,6 @@ SVG 通过数值字段控制几何图形，不执行 JavaScript 或任意表达�
 
 ### 海拔补全与替换
 
-数据采样中的「获取海拔」为已启用轨迹补全缺失海拔，或选择「替换全部」后使用地形海拔。参考 [gpx.studio 的取样方法](https://github.com/gpxstudio/gpx.studio/blob/main/website/src/lib/utils.ts)，直接连接 [Mapterhorn 官方瓦片服务](https://mapterhorn.com/data-access/)：12 级、512×512 WebP Terrarium 瓦片，按 `R×256 + G + B/256 − 32768` 解码并双线性插值。桌面端由 Rust 下载、缓存、解码和采样；按瓦片合并请求，不逐个定位点重复下载。
+右侧数据采样中的「海拔」提供「替换原始数据」按钮，一次获取已启用轨迹的地形海拔并替换显示值；完成后可用旁边的恢复按钮还原原始海拔。参考 [gpx.studio 的取样方法](https://github.com/gpxstudio/gpx.studio/blob/main/website/src/lib/utils.ts)，直接连接 [Mapterhorn 官方瓦片服务](https://mapterhorn.com/data-access/)：12 级、512×512 WebP Terrarium 瓦片，按 `R×256 + G + B/256 − 32768` 解码并双线性插值。桌面端由 Rust 下载、缓存、解码和采样；按瓦片合并请求，不逐个定位点重复下载。
 
 原始 GPX 海拔保留；替换值独立保存，可「恢复原始」，并随工程保存/恢复。无有效地形数据的点保留原值，不把失败填成 0；网络失败不应用本次更改。支持进度与取消，取消后不应用正在获取的结果（当前网络请求最多等到超时结束）。浏览器开发预览不提供地形获取，需在桌面版操作。地形海拔与设备测得的海拔可能存在差异；数据来源见 [Mapterhorn 署名](https://mapterhorn.com/attribution/)。

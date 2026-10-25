@@ -6,7 +6,7 @@ import type { MediaSession } from './useMediaSession';
 import type { EditorMessages } from './useMessages';
 interface Target { sourceId: string; index: number; latitude: number; longitude: number }
 export function useElevation(media: MediaSession, messages: EditorMessages) {
-  const busy = ref(false), mode = ref<'fill' | 'replace'>('fill'), processed = ref(0), total = ref(0);
+  const busy = ref(false), processed = ref(0), total = ref(0);
   const hasOverrides = computed(() => media.sources.value.some(source => source.elevationOverride != null));
   let cancelled = false;
   function cancel() { cancelled = true; }
@@ -28,7 +28,6 @@ export function useElevation(media: MediaSession, messages: EditorMessages) {
         const values = [...(source.elevationOverride ?? source.track.samples.map(() => null))];
         updates.set(source.id, values);
         effective.samples.forEach((sample, index) => {
-          if (mode.value === 'fill' && sample.elevation != null) return;
           const fraction = mercator(sample.latitude, sample.longitude, 12);
           const x = ((Math.floor(fraction.x) % 4096) + 4096) % 4096, y = Math.max(0, Math.min(4095, Math.floor(fraction.y)));
           const key = `${x}/${y}`;
@@ -37,7 +36,7 @@ export function useElevation(media: MediaSession, messages: EditorMessages) {
           total.value++;
         });
       }
-      if (!total.value) { messages.notice.value = '没有需要补全的海拔点。'; return; }
+      if (!total.value) { messages.notice.value = '没有可替换海拔的轨迹点。'; return; }
       for (const group of groups.values()) {
         for (let start = 0; start < group.targets.length; start += 4096) {
           if (cancelled) return;
@@ -55,5 +54,5 @@ export function useElevation(media: MediaSession, messages: EditorMessages) {
     finally { busy.value = false; }
   }
   onBeforeUnmount(cancel);
-  return { busy, mode, processed, total, hasOverrides, run, cancel, restore };
+  return { busy, processed, total, hasOverrides, run, cancel, restore };
 }
