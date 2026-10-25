@@ -70,7 +70,7 @@ export function validateWidgets(v: unknown): Widget[] {
       kind: w.kind as Widget["kind"],
       x: num(w.x, 0, 1),
       y: num(w.y, 0, 1),
-      scale: num(w.scale, 0.65, 1.65),
+      scale: num(w.scale, 0, 100),
       opacity: num(w.opacity, 0, 100),
       color,
       visible: bool(w.visible),

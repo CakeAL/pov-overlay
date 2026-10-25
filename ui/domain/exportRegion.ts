@@ -7,7 +7,7 @@ export function exportRegion(width: number, height: number, ratio: number, widge
   const scale = Math.min(width / 1000, height / designHeight);
   const originX = (width - 1000 * scale) / 2, originY = (height - designHeight * scale) / 2;
   let left = width, top = height, right = 0, bottom = 0;
-  for (const widget of widgets.filter(widget => widget.visible)) {
+  for (const widget of widgets.filter(widget => widget.visible && widget.scale > 0)) {
     const size = widgetDimensions(widget, ratio);
     const x = originX + widget.x * 1000 * scale, y = originY + widget.y * designHeight * scale;
     left = Math.min(left, x - 2); top = Math.min(top, y - 2);

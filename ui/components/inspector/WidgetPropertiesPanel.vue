@@ -6,7 +6,7 @@ import MapProperties from "./MapProperties.vue";
 import RouteProperties from "./RouteProperties.vue";
 import { FONT_FAMILIES } from "../../domain/widgetTypography";
 const { layout } = useEditorContext();
-const { selected } = toRefs(layout);
+const { selected, maximumScale } = toRefs(layout);
 const { remember, resetSelected, updatePosition, updateScale } = layout;
 function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: string | number | boolean | undefined) {
   if (!selected.value || selected.value.locked) return;
@@ -59,18 +59,19 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
       <button :disabled="selected.locked" :aria-pressed="selected.typography?.bold === true" aria-label="加粗" @click="typography('bold', !selected.typography?.bold)"><Bold :size="16" /></button>
       <button :disabled="selected.locked" :aria-pressed="selected.typography?.italic === true" aria-label="斜体" @click="typography('italic', !selected.typography?.italic)"><Italic :size="16" /></button></div>
     </div>
-    <label class="slider-label"
-      >大小 <span>{{ Math.round(selected.scale * 100) }}%</span></label
+    <div class="slider-label"
+      >大小 <label class="scale-value"><input aria-label="元素大小百分比" type="number" min="0" :max="maximumScale * 100" step="0.1" :value="Number((selected.scale * 100).toFixed(1))" :disabled="selected.locked" @focus="remember" @change="layout.setScale(Number(($event.target as HTMLInputElement).value) / 100)" />%</label></div
     ><input
       class="property-slider"
       aria-label="元素大小"
       type="range"
-      min="0.65"
-      max="1.65"
-      step="0.01"
+      min="0"
+      :max="maximumScale"
+      step="0.001"
       :value="selected.scale"
       :disabled="selected.locked"
       @pointerdown="remember"
+      @keydown="remember"
       @input="updateScale"
     />
     <label class="slider-label"

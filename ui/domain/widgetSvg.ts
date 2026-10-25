@@ -8,6 +8,7 @@ import { widgetAspect, widgetDimensions } from "./widgetGeometry";
 export const svgDataUrl = (source: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
 export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number, context: OverlayContext = {}): string {
+  if (widget.scale <= 0) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>';
   if (widget.kind === "route") return styleWidgetSvg(routeOverlay(widget, sample, context), widget.typography);
   if (widget.kind === "svg")
     return styleWidgetSvg(bindSvg(widget.svg?.source ?? "", sample, elapsed, widget.color, { ...context, speedMaxKmh: widget.speedMaxKmh }), widget.typography);

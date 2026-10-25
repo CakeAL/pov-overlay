@@ -1,4 +1,4 @@
-import { widgetAspect, widgetDimensions } from "../domain/widgetGeometry";
+import { widgetAspect, widgetDimensions, widgetMaximumScale } from "../domain/widgetGeometry";
 import { computed, ref, watch, type Ref } from "vue";
 import { defaultWidgets, type Widget } from "../domain/types";
 import { snapLayout, type SnapGuides } from "../domain/layoutSnapping";
@@ -42,8 +42,10 @@ export function useWidgetLayout(
     widgets.value = defaultWidgets();
     selectedId.value = "speed";
   }
+  const maximumScale = computed(() => selected.value ? widgetMaximumScale(selected.value, ratio.value) : 1);
   const dimensions = (widget: Widget) => widgetDimensions(widget, ratio.value);
   function clampWidget(widget: Widget) {
+    widget.scale = Math.max(0, Math.min(widgetMaximumScale(widget, ratio.value), widget.scale));
     const size = dimensions(widget);
     widget.x = Math.max(0, Math.min(1 - size.width, widget.x));
     widget.y = Math.max(0, Math.min(1 - size.height, widget.y));
@@ -52,8 +54,11 @@ export function useWidgetLayout(
     widgets.value.forEach(clampWidget);
   }
   function updateScale(event: Event) {
-    if (!selected.value) return;
-    selected.value.scale = Number((event.target as HTMLInputElement).value);
+    setScale(Number((event.target as HTMLInputElement).value));
+  }
+  function setScale(value: number) {
+    if (!selected.value || selected.value.locked || !Number.isFinite(value)) return;
+    selected.value.scale = value;
     clampWidget(selected.value);
   }
   function widgetStyle(widget: Widget) {
@@ -109,9 +114,9 @@ export function useWidgetLayout(
     guides.value = { x: null, y: null };
     if (drag.mode === "resize")
       widget.scale = Math.max(
-        0.65,
+        0,
         Math.min(
-          1.65,
+          widgetMaximumScale(widget, ratio.value),
           drag.scale +
             dx / (widget.widthRatio ?? (widget.kind === "speed" ? 0.19 : 0.3)),
         ),
@@ -192,6 +197,7 @@ export function useWidgetLayout(
     updateScale,
     clampWidget,
     dimensions,
+    maximumScale, setScale,
     widgetStyle,
     startDrag,
     moveDrag,

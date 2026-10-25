@@ -31,7 +31,7 @@ export class ExportRenderer {
     this.context = context;
   }
   async frame(sample: Sample | null, elapsed: number, signal?: AbortSignal): Promise<Uint8Array> {
-    const visible = this.widgets.filter(widget => widget.visible);
+    const visible = this.widgets.filter(widget => widget.visible && widget.scale > 0);
     const context = overlayContext(this.track, this.track ? this.track.startMs + (this.offset + elapsed) * 1000 : 0, sample);
     if (signal?.aborted) throw new Error("导出已取消。");
     const loading = Promise.all(visible.map(widget => renderWidgetSvg(widget, sample, elapsed, this.ratio, context)));
