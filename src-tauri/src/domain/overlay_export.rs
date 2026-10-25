@@ -60,8 +60,8 @@ impl ExportSettings {
         {
             return Err("分辨率须为 64–7680 之间的偶数，且不超过 8K 像素总量。".into());
         }
-        if !self.fps.is_finite() || !(1.0..=120.0).contains(&self.fps) {
-            return Err("帧率须为 1–120 fps。".into());
+        if !self.fps.is_finite() || !(0.1..=120.0).contains(&self.fps) {
+            return Err("帧率须为 0.1–120 fps。".into());
         }
         if !self.duration_seconds.is_finite()
             || self.duration_seconds <= 0.0

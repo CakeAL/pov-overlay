@@ -1,6 +1,6 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import type { Widget } from "../domain/types";
-import { validateExport, type ExportFormat, type ExportBackground, type ExportSettings } from "../domain/exportSettings";
+import { recommendedExportFps, validateExport, type ExportFormat, type ExportBackground, type ExportSettings } from "../domain/exportSettings";
 import { playbackSample } from "../domain/playbackSample";
 import { ExportRenderer } from "../infrastructure/export/renderer";
 import { encoderInfo, chooseExportPath, startExport, appendFrame, finishExport, cancelExport, type EncoderInfo } from "../infrastructure/export/native";
@@ -18,7 +18,8 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   media: MediaSession, telemetry: TelemetrySettings, documents: Documents, messages: EditorMessages) {
   const open = ref(false), checking = ref(false), busy = ref(false);
   const info = ref<EncoderInfo | null>(null), error = ref("");
-  const width = ref(1920), height = ref(1080), fps = ref(30), format = ref<ExportFormat>("webmVp9");
+  const recommendedFps = computed(() => recommendedExportFps(telemetry.refreshSeconds.value));
+  const width = ref(1920), height = ref(1080), fps = ref(recommendedFps.value), format = ref<ExportFormat>("webmVp9");
   const background = ref<ExportBackground>("transparent");
   const preferHardware = ref(true), encoderLabel = ref("");
   watch(background, value => {
@@ -44,6 +45,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   async function show() {
     if (busy.value) { open.value = true; return; }
     open.value = true;
+    fps.value = recommendedFps.value;
     start.value = 0; end.value = playback.duration.value;
     progress.value = 0; phase.value = ""; encoderLabel.value = "";
     await checkEncoder();
@@ -116,5 +118,5 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   }
   onBeforeUnmount(() => { if (job) void cancel(); });
   return { open, checking, busy, info, error, width, height, fps, format, background, preferHardware, encoderLabel, start, end, progress, phase,
-    ready, mismatch, show, checkEncoder, resolution, cancel, run };
+    ready, recommendedFps, mismatch, show, checkEncoder, resolution, cancel, run };
 }

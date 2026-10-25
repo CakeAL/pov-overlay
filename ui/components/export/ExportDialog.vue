@@ -2,8 +2,8 @@
 import { ref, toRefs, watch } from "vue";
 import { X } from "lucide-vue-next";
 import { useEditorContext } from "../../editor/context";
-const { videoExport, playback } = useEditorContext();
-const { open, checking, busy, info, error, width, height, fps, format, background, preferHardware, encoderLabel, start, end, progress, phase, mismatch } = toRefs(videoExport);
+const { videoExport, playback, telemetry } = useEditorContext();
+const { open, checking, busy, info, error, width, height, fps, format, background, preferHardware, encoderLabel, start, end, progress, phase, mismatch, recommendedFps } = toRefs(videoExport);
 const dialog = ref<HTMLDialogElement>();
 watch(open, (value) => {
   if (value) dialog.value?.showModal();
@@ -41,8 +41,9 @@ function close() { if (!busy.value) open.value = false; }
           <span>×</span><label>高度<input type="number" aria-label="导出高度" v-model.number="height" min="64" max="7680" step="2" required /></label>
         </div>
         <p v-if="mismatch" class="export-hint">画布将等比居中，空白区域{{ background === 'green' ? '为绿色' : '透明' }}。</p>
-        <label class="export-row">帧率<input type="number" aria-label="导出帧率" v-model.number="fps" min="1" max="120" step="0.001" list="export-fps" required /></label>
-        <datalist id="export-fps"><option v-for="value in [24,25,30,50,60]" :key="value" :value="value" /></datalist>
+        <label class="export-row">帧率<input type="number" aria-label="导出帧率" v-model.number="fps" min="0.1" max="120" step="0.001" list="export-fps" required /></label>
+        <p class="export-hint">推荐 {{ recommendedFps }} fps（1 / {{ telemetry.refreshSeconds }} 秒），减少重复帧可加快导出。<button v-if="fps !== recommendedFps" type="button" class="text-button" @click="fps = recommendedFps">使用推荐</button></p>
+        <datalist id="export-fps"><option :value="recommendedFps" /><option v-for="value in [24,25,30,50,60]" :key="value" :value="value" /></datalist>
         <div class="export-dimensions">
           <label>起始秒<input type="number" aria-label="导出起始秒" v-model.number="start" min="0" :max="playback.duration" step="0.01" required /></label>
           <span>—</span><label>结束秒<input type="number" aria-label="导出结束秒" v-model.number="end" min="0" :max="playback.duration" step="0.01" required /></label>
