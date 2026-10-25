@@ -571,3 +571,5 @@
 .catalog-card .source-action { position: absolute; right: 5px; bottom: 3px; }
 .catalog-card:hover { background: #f2f6eb; border-color: #9bb780; }
 .property-title-actions { display: flex; align-items: center; gap: 8px; }
+.elevation-source { display: flex; flex-direction: column; gap: 4px; }
+.elevation-source .text-button { color: #597547; font-size: 12px; }
