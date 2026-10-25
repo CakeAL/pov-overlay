@@ -2,6 +2,7 @@ use tauri::Manager;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
         .manage(crate::application::overlay_export::ExportManager::default())
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::Destroyed) {
@@ -11,6 +12,8 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            crate::commands::system::open_preset_folder,
+            crate::commands::system::open_external_url,
             crate::commands::fonts::list_system_fonts,
             crate::commands::maps::load_map_tile,
             crate::commands::maps::sample_terrain_tile,

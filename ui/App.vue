@@ -2,6 +2,7 @@
 import { toRefs } from "vue";
 import { provideEditor } from "./editor/context";
 import ExportDialog from "./components/export/ExportDialog.vue";
+import SavePresetDialog from "./components/shell/SavePresetDialog.vue";
 import DocumentLibrary from "./components/shell/DocumentLibrary.vue";
 import AppHeader from "./components/shell/AppHeader.vue";
 import Notifications from "./components/shell/Notifications.vue";
@@ -23,6 +24,7 @@ const { dropActive } = toRefs(drop);
     <AppHeader />
     <ExportDialog />
     <DocumentLibrary />
+    <SavePresetDialog />
     <Notifications />
     <main class="workspace"><InspectorSidebar /><PreviewWorkspace /><SettingsSidebar /></main>
   </div>

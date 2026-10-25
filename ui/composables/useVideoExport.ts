@@ -69,7 +69,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
         throw new Error("导出区间超出当前时间轴。");
       if (!info.value[format.value]) throw new Error("当前 FFmpeg 不支持所选编码器。");
       busy.value = true; cancelled = false; controller = new AbortController(); phase.value = "准备导出";
-      const path = await chooseExportPath(documents.name.value, settings.format);
+      const path = await chooseExportPath(documents.presetName.value || "overlay", settings.format);
       if (!path || cancelled) { phase.value = ""; return; }
       playback.playing.value = false; playback.video.value?.pause();
       const widgets: Widget[] = JSON.parse(JSON.stringify(layout.widgets.value));

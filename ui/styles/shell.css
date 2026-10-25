@@ -159,9 +159,9 @@
 .file-menu { position: relative; }
 .file-menu > summary { list-style: none; cursor: pointer; padding: 5px 12px; font-size: 14px; }
 .file-menu > summary::-webkit-details-marker { display: none; }
-.file-menu-items { position: absolute; right: 0; top: 100%; z-index: 20; background: white; padding: 6px; min-width: 150px; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 24px #0002; }
-.document-actions .file-menu-items button { display: block; width: 100%; border: 0 !important; text-align: left; padding: 8px 12px; }
-.document-actions .file-menu-items button:hover { background: #f2f6eb !important; }
+.file-menu-items { position: absolute; left: 0; top: 100%; z-index: 20; background: white; padding: 6px; min-width: 150px; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 24px #0002; }
+.file-menu-items button { display: block; width: 100%; border: 0 !important; text-align: left; padding: 8px 12px; }
+.file-menu-items button:hover { background: #f2f6eb !important; }
 
 .notification-stack { position: fixed; inset: 56px 16px auto auto; margin: 0; padding: 0; border: 0; background: transparent; color: inherit; width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 72px); overflow: visible; z-index: 1000; pointer-events: none; }
 .notification-card { display: flex; align-items: flex-start; gap: 10px; padding: 14px; margin-bottom: 10px; border: 1px solid #d7e2cc; border-radius: 8px; background: #f5faef; color: #49613b; box-shadow: 0 5px 24px #23351d24; font-size: 14px; pointer-events: auto; }
@@ -171,3 +171,5 @@
 .notification-card .icon-button { width: 22px; height: 22px; }
 .notification-enter-active, .notification-leave-active { transition: transform .18s ease, opacity .18s ease; }
 .notification-enter-from, .notification-leave-to { transform: translateX(24px); opacity: 0; }
+
+.current-preset { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: #5b6b50; }

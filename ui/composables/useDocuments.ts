@@ -1,3 +1,4 @@
+import { openPresetFolder } from "../infrastructure/platform";
 import { ref, watch, nextTick } from "vue";
 import type { MediaSession } from "./useMediaSession";
 import type { WidgetLayout } from "./useWidgetLayout";
@@ -33,13 +34,15 @@ export function useDocuments(
     projectInput = ref<HTMLInputElement>(),
     presetInput = ref<HTMLInputElement>();
   const libraryOpen = ref(false), libraryKind = ref<'preset' | 'project'>('project'), entries = ref<LibraryEntry[]>([]);
+  const presetName = ref(""), saveOpen = ref(false), draftName = ref("");
+  function requestSavePreset() { draftName.value = presetName.value; saveOpen.value = true; }
   let pending: ProjectDocument | null = null;
   let unresolvedVideo: ProjectDocument["video"] = null;
   function preset(): PresetDocument {
     return {
       type: "pov-overlay/preset",
       version: 1,
-      name: name.value,
+      name: presetName.value || name.value,
       widgets: JSON.parse(JSON.stringify(layout.widgets.value)),
       smoothingPoints: telemetry.smoothingPoints.value,
       refreshSeconds: telemetry.refreshSeconds.value,
@@ -158,7 +161,7 @@ export function useDocuments(
     { flush: "post" },
   );
   async function load(json: string, kind: "preset" | "project") {
-    if (kind === "preset") applyPreset(parseDocument(json, "preset"));
+    if (kind === "preset") { const data = parseDocument(json, "preset"); applyPreset(data); presetName.value = data.name; }
     else await applyProject(parseDocument(json, "project"));
   }
   async function importFile(kind: "preset" | "project") {
@@ -196,25 +199,32 @@ export function useDocuments(
       input.value = "";
     }
   }
-  async function saveCurrent(kind: "preset" | "project") {
+  async function saveCurrent(kind: "preset" | "project", customName?: string) {
     await action(async () => {
       const data = kind === "preset" ? preset() : project();
+      if (customName !== undefined) {
+        const entered = customName.trim();
+        if (!entered || entered.length > 60 || /[\u0000-\u001f]/.test(entered)) throw new Error('请输入 1–60 字的预设名称。');
+        data.name = entered;
+      }
       if (kind === "preset") parseDocument(JSON.stringify(data), "preset");
       else parseDocument(JSON.stringify(data), "project");
-      const safe = name.value.replace(/[\\/:*?"<>|]/g, "_").replace(/^\.+/, "_").slice(0, 60) || "untitled";
+      const safe = data.name.replace(/[\\/:*?"<>|]/g, "_").replace(/^\.+/, "_").slice(0, 60) || "untitled";
       if (
         await saveDocument(
           `${safe}.${kind === "preset" ? "preset" : "pov"}.json`,
           JSON.stringify(data),
           kind,
         )
-      )
-        messages.notice.value =
-          kind === "preset" ? "预设已保存。" : "工程已保存。";
+      ) {
+        if (kind === "preset") { presetName.value = data.name; saveOpen.value = false; }
+        messages.notice.value = kind === "preset" ? `预设已保存：${data.name}` : "工程已保存。";
+      }
     });
   }
   return {
-    name,
+    name, presetName, saveOpen, draftName, requestSavePreset,
+    openPresetFolder: () => action(openPresetFolder),
     libraryOpen, libraryKind, entries, openEntry, importExternal,
     busy,
     projectInput,

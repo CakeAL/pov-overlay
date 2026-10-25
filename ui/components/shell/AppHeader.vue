@@ -1,45 +1,18 @@
 <script setup lang="ts">
-import { toRefs } from "vue";
-import { useEditorContext } from "../../editor/context";
+import { toRefs } from 'vue';
+import { useEditorContext } from '../../editor/context';
 const { documents, videoExport } = useEditorContext();
-const { name, busy, projectInput, presetInput } = toRefs(documents);
+const { presetName, busy, presetInput } = toRefs(documents);
 </script>
 <template>
   <header class="app-header">
-    <input
-      class="project-name"
-      aria-label="工程名称"
-      v-model="name"
-      maxlength="256"
-    />
-    <div class="document-actions">
-      <details class="file-menu"><summary>文件</summary><div class="file-menu-items" @click="($event.currentTarget as HTMLElement).parentElement?.removeAttribute('open')">
-      <button :disabled="busy" @click="documents.choose('project')">
-        打开工程</button
-      ><button :disabled="busy" @click="documents.saveCurrent('project')">
-        保存工程</button
-      ><button :disabled="busy" @click="documents.choose('preset')">
-        载入预设</button
-      ><button :disabled="busy" @click="documents.saveCurrent('preset')">
-        保存预设
-      </button>
-      </div></details>
-      <button :disabled="!videoExport.ready || busy" @click="videoExport.show">导出视频</button>
-    </div>
-    <input
-      ref="projectInput"
-      class="file-input"
-      data-testid="project-file"
-      type="file"
-      accept=".json,application/json"
-      @change="documents.selected($event, 'project')"
-    /><input
-      ref="presetInput"
-      class="file-input"
-      data-testid="preset-file"
-      type="file"
-      accept=".json,application/json"
-      @change="documents.selected($event, 'preset')"
-    />
+    <details class="file-menu"><summary>文件</summary><div class="file-menu-items" @click="($event.currentTarget as HTMLElement).parentElement?.removeAttribute('open')">
+      <button :disabled="busy" @click="documents.choose('preset')">载入预设</button>
+      <button :disabled="busy" @click="documents.requestSavePreset">保存预设</button>
+      <button :disabled="busy" @click="documents.openPresetFolder">打开预设文件夹</button>
+    </div></details>
+    <span class="current-preset">{{ presetName || 'POV Overlay' }}</span>
+    <div class="document-actions"><button :disabled="!videoExport.ready || busy" @click="videoExport.show">导出视频</button></div>
+    <input ref="presetInput" class="file-input" data-testid="preset-file" type="file" accept=".json,application/json" @change="documents.selected($event, 'preset')" />
   </header>
 </template>
