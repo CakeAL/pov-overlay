@@ -10,11 +10,6 @@ interface Location { latitude: number; longitude: number; zoom: number }
 export const amapImageKey = (location: Location) => `${location.zoom}/${location.latitude.toFixed(6)}/${location.longitude.toFixed(6)}`;
 export const amapImageCached = (location: Location) => cache.peek(amapImageKey(location)) !== undefined;
 export function clearAmapImages() { cache.clear(); retryAmap(); generation++; }
-export function amapKeyStatus() { return native ? invoke<boolean>('amap_key_status') : Promise.resolve(false); }
-export async function configureAmap(key: string) {
-  if (!native) throw new Error('高德地图 Key 请在桌面版配置。');
-  await invoke('configure_amap_key', { key }); clearAmapImages(); window.dispatchEvent(new Event('pov-amap-configured'));
-}
 export function amapImage(location: Location, signal?: AbortSignal) {
   const key = amapImageKey(location);
   return cache.get(key, async () => {

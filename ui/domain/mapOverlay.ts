@@ -1,3 +1,4 @@
+import type { MapProvider } from "./appSettings";
 import { mapCoordinate } from './mapCoordinates';
 import type { Sample, Widget } from './types';
 import type { OverlayContext } from './overlayContext';
@@ -7,7 +8,7 @@ export const mercator = (latitude: number, longitude: number, zoom: number) => {
   const n = 2 ** zoom;
   return { x: ((longitude + 180) / 360) * n, y: (1 - Math.asinh(Math.tan(lat)) / Math.PI) / 2 * n };
 };
-export interface MapTile { z: number; x: number; y: number; left: number; top: number }
+export interface MapTile { provider?: MapProvider; z: number; x: number; y: number; left: number; top: number }
 export function mapScene(widget: Widget, sample: Sample | null, context: OverlayContext) {
   const track = context.track;
   let index = 0;
@@ -25,7 +26,7 @@ export function mapScene(widget: Widget, sample: Sample | null, context: Overlay
   const tiles: MapTile[] = [];
   if (provider !== 'amap') for (let y = Math.floor(p.y - 0.84); y <= Math.floor(p.y + 0.84); y++)
     for (let x = Math.floor(p.x - 0.84); x <= Math.floor(p.x + 0.84); x++)
-      if (y >= 0 && y < n) tiles.push({ z: zoom, x: ((x % n) + n) % n, y, left: 150 + (x - p.x) * 256, top: 150 + (y - p.y) * 256 });
+      if (y >= 0 && y < n) tiles.push({ provider, z: zoom, x: ((x % n) + n) % n, y, left: 150 + (x - p.x) * 256, top: 150 + (y - p.y) * 256 });
   const angle = widget.map?.headingUp && center.headingDeg != null ? -center.headingDeg : 0;
   let path = '';
   if (track && widget.map?.showRoute !== false) {

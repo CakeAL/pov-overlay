@@ -6,9 +6,9 @@ import { renderWidgetSvg } from '../../infrastructure/renderWidget';
 import { widgetSvg, svgDataUrl } from '../../domain/widgetSvg';
 import { overlayContext } from '../../domain/overlayContext';
 import type { Widget } from '../../domain/types';
-const { timeline, svgElements } = useEditorContext();
+const { timeline, svgElements, appSettings } = useEditorContext();
 const map = ref(''), error = ref('');
-const template = (kind: 'route' | 'minimap'): Widget => ({ id: 'thumbnail', kind, label: '', x: 0, y: 0, scale: 1, opacity: 0, color: '#c7f284', visible: true, locked: false, map: { shape: 'circle', zoom: 14 }, route: { mode: 'full' } });
+const template = (kind: 'route' | 'minimap'): Widget => ({ id: 'thumbnail', kind, label: '', x: 0, y: 0, scale: 1, opacity: 0, color: '#c7f284', visible: true, locked: false, map: { provider: appSettings.settings.defaultMapProvider, shape: 'circle', zoom: 14 }, route: { mode: 'full' } });
 const route = computed(() => {
   const track = timeline.preparedTrack;
   if (!track) return '';
@@ -17,10 +17,10 @@ const route = computed(() => {
 });
 let revision = 0;
 let request: AbortController | undefined;
-watch(() => timeline.preparedTrack, async track => {
+watch(() => [timeline.preparedTrack, appSettings.settings.defaultMapProvider, appSettings.pageOpen] as const, async ([track, , paused]) => {
   request?.abort(); request = new AbortController();
   const current = ++revision; map.value = ''; error.value = '';
-  if (!track) return;
+  if (!track || paused) return;
   try {
     const sample = track.samples[0]!;
     const source = await renderWidgetSvg(template('minimap'), sample, 0, 1, overlayContext(track, track.startMs, sample), request.signal);

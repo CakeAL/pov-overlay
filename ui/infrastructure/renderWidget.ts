@@ -8,7 +8,7 @@ import { mapTile, mapTileCached } from './maps/tiles';
 export function prepareMapRender(widget: Widget, sample: Sample | null, context: OverlayContext) {
   const scene = mapScene(widget, sample, context);
   const empty = widget.scale <= 0 || widget.map?.opacity === 0;
-  const resourceKey = empty ? 'empty' : scene.raster ? `amap/${amapImageKey(scene.raster)}` : scene.tiles.map(tile => `${tile.z}/${tile.x}/${tile.y}`).join('|');
+  const resourceKey = empty ? 'empty' : scene.raster ? `amap/${amapImageKey(scene.raster)}` : scene.tiles.map(tile => `${tile.provider ?? "osm"}/${tile.z}/${tile.x}/${tile.y}`).join('|');
   return {
     resourceKey,
     renderKey: JSON.stringify([widget.map, widget.typography, widget.color, scene, empty]),

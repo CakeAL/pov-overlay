@@ -1,3 +1,4 @@
+import type { MapProvider } from "./appSettings";
 export const MAX_GAP_MS = 30_000;
 
 export interface Sample {
@@ -47,7 +48,7 @@ export interface Widget {
   locked: boolean;
   svg?: { source: string; aspectRatio: number } & SvgOrigin;
   widthRatio?: number;
-  map?: { opacity?: number; provider?: "osm" | "amap"; zoom?: number; shape?: "circle" | "square"; headingUp?: boolean; showRoute?: boolean };
+  map?: { opacity?: number; provider?: MapProvider; zoom?: number; shape?: "circle" | "square"; headingUp?: boolean; showRoute?: boolean };
   route?: { mode?: "full" | "local"; windowSeconds?: number; headingUp?: boolean };
   speedMaxKmh?: number;
   typography?: { fontFamily?: string; fontSize?: number; bold?: boolean; italic?: boolean };

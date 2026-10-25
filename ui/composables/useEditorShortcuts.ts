@@ -7,11 +7,13 @@ export function useEditorShortcuts(
   layout: WidgetLayout,
   playback: Playback,
   viewport: CanvasViewport,
+  enabled = () => true,
 ) {
   const { selected, remember, undo, redo, clampWidget } = layout;
   const { togglePlay } = playback;
   const { stageSize } = viewport;
   function handleKey(event: KeyboardEvent) {
+    if (!enabled()) return;
     const target = event.target as HTMLElement;
     if (target.closest('input, textarea, select, [contenteditable="true"], dialog')) return;
     if ((event.key === 'Delete' || event.key === 'Backspace') && selected.value && viewport.stage.value?.contains(target)) {

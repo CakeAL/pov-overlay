@@ -1,3 +1,4 @@
+import { useAppSettings } from "../composables/useAppSettings";
 import { useSystemFonts } from "../composables/useSystemFonts";
 import { useWidgetMenu } from "../composables/useWidgetMenu";
 import { useElevation } from "../composables/useElevation";
@@ -25,11 +26,12 @@ export function createEditor() {
   const elevation = useElevation(media, messages);
   const alignment = useAlignment(media.track, media.activeVideo, messages);
   const playback = usePlayback(media, messages);
+  const appSettings = useAppSettings(messages, playback);
   const viewport = useCanvasViewport(playback.ratio);
   const layout = useWidgetLayout(playback.ratio, viewport.stage);
   const widgetMenu = useWidgetMenu(layout);
   const telemetry = useTelemetrySettings();
-  const svgElements = useSvgElements(layout, messages);
+  const svgElements = useSvgElements(layout, messages, () => appSettings.settings.defaultMapProvider);
   const timeline = useTimeline(media, playback, alignment, telemetry);
   const profile = useTrackProfile(timeline, playback, alignment, media);
   const documents = useDocuments(
@@ -42,9 +44,10 @@ export function createEditor() {
   );
   const videoExport = useVideoExport(timeline, layout, playback, alignment, media, telemetry, documents, messages);
   const drop = useFileDrop(media);
-  useEditorShortcuts(layout, playback, viewport);
+  useEditorShortcuts(layout, playback, viewport, () => !appSettings.pageOpen.value);
   return reactive({
     documents,
+    appSettings,
     fonts,
     widgetMenu,
     elevation,

@@ -563,9 +563,6 @@
 .navigation-catalog { margin-top: 8px; }
 .navigation-catalog .catalog-preview { height: 100px; }
 .navigation-catalog .catalog-preview img { max-height: 88px; }
-.amap-key-setting { display: flex; gap: 6px; }
-.amap-key-setting input { min-width: 0; flex: 1; border: 1px solid #d0d7cb; border-radius: 4px; padding: 6px; font: inherit; }
-.amap-key-setting button { padding: 5px 8px; border: 1px solid #d0d7cb; border-radius: 4px; }
 .catalog-card { position: relative; border: 1px solid var(--line); border-radius: 6px; min-width: 0; }
 .catalog-card .catalog-add { display: flex; flex-direction: column; gap: 9px; width: 100%; height: 100%; padding: 12px 9px 30px; text-align: left; }
 .catalog-card .source-action { position: absolute; right: 5px; bottom: 3px; }

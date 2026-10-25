@@ -1,11 +1,5 @@
 use base64::{Engine, engine::general_purpose::STANDARD};
 use std::{path::Path, time::Duration};
-pub fn configured(root: &Path) -> bool {
-    super::api_keys::configured(root, "amap")
-}
-pub fn configure(root: &Path, key: &str) -> Result<(), String> {
-    super::api_keys::save(root, "amap", Some(key))
-}
 pub fn load(
     root: &Path,
     cache: &Path,

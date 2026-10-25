@@ -1,9 +1,6 @@
 use super::tile_cache::{self, TileSource};
 use base64::{Engine, engine::general_purpose::STANDARD};
 use std::path::Path;
-pub fn load(root: &Path, z: u8, x: u32, y: u32) -> Result<String, String> {
-    load_source(root, root, "osm", z, x, y)
-}
 pub fn load_source(
     root: &Path,
     config: &Path,

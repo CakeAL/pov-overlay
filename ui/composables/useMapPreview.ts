@@ -8,7 +8,7 @@ import { mapRuntimeSettings } from '../infrastructure/maps/runtime';
 import { retryAmap } from '../infrastructure/maps/amap';
 import { retryMapTiles } from '../infrastructure/maps/tiles';
 export interface MapPreviewInput { widget: Widget; sample: Sample | null; context: OverlayContext }
-export function useMapPreview(input: () => MapPreviewInput) {
+export function useMapPreview(input: () => MapPreviewInput, enabled = () => true) {
   const url = ref(''), error = ref(''), loading = ref(false), retry = ref(0);
   let plan: ReturnType<typeof prepareMapRender> | undefined, resourceKey = '', renderKey = '', revision = 0;
   let controller: AbortController | undefined, timer: ReturnType<typeof setTimeout> | undefined, running = false;
@@ -28,10 +28,13 @@ export function useMapPreview(input: () => MapPreviewInput) {
     finally { if (current === revision) { running = false; loading.value = false; } }
   }
   watch(() => {
+    if (!enabled()) return null;
     const value = input();
     const widget = { ...value.widget, map: { ...value.widget.map }, typography: value.widget.typography ? { ...value.widget.typography } : undefined };
     return { next: prepareMapRender(widget, value.sample, value.context), retry: retry.value };
-  }, ({ next }, previous) => {
+  }, (value, previous) => {
+    if (!value) { stop(); loading.value = false; renderKey = ''; return; }
+    const { next } = value;
     if (next.renderKey === renderKey && previous?.retry === retry.value) return;
     const changedResources = resourceKey !== next.resourceKey || previous?.retry !== retry.value;
     plan = next; renderKey = next.renderKey;
@@ -42,7 +45,7 @@ export function useMapPreview(input: () => MapPreviewInput) {
     } else if (!running && !loading.value) void run(revision);
   }, { immediate: true });
   function refresh() { retryMapTiles(); retryAmap(); retry.value++; }
-  onMounted(() => { for (const name of ['pov-amap-configured', 'pov-map-settings-changed', 'pov-map-cache-cleared']) window.addEventListener(name, refresh); });
-  onBeforeUnmount(() => { stop(); for (const name of ['pov-amap-configured', 'pov-map-settings-changed', 'pov-map-cache-cleared']) window.removeEventListener(name, refresh); });
+  onMounted(() => { for (const name of ['pov-map-settings-changed', 'pov-map-cache-cleared']) window.addEventListener(name, refresh); });
+  onBeforeUnmount(() => { stop(); for (const name of ['pov-map-settings-changed', 'pov-map-cache-cleared']) window.removeEventListener(name, refresh); });
   return { url, error, loading, refresh };
 }

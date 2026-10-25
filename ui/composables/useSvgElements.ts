@@ -1,3 +1,4 @@
+import type { MapProvider } from "../domain/appSettings";
 import { ref, computed } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
@@ -9,7 +10,7 @@ import { showSvgSource } from "../infrastructure/platform";
 import type { SvgOrigin, Widget } from "../domain/types";
 import type { WidgetLayout } from "./useWidgetLayout";
 import type { EditorMessages } from "./useMessages";
-export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
+export function useSvgElements(layout: WidgetLayout, messages: EditorMessages, defaultProvider: () => MapProvider = () => 'osm') {
   const svgInput = ref<HTMLInputElement>();
   const legacyStrip = sanitizeSvg(TELEMETRY_STRIP);
   const canSplitTelemetryStrip = computed(
@@ -118,7 +119,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
     };
   }
   function addMinimap() {
-    insert([{ id: crypto.randomUUID(), kind: 'minimap', label: '小地图', x: 0.05, y: 0.05, widthRatio: 0.24, scale: 1, opacity: 0, color: '#709f43', visible: true, locked: false, map: { zoom: 14, shape: 'circle', headingUp: false, showRoute: true } }]);
+    insert([{ id: crypto.randomUUID(), kind: 'minimap', label: '小地图', x: 0.05, y: 0.05, widthRatio: 0.24, scale: 1, opacity: 0, color: '#709f43', visible: true, locked: false, map: { provider: defaultProvider(), zoom: 14, shape: 'circle', headingUp: false, showRoute: true } }]);
   }
   function addRoute() {
     insert([{ id: crypto.randomUUID(), kind: 'route', label: '路线', x: 0.05, y: 0.05, widthRatio: 0.22, scale: 1, opacity: 0, color: '#c7f284', visible: true, locked: false, route: { mode: 'full', windowSeconds: 120, headingUp: false } }]);

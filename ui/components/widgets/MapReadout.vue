@@ -3,8 +3,8 @@ import type { Widget, Sample } from '../../domain/types';
 import { useEditorContext } from '../../editor/context';
 import { useMapPreview } from '../../composables/useMapPreview';
 const props = defineProps<{ widget: Widget; sample: Sample | null }>();
-const { timeline } = useEditorContext();
-const { url, error, loading, refresh } = useMapPreview(() => ({ widget: props.widget, sample: props.sample, context: timeline.context }));
+const { timeline, appSettings } = useEditorContext();
+const { url, error, loading, refresh } = useMapPreview(() => ({ widget: props.widget, sample: props.sample, context: timeline.context }), () => !appSettings.pageOpen);
 </script>
 <template>
   <img v-if="url" class="builtin-readout" :src="url" alt="小地图" draggable="false" />

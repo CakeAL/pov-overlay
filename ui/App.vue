@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { toRefs } from "vue";
 import { provideEditor } from "./editor/context";
+import AppSettingsPage from "./components/settings/AppSettingsPage.vue";
 import ExportDialog from "./components/export/ExportDialog.vue";
 import SavePresetDialog from "./components/shell/SavePresetDialog.vue";
 import DocumentLibrary from "./components/shell/DocumentLibrary.vue";
@@ -10,22 +11,23 @@ import SettingsSidebar from "./components/inspector/SettingsSidebar.vue";
 import InspectorSidebar from "./components/inspector/InspectorSidebar.vue";
 import PreviewWorkspace from "./components/canvas/PreviewWorkspace.vue";
 
-const { drop } = provideEditor();
+const { drop, appSettings } = provideEditor();
 const { dropActive } = toRefs(drop);
 </script>
 
 <template>
   <div
     class="app-shell"
-    @dragover.prevent="dropActive = true"
+    @dragover.prevent="dropActive = !appSettings.pageOpen"
     @dragleave.prevent="dropActive = false"
-    @drop.prevent="drop.dropped"
+    @drop.prevent="!appSettings.pageOpen && drop.dropped($event)"
   >
-    <AppHeader />
+    <AppHeader v-show="!appSettings.pageOpen" />
     <ExportDialog />
     <DocumentLibrary />
     <SavePresetDialog />
     <Notifications />
-    <main class="workspace"><InspectorSidebar /><PreviewWorkspace /><SettingsSidebar /></main>
+    <AppSettingsPage v-if="appSettings.pageOpen" />
+    <main v-show="!appSettings.pageOpen" class="workspace"><InspectorSidebar /><PreviewWorkspace /><SettingsSidebar /></main>
   </div>
 </template>
