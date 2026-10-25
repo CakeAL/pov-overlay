@@ -88,9 +88,6 @@
   .canvas-options > div {
     gap: 10px;
   }
-  .message-banner {
-    padding: 9px 15px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

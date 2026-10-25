@@ -80,36 +80,6 @@
   color: #47553c;
 }
 
-.message-banner {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 25px;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.message-banner > span {
-  flex: 1;
-}
-
-.message-banner button {
-  display: flex;
-  color: inherit;
-  padding: 2px;
-}
-
-.message-banner.error {
-  background: #fff2ec;
-  color: #9b6149;
-  border-bottom: 1px solid #eed8cd;
-}
-
-.message-banner.notice {
-  background: #eef5e6;
-  color: #728459;
-  border-bottom: 1px solid #dae5ce;
-}
 .app-header {
   height: 42px;
   min-height: 42px;
@@ -192,3 +162,12 @@
 .file-menu-items { position: absolute; right: 0; top: 100%; z-index: 20; background: white; padding: 6px; min-width: 150px; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 24px #0002; }
 .document-actions .file-menu-items button { display: block; width: 100%; border: 0 !important; text-align: left; padding: 8px 12px; }
 .document-actions .file-menu-items button:hover { background: #f2f6eb !important; }
+
+.notification-stack { position: fixed; inset: 56px 16px auto auto; margin: 0; padding: 0; border: 0; background: transparent; color: inherit; width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 72px); overflow: visible; z-index: 1000; pointer-events: none; }
+.notification-card { display: flex; align-items: flex-start; gap: 10px; padding: 14px; margin-bottom: 10px; border: 1px solid #d7e2cc; border-radius: 8px; background: #f5faef; color: #49613b; box-shadow: 0 5px 24px #23351d24; font-size: 14px; pointer-events: auto; }
+.notification-card.error { color: #974e39; background: #fff7f3; border-color: #efd7cb; }
+.notification-card > svg { flex-shrink: 0; margin-top: 2px; }
+.notification-card > span { flex: 1; overflow-wrap: anywhere; line-height: 1.5; }
+.notification-card .icon-button { width: 22px; height: 22px; }
+.notification-enter-active, .notification-leave-active { transition: transform .18s ease, opacity .18s ease; }
+.notification-enter-from, .notification-leave-to { transform: translateX(24px); opacity: 0; }
