@@ -193,7 +193,7 @@ cargo check --workspace --all-features
 
 ### SVG 动态图形范例
 
-元素面板的「SVG 范例」可直接加入指针时速表、速度进度条与行程进度环；原文件位于 `public/examples/`，可自行修改后导入。
+元素面板的「SVG 范例」可直接加入指针时速表、速度进度条与行程进度环；原文件位于 `ui/examples/`，可自行修改后导入。
 
 SVG 通过数值字段控制几何图形，不执行 JavaScript 或任意表达式：
 
