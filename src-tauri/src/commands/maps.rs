@@ -1,9 +1,23 @@
 use tauri::Manager;
 #[tauri::command]
-pub async fn load_map_tile(app: tauri::AppHandle, z: u8, x: u32, y: u32) -> Result<String, String> {
+pub async fn load_map_tile(
+    app: tauri::AppHandle,
+    z: u8,
+    x: u32,
+    y: u32,
+    provider: Option<String>,
+) -> Result<String, String> {
     let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
+    let config = app.path().app_config_dir().map_err(|e| e.to_string())?;
     tauri::async_runtime::spawn_blocking(move || {
-        crate::infrastructure::map_tiles::load(&cache, z, x, y)
+        crate::infrastructure::map_tiles::load_source(
+            &cache,
+            &config,
+            provider.as_deref().unwrap_or("osm"),
+            z,
+            x,
+            y,
+        )
     })
     .await
     .map_err(|e| e.to_string())?
@@ -47,8 +61,9 @@ pub async fn load_amap_map(
     zoom: u8,
 ) -> Result<String, String> {
     let root = app.path().app_config_dir().map_err(|e| e.to_string())?;
+    let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
     tauri::async_runtime::spawn_blocking(move || {
-        crate::infrastructure::amap::load(&root, latitude, longitude, zoom)
+        crate::infrastructure::amap::load(&root, &cache, latitude, longitude, zoom)
     })
     .await
     .map_err(|e| e.to_string())?

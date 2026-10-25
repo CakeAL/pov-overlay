@@ -11,6 +11,9 @@ pub fn read_text(path: &Path, max_bytes: u64) -> Result<String, String> {
     fs::read_to_string(path).map_err(|e| e.to_string())
 }
 pub fn atomic_write(path: &Path, content: &str) -> Result<(), String> {
+    atomic_write_bytes(path, content.as_bytes())
+}
+pub fn atomic_write_bytes(path: &Path, content: &[u8]) -> Result<(), String> {
     let stamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(|e| e.to_string())?
@@ -22,7 +25,7 @@ pub fn atomic_write(path: &Path, content: &str) -> Result<(), String> {
             .write(true)
             .create_new(true)
             .open(&temp)?;
-        file.write_all(content.as_bytes())?;
+        file.write_all(content)?;
         file.sync_all()?;
         fs::rename(&temp, path)
     })();

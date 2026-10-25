@@ -28,3 +28,11 @@ pub mod amap;
 pub mod svg_sources;
 
 pub mod hardware_probe;
+
+pub mod app_settings;
+
+pub mod api_keys;
+
+pub mod cached_images;
+
+pub mod map_http;

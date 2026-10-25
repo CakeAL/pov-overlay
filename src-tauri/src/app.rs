@@ -4,6 +4,14 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(crate::application::overlay_export::ExportManager::default())
+        .setup(|app| {
+            if let Ok(config) = app.path().app_config_dir()
+                && let Ok(settings) = crate::infrastructure::app_settings::read(&config)
+            {
+                crate::infrastructure::cached_images::set_limit(settings.cache_limit_mb);
+            }
+            Ok(())
+        })
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::Destroyed) {
                 window
@@ -12,6 +20,11 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            crate::commands::settings::load_app_settings,
+            crate::commands::settings::save_app_settings,
+            crate::commands::settings::set_map_api_key,
+            crate::commands::settings::clear_map_cache,
+            crate::commands::settings::open_map_cache_folder,
             crate::commands::system::reveal_svg_source,
             crate::commands::system::open_preset_folder,
             crate::commands::system::open_external_url,
