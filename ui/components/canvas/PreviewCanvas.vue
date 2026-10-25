@@ -9,7 +9,7 @@ const { media, playback, viewport, layout, timeline, drop } =
 const { activeVideo: asset, image, backgroundMode } = toRefs(media);
 const { video, muted, currentTime, playing } = toRefs(playback);
 const { loadedMetadata, videoError } = playback;
-const { stageWrap, stage, stageSize } = toRefs(viewport);
+const { stageWrap, stage, stageSize, pan, panMode, panning } = toRefs(viewport);
 const { selectedId, showSafeArea, guides, widgets } = toRefs(layout);
 const { sample, status } = toRefs(timeline);
 const { dropActive } = toRefs(drop);
@@ -19,7 +19,13 @@ const { dropActive } = toRefs(drop);
   <div
     ref="stageWrap"
     class="stage-wrap"
-    :class="{ 'is-drag-over': dropActive }"
+    :class="{ 'is-drag-over': dropActive, 'pan-mode': panMode, 'is-panning': panning }"
+    @wheel="viewport.wheel"
+    @pointerdown.capture="viewport.beginPan"
+    @pointermove.capture="viewport.movePan"
+    @pointerup.capture="viewport.endPan"
+    @pointercancel.capture="viewport.endPan"
+    @lostpointercapture="viewport.endPan"
   >
     <div
       ref="stage"
@@ -28,6 +34,7 @@ const { dropActive } = toRefs(drop);
       :style="{
         width: `${stageSize.width}px`,
         height: `${stageSize.height}px`,
+        transform: `translate(${pan.x}px, ${pan.y}px)`,
       }"
       @pointerdown.self="selectedId = ''"
     >

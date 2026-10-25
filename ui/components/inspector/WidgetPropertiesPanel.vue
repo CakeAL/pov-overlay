@@ -31,9 +31,9 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
           type="number"
           min="0"
           max="100"
-          step="0.1"
+          step="0.01"
           :disabled="selected.locked"
-          :value="(selected.x * 100).toFixed(1)"
+          :value="(selected.x * 100).toFixed(2)"
           @focus="remember"
           @change="updatePosition('x', $event)"
         /><span>%</span></label
@@ -44,9 +44,9 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
           type="number"
           min="0"
           max="100"
-          step="0.1"
+          step="0.01"
           :disabled="selected.locked"
-          :value="(selected.y * 100).toFixed(1)"
+          :value="(selected.y * 100).toFixed(2)"
           @focus="remember"
           @change="updatePosition('y', $event)"
         /><span>%</span></label
@@ -60,7 +60,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
       <button :disabled="selected.locked" :aria-pressed="selected.typography?.italic === true" aria-label="斜体" @click="typography('italic', !selected.typography?.italic)"><Italic :size="16" /></button></div>
     </div>
     <div class="slider-label"
-      >大小 <label class="scale-value"><input aria-label="元素大小百分比" type="number" min="0" :max="maximumScale * 100" step="0.1" :value="Number((selected.scale * 100).toFixed(1))" :disabled="selected.locked" @focus="remember" @change="layout.setScale(Number(($event.target as HTMLInputElement).value) / 100)" />%</label></div
+      >大小 <label class="scale-value"><input aria-label="元素大小百分比" type="number" min="0" :max="maximumScale * 100" step="0.01" :value="Number((selected.scale * 100).toFixed(1))" :disabled="selected.locked" @focus="remember" @change="layout.setScale(Number(($event.target as HTMLInputElement).value) / 100)" />%</label></div
     ><input
       class="property-slider"
       aria-label="元素大小"

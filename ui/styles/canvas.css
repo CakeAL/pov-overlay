@@ -253,3 +253,9 @@
   background: white;
   font: inherit;
 }
+.canvas-zoom { display: flex; align-items: center; gap: 2px; }
+.canvas-zoom .icon-button { width: 24px; height: 27px; }
+.canvas-zoom select { width: 62px; border: 1px solid #d8dfd2; border-radius: 4px; padding: 4px; font: inherit; font-size: 12px; color: #5c6e50; background: white; }
+.canvas-zoom .active { background: #e5eddd; color: #456332; }
+.stage-wrap.pan-mode, .stage-wrap.pan-mode .overlay-widget { cursor: grab; }
+.stage-wrap.is-panning, .stage-wrap.is-panning .overlay-widget { cursor: grabbing; }
