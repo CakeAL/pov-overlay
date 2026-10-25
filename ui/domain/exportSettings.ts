@@ -1,7 +1,7 @@
 import type { FrameRegion } from "./exportRegion";
-export type ExportFormat = "prores4444" | "pngMov" | "h264Mp4";
+export type ExportFormat = "prores4444" | "pngMov" | "h264Mp4" | "webmVp9";
 export type ExportBackground = "transparent" | "green";
-export const exportExtension = (format: ExportFormat) => format === "h264Mp4" ? "mp4" : "mov";
+export const exportExtension = (format: ExportFormat) => format === "webmVp9" ? "webm" : format === "h264Mp4" ? "mp4" : "mov";
 export interface ExportSettings {
   width: number;
   height: number;
@@ -21,6 +21,6 @@ export function validateExport(settings: ExportSettings): number {
   if (!Number.isFinite(durationSeconds) || durationSeconds <= 0 || durationSeconds > 86400)
     throw new Error("导出时长须大于 0 且不超过 24 小时。");
   if (settings.format === "h264Mp4" && settings.background !== "green")
-    throw new Error("H.264 MP4 不保留透明通道，请选择绿幕或 MOV 格式。");
+    throw new Error("H.264 MP4 不保留透明通道，请选择绿幕或支持透明的格式。");
   return Math.ceil(durationSeconds * fps);
 }

@@ -283,3 +283,40 @@ fn hardware_probe_and_encoding_preserve_alpha_or_fall_back() {
     assert_eq!(result.stdout[3], 0);
     assert!((126..=130).contains(&result.stdout[(32 * 64 + 32) * 4 + 3]));
 }
+
+#[test]
+#[ignore = "需要本地 FFmpeg"]
+fn webm_vp9_preserves_transparent_and_half_transparent_pixels() {
+    let info = detect_encoder().unwrap();
+    assert!(info.webm_vp9);
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("alpha.webm");
+    let encoder = OverlayEncoder::start(
+        &info.path,
+        settings(ExportFormat::WebmVp9),
+        &path,
+        "vp9",
+        None,
+    )
+    .unwrap();
+    encoder.append(0, 3, &frame()).unwrap();
+    encoder.finish().unwrap();
+    let decoded = Command::new(&info.path)
+        .args(["-v", "error", "-c:v", "libvpx-vp9", "-i"])
+        .arg(&path)
+        .args([
+            "-frames:v",
+            "1",
+            "-f",
+            "rawvideo",
+            "-pix_fmt",
+            "rgba",
+            "pipe:1",
+        ])
+        .output()
+        .unwrap();
+    assert!(decoded.status.success());
+    assert_eq!(decoded.stdout.len(), 64 * 64 * 4);
+    assert!(decoded.stdout[3] <= 2);
+    assert!((124..=132).contains(&decoded.stdout[(32 * 64 + 32) * 4 + 3]));
+}

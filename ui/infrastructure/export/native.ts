@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
 import { exportExtension, type ExportSettings, type ExportFormat } from "../../domain/exportSettings";
-export interface EncoderInfo { path: string; prores4444: boolean; pngMov: boolean; h264Mp4: boolean }
+export interface EncoderInfo { path: string; prores4444: boolean; pngMov: boolean; h264Mp4: boolean; webmVp9: boolean }
 export const encoderInfo = () => invoke<EncoderInfo>("export_encoder_info");
 export async function chooseExportPath(name: string, format: ExportFormat): Promise<string | null> {
   const extension = exportExtension(format);

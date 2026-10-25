@@ -25,7 +25,7 @@ pub fn select_encoder(ffmpeg: &str, settings: &ExportSettings) -> EncoderSelecti
     let name = match settings.format {
         ExportFormat::Prores4444 => "prores_videotoolbox",
         ExportFormat::H264Mp4 => "h264_videotoolbox",
-        ExportFormat::PngMov => return software,
+        ExportFormat::PngMov | ExportFormat::WebmVp9 => return software,
     };
     let key = (
         ffmpeg.into(),
@@ -79,6 +79,24 @@ pub fn configure_codec(
                 "yuva444p10le",
                 "-alpha_bits",
                 "16",
+            ]);
+        }
+        (ExportFormat::WebmVp9, _) => {
+            command.args([
+                "-pix_fmt",
+                "yuva420p",
+                "-crf",
+                "30",
+                "-b:v",
+                "0",
+                "-deadline",
+                "good",
+                "-cpu-used",
+                "4",
+                "-row-mt",
+                "1",
+                "-auto-alt-ref",
+                "0",
             ]);
         }
         (ExportFormat::PngMov, _) => {

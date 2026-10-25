@@ -24,10 +24,11 @@ function close() { if (!busy.value) open.value = false; }
         </select></label>
         <label class="export-row">格式<select v-model="format" aria-label="导出格式">
           <option v-if="background === 'green'" value="h264Mp4" :disabled="!!info && !info.h264Mp4">MP4 / H.264（体积较小）</option>
+          <option value="webmVp9" :disabled="!!info && !info.webmVp9">WebM / VP9（透明，体积较小）</option>
           <option value="prores4444" :disabled="!!info && !info.prores4444">MOV / ProRes 4444</option>
           <option value="pngMov" :disabled="!!info && !info.pngMov">MOV / PNG 无损</option>
         </select></label>
-        <label class="export-hardware" v-if="format !== 'pngMov'">
+        <label class="export-hardware" v-if="format === 'prores4444' || format === 'h264Mp4'">
           <input type="checkbox" v-model="preferHardware" aria-label="优先硬件编码" />优先硬件编码
         </label>
         <label class="export-row">分辨率<select aria-label="分辨率预设" :value="`${width}x${height}`" @change="videoExport.resolution">

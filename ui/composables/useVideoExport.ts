@@ -18,11 +18,11 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   media: MediaSession, telemetry: TelemetrySettings, documents: Documents, messages: EditorMessages) {
   const open = ref(false), checking = ref(false), busy = ref(false);
   const info = ref<EncoderInfo | null>(null), error = ref("");
-  const width = ref(1920), height = ref(1080), fps = ref(30), format = ref<ExportFormat>("prores4444");
+  const width = ref(1920), height = ref(1080), fps = ref(30), format = ref<ExportFormat>("webmVp9");
   const background = ref<ExportBackground>("transparent");
   const preferHardware = ref(true), encoderLabel = ref("");
   watch(background, value => {
-    format.value = value === "green" ? "h264Mp4" : info.value?.prores4444 ? "prores4444" : "pngMov";
+    format.value = value === "green" ? "h264Mp4" : info.value?.webmVp9 ? "webmVp9" : info.value?.prores4444 ? "prores4444" : "pngMov";
   });
   const start = ref(0), end = ref(0), progress = ref(0), phase = ref("");
   let job: string | null = null, cancelled = false;
@@ -35,9 +35,9 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
     try {
       if (!native) throw new Error("视频导出请在桌面应用中使用。");
       info.value = await encoderInfo();
-      if (!info.value.prores4444 && info.value.pngMov) format.value = "pngMov";
+      if (!info.value[format.value]) format.value = info.value.webmVp9 ? "webmVp9" : info.value.prores4444 ? "prores4444" : "pngMov";
       if (background.value === "green") format.value = "h264Mp4";
-      if (!info.value.prores4444 && !info.value.pngMov && !info.value.h264Mp4) throw new Error("当前 FFmpeg 缺少可用的视频编码器。");
+      if (!info.value.prores4444 && !info.value.pngMov && !info.value.h264Mp4 && !info.value.webmVp9) throw new Error("当前 FFmpeg 缺少可用的视频编码器。");
     } catch (reason) { error.value = String(reason instanceof Error ? reason.message : reason); }
     finally { checking.value = false; }
   }

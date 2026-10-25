@@ -22,6 +22,7 @@ pub struct EncoderInfo {
     pub prores4444: bool,
     pub png_mov: bool,
     pub h264_mp4: bool,
+    pub webm_vp9: bool,
 }
 pub fn detect_encoder() -> Result<EncoderInfo, String> {
     let candidates = [
@@ -46,6 +47,9 @@ pub fn detect_encoder() -> Result<EncoderInfo, String> {
             .any(|line| line.split_whitespace().nth(1) == Some("libx264"));
         return Ok(EncoderInfo {
             h264_mp4,
+            webm_vp9: text
+                .lines()
+                .any(|line| line.split_whitespace().nth(1) == Some("libvpx-vp9")),
             path: path.into(),
             prores4444: text
                 .lines()

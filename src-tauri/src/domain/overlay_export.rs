@@ -6,11 +6,13 @@ pub enum ExportFormat {
     Prores4444,
     PngMov,
     H264Mp4,
+    WebmVp9,
 }
 impl ExportFormat {
     pub fn extension(self) -> &'static str {
         match self {
             Self::H264Mp4 => "mp4",
+            Self::WebmVp9 => "webm",
             _ => "mov",
         }
     }
@@ -70,7 +72,7 @@ impl ExportSettings {
         if matches!(self.format, ExportFormat::H264Mp4)
             && self.background != ExportBackground::Green
         {
-            return Err("H.264 MP4 不保留透明通道，请选择绿幕或 MOV 格式。".into());
+            return Err("H.264 MP4 不保留透明通道，请选择绿幕或支持透明的格式。".into());
         }
         let frame = self.region();
         if frame.width == 0
@@ -87,6 +89,7 @@ impl ExportSettings {
             ExportFormat::Prores4444 => "prores_ks",
             ExportFormat::PngMov => "png",
             ExportFormat::H264Mp4 => "libx264",
+            ExportFormat::WebmVp9 => "libvpx-vp9",
         }
     }
     pub fn region(&self) -> FrameRegion {
