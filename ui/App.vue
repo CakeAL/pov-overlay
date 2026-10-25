@@ -5,6 +5,7 @@ import ExportDialog from "./components/export/ExportDialog.vue";
 import DocumentLibrary from "./components/shell/DocumentLibrary.vue";
 import AppHeader from "./components/shell/AppHeader.vue";
 import Notifications from "./components/shell/Notifications.vue";
+import SettingsSidebar from "./components/inspector/SettingsSidebar.vue";
 import InspectorSidebar from "./components/inspector/InspectorSidebar.vue";
 import PreviewWorkspace from "./components/canvas/PreviewWorkspace.vue";
 
@@ -23,6 +24,6 @@ const { dropActive } = toRefs(drop);
     <ExportDialog />
     <DocumentLibrary />
     <Notifications />
-    <main class="workspace"><InspectorSidebar /><PreviewWorkspace /></main>
+    <main class="workspace"><InspectorSidebar /><PreviewWorkspace /><SettingsSidebar /></main>
   </div>
 </template>
