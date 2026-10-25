@@ -8,11 +8,9 @@ pub async fn load_map_tile(
     provider: Option<String>,
 ) -> Result<String, String> {
     let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
-    let config = app.path().app_config_dir().map_err(|e| e.to_string())?;
     tauri::async_runtime::spawn_blocking(move || {
         crate::infrastructure::map_tiles::load_source(
             &cache,
-            &config,
             provider.as_deref().unwrap_or("osm"),
             z,
             x,

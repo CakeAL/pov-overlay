@@ -6,7 +6,10 @@ pub fn read(root: &Path) -> Result<AppSettings, String> {
         return Ok(AppSettings::default());
     }
     let text = super::documents::read_text(&path, 32 * 1024)?;
-    let settings: AppSettings = serde_json::from_str(&text).map_err(|e| e.to_string())?;
+    let mut settings: AppSettings = serde_json::from_str(&text).map_err(|e| e.to_string())?;
+    if !["osm", "amap"].contains(&settings.default_map_provider.as_str()) {
+        settings.default_map_provider = "osm".into();
+    }
     settings.validate()?;
     Ok(settings)
 }

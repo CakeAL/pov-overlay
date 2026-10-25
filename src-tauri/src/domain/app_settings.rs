@@ -23,8 +23,7 @@ impl Default for AppSettings {
 }
 impl AppSettings {
     pub fn validate(&self) -> Result<(), String> {
-        if !["osm", "amap", "cartoLight", "cartoDark", "cartoVoyager"]
-            .contains(&self.default_map_provider.as_str())
+        if !["osm", "amap"].contains(&self.default_map_provider.as_str())
             || !(50..=1500).contains(&self.map_debounce_ms)
             || !(1..=4).contains(&self.map_concurrent_requests)
             || !(250..=5000).contains(&self.amap_min_interval_ms)

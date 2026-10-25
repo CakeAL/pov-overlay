@@ -1,4 +1,4 @@
-import { isMapProvider, type MapProvider } from "../../domain/appSettings";
+import { isMapProvider } from "../../domain/appSettings";
 import type {
   Widget,
   Track,
@@ -79,9 +79,9 @@ export function validateWidgets(v: unknown): Widget[] {
       locked: bool(w.locked),
       map: w.map == null ? undefined : (() => {
         const m = object(w.map);
-        if (m.provider != null && !isMapProvider(m.provider)) throw new Error('地图来源无效。');
+        if (m.provider != null && typeof m.provider !== 'string') throw new Error('地图来源无效。');
         if (m.shape != null && m.shape !== 'circle' && m.shape !== 'square') throw new Error('地图形状无效。');
-        return { opacity: m.opacity == null ? undefined : num(m.opacity, 0, 100), provider: m.provider as MapProvider | undefined, zoom: m.zoom == null ? undefined : num(m.zoom, 2, 19), shape: m.shape as 'circle' | 'square' | undefined, headingUp: m.headingUp == null ? undefined : bool(m.headingUp), showRoute: m.showRoute == null ? undefined : bool(m.showRoute) };
+        return { opacity: m.opacity == null ? undefined : num(m.opacity, 0, 100), provider: m.provider == null ? undefined : isMapProvider(m.provider) ? m.provider : 'osm', zoom: m.zoom == null ? undefined : num(m.zoom, 2, 19), shape: m.shape as 'circle' | 'square' | undefined, headingUp: m.headingUp == null ? undefined : bool(m.headingUp), showRoute: m.showRoute == null ? undefined : bool(m.showRoute) };
       })(),
       route: w.route == null ? undefined : (() => {
         const r = object(w.route);

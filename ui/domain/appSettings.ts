@@ -1,8 +1,5 @@
 export const MAP_PROVIDERS = [
   { value: 'osm', label: 'OpenStreetMap', url: 'https://www.openstreetmap.org/' },
-  { value: 'cartoLight', label: 'CARTO 浅色', url: 'https://www.carto.com/basemaps/' },
-  { value: 'cartoDark', label: 'CARTO 深色', url: 'https://www.carto.com/basemaps/' },
-  { value: 'cartoVoyager', label: 'CARTO Voyager', url: 'https://www.carto.com/basemaps/' },
   { value: 'amap', label: '高德地图', url: 'https://lbs.amap.com/api/webservice/guide/api/staticmaps' },
 ] as const;
 export type MapProvider = typeof MAP_PROVIDERS[number]['value'];

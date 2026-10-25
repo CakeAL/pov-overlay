@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useEditorContext } from '../../editor/context';
-const props = defineProps<{ provider: 'amap' | 'carto'; label: string; url: string }>();
+const props = defineProps<{ provider: 'amap'; label: string; url: string }>();
 const { appSettings } = useEditorContext();
 const key = ref('');
 async function save() { if (await appSettings.saveKey(props.provider, key.value.trim())) key.value = ''; }

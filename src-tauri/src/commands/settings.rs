@@ -10,7 +10,6 @@ use tauri_plugin_opener::OpenerExt;
 pub struct SettingsSnapshot {
     settings: AppSettings,
     amap_configured: bool,
-    carto_configured: bool,
     cache: cached_images::CacheStats,
 }
 #[tauri::command]
@@ -23,7 +22,6 @@ pub async fn load_app_settings(app: tauri::AppHandle) -> Result<SettingsSnapshot
         Ok(SettingsSnapshot {
             settings,
             amap_configured: api_keys::configured(&config, "amap"),
-            carto_configured: api_keys::configured(&config, "carto"),
             cache: cached_images::stats(&cache),
         })
     })

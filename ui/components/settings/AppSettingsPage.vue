@@ -18,7 +18,6 @@ const size = (bytes: number) => bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(
       <section class="preferences-section" aria-label="API Key"><h2>API Key</h2>
         <p v-if="!appSettings.native" class="settings-note">API Key 与磁盘缓存请在桌面应用中配置。</p>
         <ApiKeySetting provider="amap" label="高德 Web 服务" url="https://lbs.amap.com/api/webservice/guide/api/staticmaps" />
-        <ApiKeySetting provider="carto" label="CARTO" url="https://www.carto.com/basemaps/" />
       </section>
       <fieldset :disabled="appSettings.busy"><legend>缓存</legend>
         <label class="preferences-row">高德静态图缓存（天）<input aria-label="静态图缓存天数" type="number" min="1" max="365" v-model.number="appSettings.draft.amapCacheDays" /></label>
@@ -26,7 +25,7 @@ const size = (bytes: number) => bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(
         <div v-if="appSettings.native" class="cache-summary"><span>{{ size(appSettings.cache.bytes) }} · {{ appSettings.cache.files }} 个文件</span><div><button @click="appSettings.openCacheFolder">打开文件夹</button><button @click="appSettings.clearCache">清空缓存</button></div><code>{{ appSettings.cache.path }}</code></div>
         <p class="settings-note">底图、静态图和海拔瓦片共用容量上限；网络异常时优先使用已有缓存。</p>
       </fieldset>
-      <section class="preferences-section provider-links"><h2>数据来源</h2><button @click="appSettings.openUrl('https://www.openstreetmap.org/copyright')">OpenStreetMap ↗</button><button @click="appSettings.openUrl('https://www.carto.com/basemaps/')">CARTO · 基于 OSM ↗</button><button @click="appSettings.openUrl('https://lbs.amap.com/')">高德地图 ↗</button><button @click="appSettings.openUrl('https://mapterhorn.com/')">Mapterhorn 海拔 ↗</button></section>
+      <section class="preferences-section provider-links"><h2>数据来源</h2><button @click="appSettings.openUrl('https://www.openstreetmap.org/copyright')">OpenStreetMap ↗</button><button @click="appSettings.openUrl('https://lbs.amap.com/')">高德地图 ↗</button><button @click="appSettings.openUrl('https://mapterhorn.com/')">Mapterhorn 海拔 ↗</button></section>
     </div>
   </main>
 </template>

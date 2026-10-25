@@ -11,13 +11,13 @@ import type { Playback } from './usePlayback';
 export function useAppSettings(messages: EditorMessages, playback: Playback) {
   const pageOpen = ref(false), busy = ref(false), loaded = ref(false);
   const settings = reactive({ ...DEFAULT_APP_SETTINGS }), draft = reactive({ ...settings });
-  const configured = reactive({ amap: false, carto: false });
+  const configured = reactive({ amap: false });
   const cache = ref<CacheStats>({ bytes: 0, files: 0, path: '' });
   function clearMemory() { clearMapTiles(); clearAmapImages(); }
   async function load() {
     const snapshot = await loadAppSettings();
     Object.assign(settings, snapshot.settings); Object.assign(draft, snapshot.settings);
-    configured.amap = snapshot.amapConfigured; configured.carto = snapshot.cartoConfigured;
+    configured.amap = snapshot.amapConfigured;
     cache.value = snapshot.cache; loaded.value = true;
     configureMapRuntime(settings, !pageOpen.value);
   }
@@ -44,7 +44,7 @@ export function useAppSettings(messages: EditorMessages, playback: Playback) {
     } catch (reason) { messages.report(reason); }
     finally { busy.value = false; }
   }
-  async function saveKey(provider: 'amap' | 'carto', key: string | null) {
+  async function saveKey(provider: 'amap', key: string | null) {
     busy.value = true;
     try {
       await setMapApiKey(provider, key); configured[provider] = key !== null;

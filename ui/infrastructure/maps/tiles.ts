@@ -12,7 +12,7 @@ export function clearMapTiles() { generation++; failures.clear(); cache.clear();
 export const mapTileCached = (tile: MapTile) => cache.peek(keyOf(tile)) !== undefined;
 async function fetchTile(tile: MapTile): Promise<string> {
   if (native) return invoke<string>('load_map_tile', { provider: tile.provider ?? 'osm', z: tile.z, x: tile.x, y: tile.y });
-  if (tile.provider && tile.provider !== 'osm') throw new Error('CARTO 地图请在桌面应用的设置中配置 Key 后使用。');
+  if (tile.provider && tile.provider !== 'osm') throw new Error('不支持此地图来源。');
   const response = await fetch(`https://tile.openstreetmap.org/${tile.z}/${tile.x}/${tile.y}.png`, { cache: 'force-cache', signal: AbortSignal.timeout(10000) });
   if (!response.ok) throw new Error(`地图请求失败（${response.status}）`);
   const blob = await response.blob();

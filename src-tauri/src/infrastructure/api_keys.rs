@@ -2,21 +2,12 @@ use std::{fs, path::Path};
 fn file(provider: &str) -> Result<&'static str, String> {
     match provider {
         "amap" => Ok("amap.key"),
-        "carto" => Ok("carto.key"),
         _ => Err("API 提供商无效。".into()),
     }
 }
 pub fn read(root: &Path, provider: &str) -> Result<String, String> {
-    fs::read_to_string(root.join(file(provider)?)).map_err(|_| {
-        format!(
-            "请先在设置中配置 {} API Key。",
-            if provider == "amap" {
-                "高德 Web 服务"
-            } else {
-                "CARTO"
-            }
-        )
-    })
+    fs::read_to_string(root.join(file(provider)?))
+        .map_err(|_| "请先在设置中配置高德 Web 服务 API Key。".into())
 }
 pub fn configured(root: &Path, provider: &str) -> bool {
     read(root, provider).is_ok_and(|key| !key.trim().is_empty())

@@ -10,14 +10,7 @@ use std::{
     },
     time::Duration,
 };
-const FOLDERS: &[&str] = &[
-    "map-tiles",
-    "terrain-tiles",
-    "amap-static",
-    "carto-light",
-    "carto-dark",
-    "carto-voyager",
-];
+const FOLDERS: &[&str] = &["map-tiles", "terrain-tiles", "amap-static"];
 static LOCKS: OnceLock<[Mutex<()>; 64]> = OnceLock::new();
 static DISK_MUTATION: RwLock<()> = RwLock::new(());
 static GENERATION: AtomicU64 = AtomicU64::new(0);
