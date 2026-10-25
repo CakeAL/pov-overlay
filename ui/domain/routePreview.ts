@@ -40,6 +40,7 @@ export function routePreview(
   width = 240,
   height = 110,
   padding = 8,
+  center?: Sample,
 ) {
   const origin = track.samples[0]!.longitude,
     meanLat =
@@ -69,16 +70,20 @@ export function routePreview(
     minY = Math.min(minY, p.y);
     maxY = Math.max(maxY, p.y);
   }
-  const spanX = maxX - minX,
-    spanY = maxY - minY,
-    scale = Math.min(
-      spanX ? (width - 2 * padding) / spanX : Infinity,
-      spanY ? (height - 2 * padding) / spanY : Infinity,
-    ),
-    factor = Number.isFinite(scale) ? scale : 1;
+  const anchorLongitude = center
+    ? origin + ((((center.longitude - origin + 180) % 360) + 360) % 360) - 180
+    : (minX + maxX) / 2 / cosine;
+  const centerX = anchorLongitude * cosine, centerY = center ? -center.latitude : (minY + maxY) / 2;
+  // A local view is symmetric around the rider, including empty space near either end.
+  const spanX = center ? 2 * Math.max(Math.abs(maxX - centerX), Math.abs(minX - centerX)) : maxX - minX;
+  const spanY = center ? 2 * Math.max(Math.abs(maxY - centerY), Math.abs(minY - centerY)) : maxY - minY;
+  const scale = Math.min(
+    spanX ? (width - 2 * padding) / spanX : Infinity,
+    spanY ? (height - 2 * padding) / spanY : Infinity,
+  ), factor = Number.isFinite(scale) ? scale : 1;
   const project = (p: { x: number; y: number }) => ({
-    x: (p.x - (minX + maxX) / 2) * factor + width / 2,
-    y: (p.y - (minY + maxY) / 2) * factor + height / 2,
+    x: (p.x - centerX) * factor + width / 2,
+    y: (p.y - centerY) * factor + height / 2,
   });
   const segments: string[] = [];
   for (let start = 0; start < raw.length; ) {

@@ -18,12 +18,12 @@ export function routeOverlay(widget: Widget, sample: Sample | null, context: Ove
     let start = local ? Math.max(0, lowerBound(track, current.timestampMs - span) - 1) : 0;
     let end = local ? Math.min(track.samples.length, lowerBound(track, current.timestampMs + span) + 1) : track.samples.length;
     if (end <= start) { start = Math.max(0, currentIndex - 1); end = Math.min(track.samples.length, start + 2); }
-    const key = `${start}:${end}`;
+    const key = `${start}:${end}${local ? `:${current.latitude}:${current.longitude}` : ''}`;
     let entries = cache.get(track);
     if (!entries) { entries = new Map(); cache.set(track, entries); }
     let geometry = entries.get(key);
     if (!geometry) {
-      geometry = routePreview({ ...track, samples: track.samples.slice(start, end) }, 300, 300, 24);
+      geometry = routePreview({ ...track, samples: track.samples.slice(start, end) }, 300, 300, 24, local ? current : undefined);
       if (entries.size >= 16) entries.delete(entries.keys().next().value!);
       entries.set(key, geometry);
     }
