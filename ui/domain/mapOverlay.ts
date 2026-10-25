@@ -49,5 +49,20 @@ export function mapSvg(widget: Widget, scene: ReturnType<typeof mapScene>, sourc
   const opacity = Math.max(0, Math.min(100, widget.map?.opacity ?? 100)) / 100;
   const color = /^#[0-9a-f]{6}$/i.test(widget.color) ? widget.color : '#73a343';
   const marker = !scene.marker ? '' : scene.heading == null ? '<circle cx="150" cy="150" r="6" fill="white" stroke="#283b2c" stroke-width="2"/>' : `<g transform="rotate(${scene.heading} 150 150)"><path d="M150 136L141 159L150 154L159 159Z" fill="white" stroke="#283b2c" stroke-width="2"/></g>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><defs><clipPath id="map-clip">${widget.map?.shape === 'circle' ? '<circle cx="150" cy="150" r="150"/>' : '<rect width="300" height="300" rx="8"/>'}</clipPath></defs><g opacity="${opacity}"><g clip-path="url(#map-clip)"><rect width="300" height="300" fill="#e6e9e2"/><g transform="rotate(${scene.angle} 150 150)">${images}<path d="${scene.path}" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>${marker}</g><g transform="translate(150 32) rotate(${scene.angle})"><path d="M0 -15L-5 -3H5Z" fill="#24392e"/><text x="0" y="13" font-size="12" text-anchor="middle" fill="#24392e">N</text></g></g>${scene.raster ? `<svg x="0" y="280" width="300" height="20" viewBox="0 480 512 32"><image width="512" height="512" href="${sources[0]}"/></svg>` : `<rect x="30" y="279" width="240" height="18" rx="3" fill="#ffffffee"/><text x="150" y="292" font-family="sans-serif" font-size="11" text-anchor="middle" fill="#253b30">${widget.map?.provider === 'amap' ? '© 高德地图' : '© OpenStreetMap contributors'}</text>`}</g></svg>`;
+  const clip = widget.map?.shape === 'circle'
+    ? '<circle cx="150" cy="150" r="150"/>'
+    : '<rect width="300" height="300" rx="8"/>';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+    <defs><clipPath id="map-clip">${clip}</clipPath></defs>
+    <g opacity="${opacity}" clip-path="url(#map-clip)">
+      <rect width="300" height="300" fill="#e6e9e2"/>
+      <g transform="rotate(${scene.angle} 150 150)">
+        ${images}<path d="${scene.path}" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>${marker}
+      </g>
+      <g transform="translate(150 32) rotate(${scene.angle})">
+        <path d="M0 -15L-5 -3H5Z" fill="#24392e"/>
+        <text x="0" y="13" font-size="12" text-anchor="middle" fill="#24392e">N</text>
+      </g>
+    </g>
+  </svg>`;
 }
