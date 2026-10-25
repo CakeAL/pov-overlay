@@ -1,5 +1,5 @@
-import { onMounted, reactive, ref } from 'vue';
-import { DEFAULT_APP_SETTINGS } from '../domain/appSettings';
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { DEFAULT_APP_SETTINGS, validateAppSettings, type AppSettings } from '../domain/appSettings';
 import { loadAppSettings, saveAppSettings, setMapApiKey, clearMapCache, openMapCacheFolder, type CacheStats } from '../infrastructure/appSettings';
 import { configureMapRuntime } from '../infrastructure/maps/runtime';
 import { clearMapTiles } from '../infrastructure/maps/tiles';
@@ -14,9 +14,13 @@ export function useAppSettings(messages: EditorMessages, playback: Playback) {
   const configured = reactive({ amap: false });
   const cache = ref<CacheStats>({ bytes: 0, files: 0, path: '' });
   function clearMemory() { clearMapTiles(); clearAmapImages(); }
+  let hydrating = false, timer: ReturnType<typeof setTimeout> | undefined;
+  let pending: AppSettings | undefined, writer: Promise<void> | undefined, saved = '';
   async function load() {
     const snapshot = await loadAppSettings();
+    hydrating = true;
     Object.assign(settings, snapshot.settings); Object.assign(draft, snapshot.settings);
+    saved = JSON.stringify(snapshot.settings); hydrating = false;
     configured.amap = snapshot.amapConfigured;
     cache.value = snapshot.cache; loaded.value = true;
     configureMapRuntime(settings, !pageOpen.value);
@@ -30,20 +34,39 @@ export function useAppSettings(messages: EditorMessages, playback: Playback) {
     try { await initializing; await load(); } catch (reason) { messages.report(reason); }
     finally { busy.value = false; }
   }
-  function close() {
+  function queue() {
+    const value = validateAppSettings({ ...draft });
+    Object.assign(settings, value); configureMapRuntime(value, !pageOpen.value);
+    pending = writer || JSON.stringify(value) !== saved ? value : undefined;
+  }
+  function drain(): Promise<void> {
+    if (writer) return writer;
+    writer = (async () => {
+      while (pending) {
+        const value = pending; pending = undefined;
+        try { await saveAppSettings(value); saved = JSON.stringify(value); }
+        catch (reason) { messages.report(reason); }
+      }
+    })().finally(() => { writer = undefined; });
+    return writer;
+  }
+  watch(draft, () => {
+    if (hydrating || !loaded.value) return;
+    clearTimeout(timer);
+    try { queue(); timer = setTimeout(() => void drain(), 300); }
+    catch { /* Keep incomplete number input editable; validate on blur or leaving. */ }
+  }, { deep: true, flush: 'sync' });
+  async function flush() {
+    clearTimeout(timer);
+    try { queue(); await drain(); return saved === JSON.stringify({ ...draft }); }
+    catch (reason) { messages.report(reason); return false; }
+  }
+  async function close() {
+    if (!await flush()) return;
     pageOpen.value = false;
-    // Refresh hidden editor maps only when returning to the editor.
     window.dispatchEvent(new Event('pov-map-settings-changed'));
   }
-  async function save() {
-    busy.value = true;
-    try {
-      await saveAppSettings({ ...draft }); Object.assign(settings, draft);
-      configureMapRuntime(settings, false);
-      messages.notice.value = '设置已保存。';
-    } catch (reason) { messages.report(reason); }
-    finally { busy.value = false; }
-  }
+  onBeforeUnmount(() => { clearTimeout(timer); if (pending) void drain(); });
   async function saveKey(provider: 'amap', key: string | null) {
     busy.value = true;
     try {
@@ -61,5 +84,5 @@ export function useAppSettings(messages: EditorMessages, playback: Playback) {
   }
   async function openCacheFolder() { try { await openMapCacheFolder(); } catch (reason) { messages.report(reason); } }
   async function openUrl(url: string) { try { await openExternalUrl(url); } catch (reason) { messages.report(reason); } }
-  return { pageOpen, busy, loaded, settings, draft, configured, cache, native, open, close, save, saveKey, clearCache, openCacheFolder, openUrl };
+  return { pageOpen, busy, loaded, settings, draft, configured, cache, native, open, close, flush, saveKey, clearCache, openCacheFolder, openUrl };
 }
