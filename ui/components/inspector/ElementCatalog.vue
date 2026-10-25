@@ -7,7 +7,7 @@ import { ELEMENT_CATEGORIES, catalogItems } from '../../domain/elementCatalog';
 import { useEditorContext } from '../../editor/context';
 import { bindSvg } from '../../domain/svgBindings';
 import { svgDataUrl } from '../../domain/widgetSvg';
-const preview = (source: string) => svgDataUrl(bindSvg(source, { timestampMs: 0, latitude: 31.2304, longitude: 121.4737, elevation: 128, speedMps: 10, headingDeg: 45, distanceMeters: 6400, segment: 0 }, 1234, '#e5f0db', { progress: { distanceMeters: 6400, totalMeters: 10000, remainingMeters: 3600, remainingSeconds: 1200, totalSeconds: 3600, fraction: 0.64 } }));
+const preview = (source: string) => svgDataUrl(bindSvg(source, { timestampMs: 0, latitude: 31.2304, longitude: 121.4737, elevation: 128, speedMps: 10, headingDeg: 45, distanceMeters: 6400, segment: 0 }, 1234, '#e5f0db', { address: { province: '广东省', city: '深圳市', district: '宝安区', street: '新安街道', road: '宝安大道' }, progress: { distanceMeters: 6400, totalMeters: 10000, remainingMeters: 3600, remainingSeconds: 1200, totalSeconds: 3600, fraction: 0.64 } }));
 const { svgElements } = useEditorContext();
 const category = ref('motion');
 const examples = computed(() => SVG_EXAMPLES.filter(item => item.category === category.value));

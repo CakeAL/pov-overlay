@@ -8,7 +8,7 @@ pub fn run() {
             if let Ok(config) = app.path().app_config_dir()
                 && let Ok(settings) = crate::infrastructure::app_settings::read(&config)
             {
-                crate::infrastructure::cached_images::set_limit(settings.cache_limit_mb);
+                crate::infrastructure::cached_resources::set_limit(settings.cache_limit_mb);
             }
             Ok(())
         })
@@ -20,6 +20,7 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            crate::commands::location::lookup_location,
             crate::commands::settings::load_app_settings,
             crate::commands::settings::save_app_settings,
             crate::commands::settings::set_map_api_key,

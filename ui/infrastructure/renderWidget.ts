@@ -1,3 +1,5 @@
+import { hasLocationFields } from "../domain/location";
+import { addressForFrame } from "./maps/geocoding";
 import type { Widget, Sample } from '../domain/types';
 import type { OverlayContext } from '../domain/overlayContext';
 import { widgetSvg } from '../domain/widgetSvg';
@@ -21,6 +23,7 @@ export function prepareMapRender(widget: Widget, sample: Sample | null, context:
   };
 }
 export async function renderWidgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number, context: OverlayContext = {}, signal?: AbortSignal): Promise<string> {
+  if (hasLocationFields(widget)) return widgetSvg(widget, sample, elapsed, ratio, { ...context, address: await addressForFrame(sample, context, signal) });
   if (widget.kind !== 'minimap') return widgetSvg(widget, sample, elapsed, ratio, context);
   return prepareMapRender(widget, sample, context).render(signal);
 }

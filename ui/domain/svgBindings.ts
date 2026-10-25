@@ -1,3 +1,4 @@
+import { escapeXml } from "./location";
 import type { OverlayContext } from "./overlayContext";
 import type { Sample } from "./types";
 import { formatTime } from "./telemetry";
@@ -12,7 +13,11 @@ export function bindSvg(
     value == null || !Number.isFinite(value) ? "—" : value.toFixed(digits);
   const speed = sample && sample.speedValid !== false ? Math.max(0, sample.speedMps * 3.6) : 0;
   const speedRatio = Math.min(1, speed / Math.max(1, context.speedMaxKmh ?? 60));
+  const place = (field: 'province' | 'city' | 'district' | 'street' | 'road') => escapeXml(context.address?.[field] || '—');
   const values: Record<string, string> = {
+    Province: place('province'), City: place('city'), District: place('district'), Street: place('street'), Road: place('road'),
+    HasAddress: context.address && Object.values(context.address).some(Boolean) ? '1' : '0',
+
     Speed: number(
       sample && sample.speedValid !== false ? sample.speedMps * 3.6 : null,
       1,

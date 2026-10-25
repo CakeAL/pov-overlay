@@ -1,6 +1,6 @@
 use crate::{
     domain::app_settings::AppSettings,
-    infrastructure::{api_keys, app_settings, cached_images},
+    infrastructure::{api_keys, app_settings, cached_resources},
 };
 use serde::Serialize;
 use tauri::Manager;
@@ -10,7 +10,7 @@ use tauri_plugin_opener::OpenerExt;
 pub struct SettingsSnapshot {
     settings: AppSettings,
     amap_configured: bool,
-    cache: cached_images::CacheStats,
+    cache: cached_resources::CacheStats,
 }
 #[tauri::command]
 pub async fn load_app_settings(app: tauri::AppHandle) -> Result<SettingsSnapshot, String> {
@@ -18,11 +18,11 @@ pub async fn load_app_settings(app: tauri::AppHandle) -> Result<SettingsSnapshot
     let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
     tauri::async_runtime::spawn_blocking(move || {
         let settings = app_settings::read(&config)?;
-        cached_images::set_limit(settings.cache_limit_mb);
+        cached_resources::set_limit(settings.cache_limit_mb);
         Ok(SettingsSnapshot {
             settings,
             amap_configured: api_keys::configured(&config, "amap"),
-            cache: cached_images::stats(&cache),
+            cache: cached_resources::stats(&cache),
         })
     })
     .await
@@ -34,8 +34,8 @@ pub async fn save_app_settings(app: tauri::AppHandle, settings: AppSettings) -> 
     let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
     tauri::async_runtime::spawn_blocking(move || {
         app_settings::save(&config, &settings)?;
-        cached_images::set_limit(settings.cache_limit_mb);
-        cached_images::enforce_limit(&cache)
+        cached_resources::set_limit(settings.cache_limit_mb);
+        cached_resources::enforce_limit(&cache)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -52,11 +52,13 @@ pub async fn set_map_api_key(
         .map_err(|e| e.to_string())?
 }
 #[tauri::command]
-pub async fn clear_map_cache(app: tauri::AppHandle) -> Result<cached_images::CacheStats, String> {
+pub async fn clear_map_cache(
+    app: tauri::AppHandle,
+) -> Result<cached_resources::CacheStats, String> {
     let cache = app.path().app_cache_dir().map_err(|e| e.to_string())?;
     tauri::async_runtime::spawn_blocking(move || {
-        cached_images::clear(&cache)?;
-        Ok(cached_images::stats(&cache))
+        cached_resources::clear(&cache)?;
+        Ok(cached_resources::stats(&cache))
     })
     .await
     .map_err(|e| e.to_string())?

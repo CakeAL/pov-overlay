@@ -11,3 +11,5 @@ pub mod fonts;
 pub mod system;
 
 pub mod settings;
+
+pub mod location;

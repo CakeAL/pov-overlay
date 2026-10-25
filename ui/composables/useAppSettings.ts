@@ -1,3 +1,4 @@
+import { clearLocationCache } from "../infrastructure/maps/geocoding";
 import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { DEFAULT_APP_SETTINGS, validateAppSettings, type AppSettings } from '../domain/appSettings';
 import { loadAppSettings, saveAppSettings, setMapApiKey, clearMapCache, openMapCacheFolder, type CacheStats } from '../infrastructure/appSettings';
@@ -13,7 +14,7 @@ export function useAppSettings(messages: EditorMessages, playback: Playback) {
   const settings = reactive({ ...DEFAULT_APP_SETTINGS }), draft = reactive({ ...settings });
   const configured = reactive({ amap: false });
   const cache = ref<CacheStats>({ bytes: 0, files: 0, path: '' });
-  function clearMemory() { clearMapTiles(); clearAmapImages(); }
+  function clearMemory() { clearMapTiles(); clearAmapImages(); clearLocationCache(); }
   let hydrating = false, timer: ReturnType<typeof setTimeout> | undefined;
   let pending: AppSettings | undefined, writer: Promise<void> | undefined, saved = '';
   async function load() {

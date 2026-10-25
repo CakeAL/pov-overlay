@@ -1,3 +1,4 @@
+import { LOCATION_FIELDS } from "./location";
 /** Coordinates in the original 960 × 130 strip, with independently editable SVGs. */
 export interface TelemetryItem {
   key: string;
@@ -91,4 +92,5 @@ export const JOURNEY_ITEMS = [
   journeyItem('totalTime', '总时长', 'TotalTime'),
   journeyItem('progress', '行程进度', 'Progress', '%'),
 ];
-export const ALL_TELEMETRY_ITEMS = [...TELEMETRY_ITEMS, ...JOURNEY_ITEMS];
+export const LOCATION_ITEMS = LOCATION_FIELDS.map(field => item(field.key, field.label, 0, 0, 400, 52, `<text x="2" y="38" font-size="28">{\$${field.field}}</text>`));
+export const ALL_TELEMETRY_ITEMS = [...TELEMETRY_ITEMS, ...JOURNEY_ITEMS, ...LOCATION_ITEMS];

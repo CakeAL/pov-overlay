@@ -13,6 +13,7 @@ export const SVG_FIELDS = [
   "HasData",
   "HasSpeed",
   "HasHeading",
+  "Province", "City", "District", "Street", "Road", "HasAddress",
 ] as const;
 export function sanitizeSvg(source: string): {
   source: string;

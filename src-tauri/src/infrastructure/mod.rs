@@ -33,6 +33,8 @@ pub mod app_settings;
 
 pub mod api_keys;
 
-pub mod cached_images;
+pub mod cached_resources;
 
 pub mod map_http;
+
+pub mod geocoding;

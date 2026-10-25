@@ -34,7 +34,7 @@ pub fn load(root: &Path, source: TileSource, z: u8, x: u32, y: u32) -> Result<Ve
     } else {
         super::map_http::png
     };
-    super::cached_images::get(
+    super::cached_resources::get(
         root,
         &path,
         Duration::from_secs(days * 86400),

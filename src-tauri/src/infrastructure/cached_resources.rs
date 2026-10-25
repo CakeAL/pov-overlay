@@ -70,7 +70,7 @@ pub fn get(
     match fetch() {
         Ok(bytes) => {
             if !valid(&bytes) {
-                return cached.ok_or("地图图像内容无效。".into());
+                return cached.ok_or("在线资源内容无效。".into());
             }
             let _write = DISK_MUTATION.read().map_err(|e| e.to_string())?;
             if generation == GENERATION.load(Ordering::SeqCst) {

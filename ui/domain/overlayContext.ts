@@ -1,3 +1,4 @@
+import type { LocationAddress } from "./location";
 import type { Track, Sample } from './types';
 export interface JourneyProgress {
   distanceMeters: number;
@@ -9,6 +10,7 @@ export interface JourneyProgress {
   distanceFraction?: number;
 }
 export interface OverlayContext {
+  address?: LocationAddress | null;
   speedMaxKmh?: number;
   track?: Track | null;
   timestampMs?: number;

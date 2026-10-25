@@ -2,6 +2,7 @@
 import { Settings2, Check, Plus, Bold, Italic, FolderOpen } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
+import LocationProperties from "./LocationProperties.vue";
 import MapProperties from "./MapProperties.vue";
 import RouteProperties from "./RouteProperties.vue";
 import FontFamilySelect from "./FontFamilySelect.vue";
@@ -23,6 +24,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
     </div>
     <RouteProperties />
     <MapProperties />
+    <LocationProperties />
     <div class="position-fields">
       <label
         >X

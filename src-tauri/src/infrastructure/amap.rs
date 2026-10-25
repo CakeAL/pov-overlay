@@ -21,7 +21,7 @@ pub fn load(
         .join("amap-static")
         .join(zoom.to_string())
         .join(format!("{longitude:.6}_{latitude:.6}.image"));
-    let bytes = super::cached_images::get(
+    let bytes = super::cached_resources::get(
         cache,
         &path,
         Duration::from_secs(settings.amap_cache_days * 86400),

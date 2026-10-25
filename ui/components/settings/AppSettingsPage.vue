@@ -23,7 +23,7 @@ const size = (bytes: number) => bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(
         <label class="preferences-row">高德静态图缓存（天）<input aria-label="静态图缓存天数" type="number" min="1" max="365" v-model.number="appSettings.draft.amapCacheDays" /></label>
         <label class="preferences-row">磁盘缓存上限（MB）<input aria-label="缓存容量上限" type="number" min="64" max="8192" step="64" v-model.number="appSettings.draft.cacheLimitMb" /></label>
         <div v-if="appSettings.native" class="cache-summary"><span>{{ size(appSettings.cache.bytes) }} · {{ appSettings.cache.files }} 个文件</span><div><button @click="appSettings.openCacheFolder">打开文件夹</button><button @click="appSettings.clearCache">清空缓存</button></div><code>{{ appSettings.cache.path }}</code></div>
-        <p class="settings-note">底图、静态图和海拔瓦片共用容量上限；网络异常时优先使用已有缓存。</p>
+        <p class="settings-note">底图、静态图、地址和海拔共用容量上限；网络异常时优先使用已有缓存。</p>
       </fieldset>
       <section class="preferences-section provider-links"><h2>数据来源</h2><button @click="appSettings.openUrl('https://www.openstreetmap.org/copyright')">OpenStreetMap ↗</button><button @click="appSettings.openUrl('https://lbs.amap.com/')">高德地图 ↗</button><button @click="appSettings.openUrl('https://mapterhorn.com/')">Mapterhorn 海拔 ↗</button></section>
     </div>

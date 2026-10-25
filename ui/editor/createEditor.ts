@@ -1,3 +1,4 @@
+import { useLocationLabels } from "../composables/useLocationLabels";
 import { useAppSettings } from "../composables/useAppSettings";
 import { useSystemFonts } from "../composables/useSystemFonts";
 import { useWidgetMenu } from "../composables/useWidgetMenu";
@@ -33,6 +34,7 @@ export function createEditor() {
   const telemetry = useTelemetrySettings();
   const svgElements = useSvgElements(layout, messages, () => appSettings.settings.defaultMapProvider);
   const timeline = useTimeline(media, playback, alignment, telemetry);
+  const locationLabels = useLocationLabels(timeline, layout, () => appSettings.pageOpen.value, messages);
   const profile = useTrackProfile(timeline, playback, alignment, media);
   const documents = useDocuments(
     media,
@@ -59,6 +61,7 @@ export function createEditor() {
     viewport,
     layout,
     timeline,
+    locationLabels,
     profile,
     telemetry,
     svgElements,
