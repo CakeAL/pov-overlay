@@ -80,7 +80,7 @@ export function validateWidgets(v: unknown): Widget[] {
         const m = object(w.map);
         if (m.provider != null && m.provider !== 'osm' && m.provider !== 'amap') throw new Error('地图来源无效。');
         if (m.shape != null && m.shape !== 'circle' && m.shape !== 'square') throw new Error('地图形状无效。');
-        return { provider: m.provider as 'osm' | 'amap' | undefined, zoom: m.zoom == null ? undefined : num(m.zoom, 2, 19), shape: m.shape as 'circle' | 'square' | undefined, headingUp: m.headingUp == null ? undefined : bool(m.headingUp), showRoute: m.showRoute == null ? undefined : bool(m.showRoute) };
+        return { opacity: m.opacity == null ? undefined : num(m.opacity, 0, 100), provider: m.provider as 'osm' | 'amap' | undefined, zoom: m.zoom == null ? undefined : num(m.zoom, 2, 19), shape: m.shape as 'circle' | 'square' | undefined, headingUp: m.headingUp == null ? undefined : bool(m.headingUp), showRoute: m.showRoute == null ? undefined : bool(m.showRoute) };
       })(),
       route: w.route == null ? undefined : (() => {
         const r = object(w.route);

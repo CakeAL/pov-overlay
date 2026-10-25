@@ -7,6 +7,7 @@ import { amapImage } from './maps/amap';
 import { mapTile } from './maps/tiles';
 export async function renderWidgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number, context: OverlayContext = {}): Promise<string> {
   if (widget.scale <= 0 || widget.kind !== 'minimap') return widgetSvg(widget, sample, elapsed, ratio, context);
+  if (widget.map?.opacity === 0) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"/>';
   const scene = mapScene(widget, sample, context);
   return styleWidgetSvg(mapSvg(widget, scene, scene.raster ? [await amapImage(scene.raster)] : await Promise.all(scene.tiles.map(mapTile))), widget.typography);
 }
