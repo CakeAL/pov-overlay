@@ -110,3 +110,5 @@
 .widget-context-menu > button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 10px; text-align: left; color: #a24635; }
 .widget-context-menu > button:hover, .widget-context-menu > button:focus-visible { background: #fff0e9; }
 .widget-context-menu kbd { margin-left: auto; font: inherit; color: #899386; }
+.map-loading, .map-retry { position: absolute; right: 5px; bottom: 5px; padding: 3px 6px; border-radius: 4px; background: #26342be6 !important; color: white; font-size: 12px; }
+.map-loading { pointer-events: none; }

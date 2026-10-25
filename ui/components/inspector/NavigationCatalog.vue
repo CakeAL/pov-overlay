@@ -16,16 +16,18 @@ const route = computed(() => {
   return svgDataUrl(widgetSvg(template('route'), sample, 0, 1, overlayContext(track, track.startMs, sample)));
 });
 let revision = 0;
+let request: AbortController | undefined;
 watch(() => timeline.preparedTrack, async track => {
+  request?.abort(); request = new AbortController();
   const current = ++revision; map.value = ''; error.value = '';
   if (!track) return;
   try {
     const sample = track.samples[0]!;
-    const source = await renderWidgetSvg(template('minimap'), sample, 0, 1, overlayContext(track, track.startMs, sample));
+    const source = await renderWidgetSvg(template('minimap'), sample, 0, 1, overlayContext(track, track.startMs, sample), request.signal);
     if (current === revision) map.value = svgDataUrl(source);
   } catch (reason) { if (current === revision) error.value = String(reason); }
 }, { immediate: true });
-onBeforeUnmount(() => revision++);
+onBeforeUnmount(() => { revision++; request?.abort(); });
 </script>
 <template>
   <div class="catalog-grid navigation-catalog">
