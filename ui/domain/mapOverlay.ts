@@ -21,6 +21,8 @@ export function mapScene(widget: Widget, sample: Sample | null, context: Overlay
   if (!center) return { tiles: [] as MapTile[], angle: 0, path: '', marker: false, heading: null };
   const provider = widget.map?.provider ?? 'osm';
   const zoom = Math.round(Math.max(2, Math.min(provider === 'amap' ? 17 : 19, widget.map?.zoom ?? 14)));
+  // AMap static maps use twice the pixel scale of OSM at the same zoom.
+  const pixels = provider === 'amap' ? 512 : 256;
   const coordinates = mapCoordinate(center.latitude, center.longitude, provider);
   const n = 2 ** zoom, p = mercator(coordinates.latitude, coordinates.longitude, zoom);
   const tiles: MapTile[] = [];
@@ -35,14 +37,15 @@ export function mapScene(widget: Widget, sample: Sample | null, context: Overlay
       const point = track.samples[i]!, prev = track.samples[i - 1];
       const position = mapCoordinate(point.latitude, point.longitude, provider);
       const q = mercator(position.latitude, position.longitude, zoom);
-      const x = 150 + ((((q.x - p.x + n / 2) % n) + n) % n - n / 2) * 256;
-      const y = 150 + (q.y - p.y) * 256;
+      const x = 150 + ((((q.x - p.x + n / 2) % n) + n) % n - n / 2) * pixels;
+      const y = 150 + (q.y - p.y) * pixels;
       const broken = i === start || !prev || prev.segment !== point.segment || point.timestampMs - prev.timestampMs > MAX_GAP_MS;
       path += `${broken ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)} `;
     }
   }
-  const ax = Math.round(p.x * 4) / 4, ay = Math.round(p.y * 4) / 4;
-  const raster = provider === 'amap' ? { longitude: ax/n*360-180, latitude: Math.atan(Math.sinh(Math.PI*(1-2*ay/n)))*180/Math.PI, zoom, left: 150+(ax-p.x)*256-256, top: 150+(ay-p.y)*256-256 } : undefined;
+  const grid = pixels / 64;
+  const ax = Math.round(p.x * grid) / grid, ay = Math.round(p.y * grid) / grid;
+  const raster = provider === 'amap' ? { longitude: ax/n*360-180, latitude: Math.atan(Math.sinh(Math.PI*(1-2*ay/n)))*180/Math.PI, zoom, left: 150+(ax-p.x)*pixels-256, top: 150+(ay-p.y)*pixels-256 } : undefined;
   return { tiles, raster, angle, path, marker: !!sample, heading: sample?.headingDeg ?? null };
 }
 export function mapSvg(widget: Widget, scene: ReturnType<typeof mapScene>, sources: string[]): string {
