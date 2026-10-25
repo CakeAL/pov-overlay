@@ -10,7 +10,7 @@ use std::{
     },
     time::Duration,
 };
-const FOLDERS: &[&str] = &["map-tiles", "terrain-tiles", "amap-static"];
+const FOLDERS: &[&str] = &["map-tiles", "terrain-tiles", "amap-static", "amap-address"];
 static LOCKS: OnceLock<[Mutex<()>; 64]> = OnceLock::new();
 static DISK_MUTATION: RwLock<()> = RwLock::new(());
 static GENERATION: AtomicU64 = AtomicU64::new(0);
@@ -183,5 +183,18 @@ mod tests {
             b"image"
         );
         assert_eq!(stats(root.path()).files, 1);
+        let address = root.path().join("amap-address/point.json");
+        get(
+            root.path(),
+            &address,
+            Duration::from_secs(60),
+            valid,
+            || Ok(b"image".to_vec()),
+        )
+        .unwrap();
+        assert_eq!(stats(root.path()).files, 2);
+        clear(root.path()).unwrap();
+        assert_eq!(stats(root.path()).files, 0);
+        assert!(!address.exists());
     }
 }
