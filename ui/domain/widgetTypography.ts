@@ -19,5 +19,5 @@ export function styleWidgetSvg(source: string, typography: Widget['typography'])
     source = source.replace(/(font-size\s*(?:=\s*["']|:\s*))([\d.]+)/gi, (_, prefix: string, n: string) => `${prefix}${Number(n) * factor}`);
   }
   const rules = [family && `font-family:${family}!important`, typography.bold != null && `font-weight:${typography.bold ? 700 : 400}!important`, typography.italic != null && `font-style:${typography.italic ? 'italic' : 'normal'}!important`, !sizes.length && typography.fontSize != null && `font-size:${typography.fontSize}px`].filter(Boolean).join(';');
-  return source.replace(/(<svg\b[^>]*>)/, `$1<style>text,tspan{${rules}}</style>`);
+  return source.replace(/(<svg\b[^>]*>)/, root => `${root}<style>text,tspan{${rules}}</style>`);
 }

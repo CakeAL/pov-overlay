@@ -129,7 +129,7 @@ export function useWidgetLayout(
         const result = snapLayout(
           { x: widget.x, y: widget.y, ...dimensions(widget) },
           widgets.value
-            .filter((other) => other.id !== widget.id && other.visible)
+            .filter((other) => other.id !== widget.id && other.visible && other.scale > 0)
             .map((other) => ({ x: other.x, y: other.y, ...dimensions(other) })),
           drag.rect,
           showSafeArea.value,
