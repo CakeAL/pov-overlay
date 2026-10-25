@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Settings2, Check, Plus, Bold, Italic } from "lucide-vue-next";
+import { Settings2, Check, Plus, Bold, Italic, FolderOpen } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 import MapProperties from "./MapProperties.vue";
 import RouteProperties from "./RouteProperties.vue";
 import FontFamilySelect from "./FontFamilySelect.vue";
-const { layout } = useEditorContext();
+const { layout, svgElements } = useEditorContext();
 const { selected, maximumScale } = toRefs(layout);
 const { remember, resetSelected, updatePosition, updateScale } = layout;
 function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: string | number | boolean | undefined) {
@@ -19,7 +19,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
   <section v-if="selected" class="panel-section properties-section">
     <div class="section-title">
       <span><Settings2 :size="15" /> {{ selected.label }}设置</span
-      ><button class="text-button" @click="resetSelected">重置</button>
+      ><div class="property-title-actions"><button v-if="selected.svg" class="icon-button" aria-label="查看元素 SVG 源文件" title="查看源文件位置" @click="svgElements.inspectSource(selected.svg.source, selected.label, selected.svg)"><FolderOpen :size="15" /></button><button class="text-button" @click="resetSelected">重置</button></div>
     </div>
     <RouteProperties />
     <MapProperties />

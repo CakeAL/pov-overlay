@@ -33,6 +33,7 @@ export interface VideoAsset {
   duration: number;
 }
 export type WidgetKind = "speed" | "coordinates" | "svg" | "route" | "minimap";
+export interface SvgOrigin { sourcePath?: string; exampleKey?: string }
 export interface Widget {
   id: string;
   kind: WidgetKind;
@@ -44,7 +45,7 @@ export interface Widget {
   color: string;
   visible: boolean;
   locked: boolean;
-  svg?: { source: string; aspectRatio: number };
+  svg?: { source: string; aspectRatio: number } & SvgOrigin;
   widthRatio?: number;
   map?: { provider?: "osm" | "amap"; zoom?: number; shape?: "circle" | "square"; headingUp?: boolean; showRoute?: boolean };
   route?: { mode?: "full" | "local"; windowSeconds?: number; headingUp?: boolean };

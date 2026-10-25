@@ -24,3 +24,5 @@ pub mod tile_cache;
 pub mod fonts;
 
 pub mod amap;
+
+pub mod svg_sources;

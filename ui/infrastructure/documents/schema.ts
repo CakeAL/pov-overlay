@@ -97,7 +97,12 @@ export function validateWidgets(v: unknown): Widget[] {
       widthRatio: w.widthRatio == null ? undefined : num(w.widthRatio, 0.01, 1),
       svg:
         w.kind === "svg"
-          ? sanitizeSvg(text(object(w.svg).source, 2 * 1024 * 1024))
+          ? (() => {
+              const svg = object(w.svg);
+              const exampleKey = svg.exampleKey == null ? undefined : text(svg.exampleKey);
+              if (exampleKey && !['gauge', 'bar', 'ring'].includes(exampleKey)) throw new Error('SVG 范例标识无效。');
+              return { ...sanitizeSvg(text(svg.source, 2 * 1024 * 1024)), sourcePath: svg.sourcePath == null ? undefined : text(svg.sourcePath, 4096), exampleKey };
+            })()
           : undefined,
     };
   });

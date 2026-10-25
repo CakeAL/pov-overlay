@@ -26,3 +26,28 @@ pub async fn open_external_url(app: tauri::AppHandle, url: String) -> Result<(),
         .open_url(url, None::<&str>)
         .map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn reveal_svg_source(
+    app: tauri::AppHandle,
+    source: String,
+    label: String,
+    source_path: Option<String>,
+    example_key: Option<String>,
+) -> Result<(), String> {
+    let root = app.path().app_config_dir().map_err(|e| e.to_string())?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let path = crate::infrastructure::svg_sources::resolve(
+            &root,
+            &source,
+            &label,
+            source_path.as_deref(),
+            example_key.as_deref(),
+        )?;
+        app.opener()
+            .reveal_item_in_dir(path)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}

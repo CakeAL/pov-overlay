@@ -12,6 +12,7 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            crate::commands::system::reveal_svg_source,
             crate::commands::system::open_preset_folder,
             crate::commands::system::open_external_url,
             crate::commands::fonts::list_system_fonts,

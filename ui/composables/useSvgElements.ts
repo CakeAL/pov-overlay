@@ -5,7 +5,8 @@ import { native } from "../infrastructure/media";
 import { sanitizeSvg } from "../infrastructure/svg";
 import { TELEMETRY_STRIP } from "../domain/telemetryStrip";
 import { TELEMETRY_ITEMS, ALL_TELEMETRY_ITEMS, type TelemetryItem } from "../domain/telemetryItems";
-import type { Widget } from "../domain/types";
+import { showSvgSource } from "../infrastructure/platform";
+import type { SvgOrigin, Widget } from "../domain/types";
 import type { WidgetLayout } from "./useWidgetLayout";
 import type { EditorMessages } from "./useMessages";
 export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
@@ -32,7 +33,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
     layout.selectedId.value = values[0]?.id ?? "";
     values.forEach(layout.clampWidget);
   }
-  function addSvg(source: string, name: string, width = 0.3) {
+  function addSvg(source: string, name: string, width = 0.3, origin: SvgOrigin = {}) {
     const svg = sanitizeSvg(source);
     const widget = {
       id: crypto.randomUUID(),
@@ -45,10 +46,14 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
       color: "#ffffff",
       visible: true,
       locked: false,
-      svg,
+      svg: { ...svg, ...origin },
       widthRatio: width,
     };
     insert([widget]);
+  }
+  async function inspectSource(source: string, label: string, origin: SvgOrigin = {}) {
+    try { await showSvgSource(sanitizeSvg(source).source, label, origin); }
+    catch (reason) { messages.report(reason); }
   }
   async function chooseSvg() {
     if (!native) {
@@ -64,6 +69,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
         addSvg(
           await invoke<string>("read_svg", { path }),
           path.split(/[\\/]/).at(-1)!,
+          0.3, { sourcePath: path },
         );
     } catch (reason) {
       messages.report(reason);
@@ -143,7 +149,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
     svgInput,
     chooseSvg,
     selectedSvg,
-    addSvg,
+    addSvg, inspectSource,
     addRoute,
     addMinimap,
     addTelemetryStrip,
