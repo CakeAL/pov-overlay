@@ -67,7 +67,7 @@ export function validateWidgets(v: unknown): Widget[] {
     if (!/^#[0-9a-f]{6}$/i.test(color)) throw new Error("颜色无效。");
     return {
       id,
-      label: text(w.label),
+      label: w.kind === "minimap" && w.label === "OpenStreetMap" ? "小地图" : text(w.label),
       kind: w.kind as Widget["kind"],
       x: num(w.x, 0, 1),
       y: num(w.y, 0, 1),
@@ -78,8 +78,9 @@ export function validateWidgets(v: unknown): Widget[] {
       locked: bool(w.locked),
       map: w.map == null ? undefined : (() => {
         const m = object(w.map);
+        if (m.provider != null && m.provider !== 'osm' && m.provider !== 'amap') throw new Error('地图来源无效。');
         if (m.shape != null && m.shape !== 'circle' && m.shape !== 'square') throw new Error('地图形状无效。');
-        return { zoom: m.zoom == null ? undefined : num(m.zoom, 2, 19), shape: m.shape as 'circle' | 'square' | undefined, headingUp: m.headingUp == null ? undefined : bool(m.headingUp), showRoute: m.showRoute == null ? undefined : bool(m.showRoute) };
+        return { provider: m.provider as 'osm' | 'amap' | undefined, zoom: m.zoom == null ? undefined : num(m.zoom, 2, 19), shape: m.shape as 'circle' | 'square' | undefined, headingUp: m.headingUp == null ? undefined : bool(m.headingUp), showRoute: m.showRoute == null ? undefined : bool(m.showRoute) };
       })(),
       route: w.route == null ? undefined : (() => {
         const r = object(w.route);

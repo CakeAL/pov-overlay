@@ -24,3 +24,32 @@ pub async fn sample_terrain_tile(
     .await
     .map_err(|e| e.to_string())?
 }
+
+#[tauri::command]
+pub async fn amap_key_status(app: tauri::AppHandle) -> Result<bool, String> {
+    let root = app.path().app_config_dir().map_err(|e| e.to_string())?;
+    Ok(crate::infrastructure::amap::configured(&root))
+}
+#[tauri::command]
+pub async fn configure_amap_key(app: tauri::AppHandle, key: String) -> Result<(), String> {
+    let root = app.path().app_config_dir().map_err(|e| e.to_string())?;
+    tauri::async_runtime::spawn_blocking(move || {
+        crate::infrastructure::amap::configure(&root, key.trim())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+#[tauri::command]
+pub async fn load_amap_map(
+    app: tauri::AppHandle,
+    latitude: f64,
+    longitude: f64,
+    zoom: u8,
+) -> Result<String, String> {
+    let root = app.path().app_config_dir().map_err(|e| e.to_string())?;
+    tauri::async_runtime::spawn_blocking(move || {
+        crate::infrastructure::amap::load(&root, latitude, longitude, zoom)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}

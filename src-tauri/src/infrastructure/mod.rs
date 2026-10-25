@@ -22,3 +22,5 @@ pub mod terrain;
 pub mod tile_cache;
 
 pub mod fonts;
+
+pub mod amap;

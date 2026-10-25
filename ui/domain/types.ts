@@ -46,7 +46,7 @@ export interface Widget {
   locked: boolean;
   svg?: { source: string; aspectRatio: number };
   widthRatio?: number;
-  map?: { zoom?: number; shape?: "circle" | "square"; headingUp?: boolean; showRoute?: boolean };
+  map?: { provider?: "osm" | "amap"; zoom?: number; shape?: "circle" | "square"; headingUp?: boolean; showRoute?: boolean };
   route?: { mode?: "full" | "local"; windowSeconds?: number; headingUp?: boolean };
   speedMaxKmh?: number;
   typography?: { fontFamily?: string; fontSize?: number; bold?: boolean; italic?: boolean };

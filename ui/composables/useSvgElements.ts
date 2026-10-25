@@ -112,7 +112,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
     };
   }
   function addMinimap() {
-    insert([{ id: crypto.randomUUID(), kind: 'minimap', label: 'OpenStreetMap', x: 0.05, y: 0.05, widthRatio: 0.24, scale: 1, opacity: 0, color: '#709f43', visible: true, locked: false, map: { zoom: 14, shape: 'circle', headingUp: false, showRoute: true } }]);
+    insert([{ id: crypto.randomUUID(), kind: 'minimap', label: '小地图', x: 0.05, y: 0.05, widthRatio: 0.24, scale: 1, opacity: 0, color: '#709f43', visible: true, locked: false, map: { zoom: 14, shape: 'circle', headingUp: false, showRoute: true } }]);
   }
   function addRoute() {
     insert([{ id: crypto.randomUUID(), kind: 'route', label: '路线', x: 0.05, y: 0.05, widthRatio: 0.22, scale: 1, opacity: 0, color: '#c7f284', visible: true, locked: false, route: { mode: 'full', windowSeconds: 120, headingUp: false } }]);

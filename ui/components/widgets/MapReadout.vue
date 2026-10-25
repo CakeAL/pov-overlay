@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import type { Widget, Sample } from '../../domain/types';
 import { useEditorContext } from '../../editor/context';
 import { retryMapTiles } from "../../infrastructure/maps/tiles";
@@ -16,6 +16,9 @@ watch(() => [JSON.stringify(props.widget), props.sample, timeline.context.timest
     if (current === revision) { url.value = svgDataUrl(svg); error.value = ''; }
   } catch (reason) { if (current === revision) error.value = reason instanceof Error ? reason.message : String(reason); }
 }, { immediate: true });
+function configured() { retry.value++; }
+onMounted(() => window.addEventListener('pov-amap-configured', configured));
+onBeforeUnmount(() => { revision++; window.removeEventListener('pov-amap-configured', configured); });
 </script>
 <template>
   <img v-if="url && !error" class="builtin-readout" :src="url" alt="小地图" draggable="false" />
