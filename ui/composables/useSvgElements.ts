@@ -97,7 +97,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
       label: item.label,
       x: parent.x + (size.width * item.x) / 960,
       y: parent.y + (size.height * item.y) / 130,
-      widthRatio: (size.width * item.width) / 960 / parent.scale,
+      widthRatio: ((parent.scale > 0 ? size.width / parent.scale : parent.widthRatio ?? 0.9) * item.width) / 960,
       svg: sanitizeSvg(item.source),
     };
   }

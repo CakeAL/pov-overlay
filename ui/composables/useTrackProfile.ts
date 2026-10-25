@@ -13,8 +13,8 @@ export function useTrackProfile(
   media: MediaSession,
 ) {
   const collapsed = ref(true);
-  watch([media.sources, media.asset, media.image], () => { collapsed.value = true; hoverFraction.value = null; });
   const hoverFraction = ref<number | null>(null);
+  watch([media.sources, media.asset, media.image], () => { collapsed.value = true; hoverFraction.value = null; });
   function toggleCollapsed() {
     hoverFraction.value = null;
     collapsed.value = !collapsed.value;

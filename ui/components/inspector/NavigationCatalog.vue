@@ -29,7 +29,7 @@ onBeforeUnmount(() => revision++);
 </script>
 <template>
   <div class="catalog-grid navigation-catalog">
-    <button @click="svgElements.addRoute"><span class="catalog-preview"><img v-if="route" :src="route" alt="当前 GPX 路线缩略图" /><Route v-else :size="30" /></span><span>路线</span></button>
-    <button @click="svgElements.addMinimap"><span class="catalog-preview" :title="error || '当前 GPX 起点附近地图'"><img v-if="map" :src="map" alt="当前 GPX 小地图缩略图" /><MapPin v-else :size="30" /></span><span>小地图</span></button>
+    <button aria-label="添加路线" @click="svgElements.addRoute"><span class="catalog-preview"><img v-if="route" :src="route" alt="当前 GPX 路线缩略图" /><Route v-else :size="30" /></span><span>路线</span></button>
+    <button aria-label="添加小地图" @click="svgElements.addMinimap"><span class="catalog-preview" :title="error || '当前 GPX 起点附近地图'"><img v-if="map" :src="map" alt="当前 GPX 小地图缩略图" /><MapPin v-else :size="30" /></span><span>小地图</span></button>
   </div>
 </template>
