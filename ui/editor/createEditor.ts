@@ -1,3 +1,4 @@
+import { useSystemFonts } from "../composables/useSystemFonts";
 import { useWidgetMenu } from "../composables/useWidgetMenu";
 import { useElevation } from "../composables/useElevation";
 import { useVideoExport } from "../composables/useVideoExport";
@@ -19,6 +20,7 @@ import { useEditorShortcuts } from "../composables/useEditorShortcuts";
 /** Composition root: owns one editor session and wires independent feature controllers. */
 export function createEditor() {
   const messages = useMessages();
+  const fonts = useSystemFonts(messages);
   const media = useMediaSession(messages);
   const elevation = useElevation(media, messages);
   const alignment = useAlignment(media.track, media.activeVideo, messages);
@@ -43,6 +45,7 @@ export function createEditor() {
   useEditorShortcuts(layout, playback, viewport);
   return reactive({
     documents,
+    fonts,
     widgetMenu,
     elevation,
     videoExport,

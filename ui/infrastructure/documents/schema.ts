@@ -9,6 +9,7 @@ import {
   DEFAULT_SMOOTHING_POINTS,
   MAX_SMOOTHING_POINTS,
 } from "../../domain/speedEstimation";
+import { validFontFamily } from "../../domain/widgetTypography";
 import { sanitizeSvg } from "../svg";
 import { correctTrackTime, validTrackTimeOffset } from "../../domain/trackTime";
 export interface PresetDocument {
@@ -88,8 +89,8 @@ export function validateWidgets(v: unknown): Widget[] {
       speedMaxKmh: w.speedMaxKmh == null ? undefined : num(w.speedMaxKmh, 1, 2000),
       typography: w.typography == null ? undefined : (() => {
         const t = object(w.typography);
-        const fontFamily = t.fontFamily == null ? undefined : text(t.fontFamily, 120);
-        if (fontFamily && !/^[\w ,.-]{1,120}$/.test(fontFamily)) throw new Error("字体名称无效。");
+        const fontFamily = t.fontFamily == null ? undefined : text(t.fontFamily, 256);
+        if (fontFamily && !validFontFamily(fontFamily)) throw new Error("字体名称无效。");
         return { fontFamily, fontSize: t.fontSize == null ? undefined : num(t.fontSize, 8, 200), bold: t.bold == null ? undefined : bool(t.bold), italic: t.italic == null ? undefined : bool(t.italic) };
       })(),
       widthRatio: w.widthRatio == null ? undefined : num(w.widthRatio, 0.01, 1),

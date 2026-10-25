@@ -11,6 +11,7 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            crate::commands::fonts::list_system_fonts,
             crate::commands::maps::load_map_tile,
             crate::commands::maps::sample_terrain_tile,
             crate::commands::materials::load_gpx,
