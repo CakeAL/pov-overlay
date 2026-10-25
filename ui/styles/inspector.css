@@ -545,3 +545,5 @@
 .elevation-progress progress { width: 100px; }
 .scale-value { display: inline-flex; align-items: center; gap: 3px; }
 .scale-value input { width: 65px; padding: 3px; border: 1px solid #d0d7cb; border-radius: 4px; font: inherit; text-align: right; background: white; color: inherit; }
+.layer-delete:hover:not(:disabled) { color: #a24635; background: #fff0e9; }
+.element-actions:empty { display: none; }

@@ -3,6 +3,7 @@ import {
   Gauge,
   CodeXml,
   MapPin,
+  Trash2,
   Eye,
   EyeOff,
   LockKeyhole,
@@ -29,13 +30,6 @@ const { toggleVisible, toggleLock } = layout;
       >
         拆分数据条
       </button>
-      <button
-        class="text-button"
-        :disabled="!selectedId"
-        @click="svgElements.removeSelected"
-      >
-        删除元素
-      </button>
     </div>
     <input
       ref="svgInput"
@@ -61,6 +55,7 @@ const { toggleVisible, toggleLock } = layout;
             :size="18" /><CodeXml v-else :size="18" /></span
         ><strong>{{ widget.label }}</strong>
       </button>
+      <button class="icon-button layer-delete" :aria-label="`删除${widget.label}`" title="删除元素" @click="layout.removeWidget(widget.id)"><Trash2 :size="15" /></button>
       <button
         class="icon-button"
         :aria-label="`${widget.visible ? '隐藏' : '显示'}${widget.label}`"

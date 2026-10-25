@@ -138,14 +138,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages) {
       parent.id,
     );
   }
-  function removeSelected() {
-    if (!layout.selected.value) return;
-    layout.remember();
-    layout.widgets.value = layout.widgets.value.filter(
-      (w) => w.id !== layout.selectedId.value,
-    );
-    layout.selectedId.value = layout.widgets.value[0]?.id ?? "";
-  }
+  function removeSelected() { layout.removeWidget(layout.selectedId.value); }
   return {
     svgInput,
     chooseSvg,

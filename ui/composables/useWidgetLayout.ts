@@ -144,6 +144,13 @@ export function useWidgetLayout(
     drag = null;
     guides.value = { x: null, y: null };
   }
+  function removeWidget(id: string) {
+    const index = widgets.value.findIndex(widget => widget.id === id);
+    if (index < 0) return;
+    remember();
+    widgets.value.splice(index, 1);
+    if (selectedId.value === id) selectedId.value = widgets.value[Math.min(index, widgets.value.length - 1)]?.id ?? "";
+  }
   function toggleVisible(widget: Widget) {
     remember();
     widget.visible = !widget.visible;
@@ -192,6 +199,7 @@ export function useWidgetLayout(
     resetLayout,
     resetSelected,
     toggleVisible,
+    removeWidget,
     toggleLock,
     updatePosition,
     updateScale,
