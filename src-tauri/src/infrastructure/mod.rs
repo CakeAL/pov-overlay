@@ -26,3 +26,5 @@ pub mod fonts;
 pub mod amap;
 
 pub mod svg_sources;
+
+pub mod hardware_probe;

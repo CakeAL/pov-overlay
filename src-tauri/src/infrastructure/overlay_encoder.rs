@@ -1,4 +1,7 @@
-use super::export_codec::{EncoderSelection, configure_codec, select_encoder};
+use super::export_codec::{
+    EncoderSelection, available_encoders, configure_codec, configure_device, select_encoder,
+    upload_filter,
+};
 use crate::domain::overlay_export::{ExportBackground, ExportSettings};
 use serde::Serialize;
 use std::{
@@ -31,32 +34,28 @@ pub fn detect_encoder() -> Result<EncoderInfo, String> {
         "/usr/local/bin/ffmpeg",
     ];
     for path in candidates {
-        let Ok(output) = Command::new(path)
-            .args(["-hide_banner", "-encoders"])
-            .stdin(Stdio::null())
-            .output()
-        else {
-            continue;
-        };
-        if !output.status.success() {
+        let available = available_encoders(path);
+        if available.is_empty() {
             continue;
         }
-        let text = String::from_utf8_lossy(&output.stdout);
-        let h264_mp4 = text
-            .lines()
-            .any(|line| line.split_whitespace().nth(1) == Some("libx264"));
+        let h264_mp4 = [
+            "libx264",
+            "h264_videotoolbox",
+            "h264_nvenc",
+            "h264_qsv",
+            "h264_amf",
+            "h264_vaapi",
+            "h264_v4l2m2m",
+        ]
+        .iter()
+        .any(|name| available.contains(*name));
         return Ok(EncoderInfo {
             h264_mp4,
-            webm_vp9: text
-                .lines()
-                .any(|line| line.split_whitespace().nth(1) == Some("libvpx-vp9")),
+            webm_vp9: available.contains("libvpx-vp9"),
             path: path.into(),
-            prores4444: text
-                .lines()
-                .any(|line| line.split_whitespace().nth(1) == Some("prores_ks")),
-            png_mov: text
-                .lines()
-                .any(|line| line.split_whitespace().nth(1) == Some("png")),
+            prores4444: available.contains("prores_ks")
+                || available.contains("prores_videotoolbox"),
+            png_mov: available.contains("png"),
         });
     }
     Err("未找到 FFmpeg，请安装后重试（macOS：brew install ffmpeg）。".into())
@@ -117,6 +116,7 @@ impl OverlayEncoder {
         let selection = select_encoder(ffmpeg, &settings);
         let region = settings.region();
         let mut command = Command::new(ffmpeg);
+        configure_device(&mut command, selection);
         command
             .args([
                 "-hide_banner",
@@ -134,6 +134,7 @@ impl OverlayEncoder {
             .arg("-framerate")
             .arg(settings.fps.to_string())
             .args(["-i", "pipe:0", "-an"]);
+        let mut filters = Vec::new();
         if region.width != settings.width
             || region.height != settings.height
             || region.x != 0
@@ -144,10 +145,16 @@ impl OverlayEncoder {
             } else {
                 "0x00000000"
             };
-            command.arg("-vf").arg(format!(
+            filters.push(format!(
                 "pad={}:{}:{}:{}:color={}",
                 settings.width, settings.height, region.x, region.y, color
             ));
+        }
+        if let Some(upload) = upload_filter(selection) {
+            filters.push(upload.into());
+        }
+        if !filters.is_empty() {
+            command.arg("-vf").arg(filters.join(","));
         }
         configure_codec(&mut command, &settings, selection);
         command

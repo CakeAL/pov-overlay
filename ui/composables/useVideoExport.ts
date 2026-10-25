@@ -30,6 +30,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   let controller: AbortController | null = null;
   const ready = computed(() => !!timeline.preparedTrack.value && playback.duration.value > 0
     && (!media.activeVideo.value || alignment.alignmentKnown.value));
+  const hardwareEligible = computed(() => format.value !== "pngMov" && !(format.value === "webmVp9" && background.value === "transparent"));
   const mismatch = computed(() => Math.abs(width.value / height.value - playback.ratio.value) > 0.001);
   async function checkEncoder() {
     checking.value = true; error.value = ""; info.value = null;
@@ -82,7 +83,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
       settings.frame = renderer.region;
       const started = await startExport(path, settings, media.asset.value?.path);
       job = started.id;
-      encoderLabel.value = started.hardware ? "硬件编码" : "软件编码";
+      encoderLabel.value = `${started.hardware ? "硬件编码" : "软件编码"} · ${started.encoder}`;
       phase.value = "正在渲染"; progress.value = 0;
       let pending: { index: number; count: number; bytes: Uint8Array } | null = null;
       const flush = async () => {
@@ -118,5 +119,5 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
   }
   onBeforeUnmount(() => { if (job) void cancel(); });
   return { open, checking, busy, info, error, width, height, fps, format, background, preferHardware, encoderLabel, start, end, progress, phase,
-    ready, recommendedFps, mismatch, show, checkEncoder, resolution, cancel, run };
+    ready, hardwareEligible, recommendedFps, mismatch, show, checkEncoder, resolution, cancel, run };
 }
