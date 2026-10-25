@@ -12,7 +12,8 @@ export function useTrackProfile(
   alignment: Alignment,
   media: MediaSession,
 ) {
-  const collapsed = ref(false);
+  const collapsed = ref(true);
+  watch([media.sources, media.asset, media.image], () => { collapsed.value = true; hoverFraction.value = null; });
   const hoverFraction = ref<number | null>(null);
   function toggleCollapsed() {
     hoverFraction.value = null;
