@@ -24,6 +24,7 @@ const items = computed(() => catalogItems(category.value));
     </div>
     <NavigationCatalog v-if="category === 'navigation'" />
     <div class="catalog-tools">
+      <button class="text-button" @click="svgElements.addText">添加文本</button>
       <button class="text-button" @click="svgElements.chooseSvg"><Upload :size="14" />导入 SVG</button>
       <button class="text-button" @click="svgElements.addTelemetryStrip">添加组合</button>
     </div>

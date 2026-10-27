@@ -4,6 +4,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import { native } from "../infrastructure/media";
 import { sanitizeSvg } from "../infrastructure/svg";
+import { DEFAULT_LOCATION_TEXT, textOverlaySource } from "../domain/textOverlay";
 import { TELEMETRY_STRIP } from "../domain/telemetryStrip";
 import { TELEMETRY_ITEMS, ALL_TELEMETRY_ITEMS, type TelemetryItem } from "../domain/telemetryItems";
 import { showSvgSource } from "../infrastructure/platform";
@@ -146,11 +147,29 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages, d
     );
   }
   function removeSelected() { layout.removeWidget(layout.selectedId.value); }
+  function addText() {
+    const template = DEFAULT_LOCATION_TEXT;
+    const svg = sanitizeSvg(textOverlaySource(template));
+    insert([{ id: crypto.randomUUID(), kind: 'svg', label: '自定义文本', x: 0.05, y: 0.05, widthRatio: 0.5, scale: 1, opacity: 0, color: '#ffffff', visible: true, locked: false, svg: { ...svg, textTemplate: template } }]);
+  }
+  function updateText(template: string) {
+    const widget = layout.selected.value;
+    if (!widget?.svg || widget.svg.textTemplate == null || widget.locked) return false;
+    if (widget.svg.textTemplate === template) return true;
+    try {
+      const svg = sanitizeSvg(textOverlaySource(template));
+      layout.remember();
+      widget.svg = { ...svg, textTemplate: template };
+      layout.clampWidget(widget);
+      return true;
+    } catch (reason) { messages.report(reason); return false; }
+  }
   return {
     svgInput,
     chooseSvg,
     selectedSvg,
     addSvg, inspectSource,
+    addText, updateText,
     addRoute,
     addMinimap,
     addTelemetryStrip,

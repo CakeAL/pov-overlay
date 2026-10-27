@@ -3,6 +3,7 @@ import { Settings2, Check, Plus, Bold, Italic, FolderOpen } from "lucide-vue-nex
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 import LocationProperties from "./LocationProperties.vue";
+import TextProperties from "./TextProperties.vue";
 import MapProperties from "./MapProperties.vue";
 import RouteProperties from "./RouteProperties.vue";
 import FontFamilySelect from "./FontFamilySelect.vue";
@@ -13,6 +14,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
   if (!selected.value || selected.value.locked) return;
   remember();
   selected.value.typography = { ...selected.value.typography, [key]: value };
+  if (selected.value.svg?.textTemplate != null) layout.clampWidget(selected.value);
 }
 </script>
 
@@ -25,6 +27,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
     <RouteProperties />
     <MapProperties />
     <LocationProperties />
+    <TextProperties />
     <div class="position-fields">
       <label
         >X

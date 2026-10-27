@@ -12,6 +12,7 @@ import {
 } from "../../domain/speedEstimation";
 import { validFontFamily } from "../../domain/widgetTypography";
 import { sanitizeSvg } from "../svg";
+import { MAX_TEXT_LENGTH, textOverlaySource } from "../../domain/textOverlay";
 import { correctTrackTime, validTrackTimeOffset } from "../../domain/trackTime";
 export interface PresetDocument {
   type: "pov-overlay/preset";
@@ -100,6 +101,10 @@ export function validateWidgets(v: unknown): Widget[] {
         w.kind === "svg"
           ? (() => {
               const svg = object(w.svg);
+              if (svg.textTemplate != null) {
+                const textTemplate = text(svg.textTemplate, MAX_TEXT_LENGTH);
+                return { ...sanitizeSvg(textOverlaySource(textTemplate)), textTemplate };
+              }
               const exampleKey = svg.exampleKey == null ? undefined : text(svg.exampleKey);
               if (exampleKey && !['gauge', 'bar', 'ring'].includes(exampleKey)) throw new Error('SVG 范例标识无效。');
               return { ...sanitizeSvg(text(svg.source, 2 * 1024 * 1024)), sourcePath: svg.sourcePath == null ? undefined : text(svg.sourcePath, 4096), exampleKey };

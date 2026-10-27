@@ -17,7 +17,7 @@ const size = (bytes: number) => bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(
       </fieldset>
       <section class="preferences-section" aria-label="API Key"><h2>API Key</h2>
         <p v-if="!appSettings.native" class="settings-note">API Key 与磁盘缓存请在桌面应用中配置。</p>
-        <ApiKeySetting provider="amap" label="高德 Web 服务" url="https://lbs.amap.com/api/webservice/guide/api/staticmaps" />
+        <ApiKeySetting provider="amap" label="高德 Web 服务（地图与逆地理编码）" url="https://lbs.amap.com/api/webservice/guide/api/georegeo" />
       </section>
       <fieldset :disabled="appSettings.busy" @change="appSettings.flush"><h2>缓存</h2>
         <label class="preferences-row">高德静态图缓存（天）<input aria-label="静态图缓存天数" type="number" min="1" max="365" v-model.number="appSettings.draft.amapCacheDays" /></label>

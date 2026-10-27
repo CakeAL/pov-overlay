@@ -5,13 +5,17 @@ import type { Sample, Widget } from "./types";
 import { formatCoordinate } from "./telemetry";
 import { bindSvg } from "./svgBindings";
 import { widgetAspect, widgetDimensions } from "./widgetGeometry";
+import { fitTextOverlay, textOverlaySource } from "./textOverlay";
 export const svgDataUrl = (source: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
 export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number, context: OverlayContext = {}): string {
   if (widget.scale <= 0) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>';
   if (widget.kind === "route") return styleWidgetSvg(routeOverlay(widget, sample, context), widget.typography);
-  if (widget.kind === "svg")
-    return styleWidgetSvg(bindSvg(widget.svg?.source ?? "", sample, elapsed, widget.color, { ...context, speedMaxKmh: widget.speedMaxKmh }), widget.typography);
+  if (widget.kind === "svg") {
+    const template = widget.svg?.textTemplate;
+    const source = styleWidgetSvg(bindSvg(template == null ? widget.svg?.source ?? "" : textOverlaySource(template, widget.typography?.fontSize), sample, elapsed, widget.color, { ...context, speedMaxKmh: widget.speedMaxKmh }), widget.typography);
+    return widget.svg?.textTemplate == null ? source : fitTextOverlay(source, widget.typography?.fontSize ?? 32);
+  }
   const width = widgetDimensions(widget, ratio).width * 1000;
   const height = width / widgetAspect(widget);
   const s = widget.scale;

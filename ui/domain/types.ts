@@ -46,7 +46,7 @@ export interface Widget {
   color: string;
   visible: boolean;
   locked: boolean;
-  svg?: { source: string; aspectRatio: number } & SvgOrigin;
+  svg?: { source: string; aspectRatio: number; textTemplate?: string } & SvgOrigin;
   widthRatio?: number;
   map?: { opacity?: number; provider?: MapProvider; zoom?: number; shape?: "circle" | "square"; headingUp?: boolean; showRoute?: boolean };
   route?: { mode?: "full" | "local"; windowSeconds?: number; headingUp?: boolean };
