@@ -1,31 +1,9 @@
-.export-dialog {
-  width: min(440px, calc(100vw - 32px));
-  max-height: calc(100dvh - 40px);
-  padding: 24px;
-  color: var(--ink);
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  box-shadow: 0 12px 50px #12221833;
-}
-.export-dialog::backdrop { background: #17231d66; }
-.export-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-.export-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
-.export-dialog fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .export-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 14px 0; }
-.export-dialog input,
-.export-dialog select { font: inherit; color: inherit; padding: 7px 9px; border: 1px solid #cfd8c9; border-radius: 5px; background: white; min-width: 0; }
-.export-row select { max-width: 245px; }
-.export-row input { width: 120px; }
+.export-row > .hk-select-wrapper { width: 65%; min-width: 0; }
+.export-row > .hk-number-input { width: 140px; min-width: 0; }
 .export-dimensions { display: flex; align-items: flex-end; gap: 10px; margin: 14px 0; }
-.export-dimensions label { display: flex; flex: 1; flex-direction: column; gap: 6px; min-width: 0; }
-.export-dimensions input { width: 100%; }
+.export-dimensions > .hk-number-input { flex: 1; min-width: 0; }
 .export-dimensions > span { padding-bottom: 8px; color: var(--muted); }
-.export-hint { color: #75836d; font-size: 12px; line-height: 1.6; margin: 12px 0; }
-.export-error { color: #a34232; font-size: 13px; line-height: 1.6; }
-.export-progress { display: flex; flex-direction: column; gap: 8px; margin: 18px 0; font-size: 13px; }
-.export-progress progress { width: 100%; accent-color: var(--green); }
-.export-actions { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 20px; }
-.export-actions > button:not(.text-button) { padding: 8px 18px; border-radius: 5px; color: white; background: var(--green) !important; }
-
-.export-hardware { display: flex; gap: 8px; align-items: center; margin: 12px 0; }
+.export-hint { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 12px 0; }
+.export-error { color: rgb(var(--color-error)); font-size: 14px; line-height: 1.6; }
+.export-progress { display: flex; flex-direction: column; gap: 8px; margin: 18px 0; font-size: 14px; }

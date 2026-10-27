@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import HIconButton from "@celestia-island/hikari/components/HkIconButton.tsx";
+import HSlider from "@celestia-island/hikari/components/HkSlider.tsx";
+import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import {
   SkipBack,
   Pause,
@@ -30,14 +33,13 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
   >
     <div class="transport-top">
       <div class="transport-buttons">
-        <button
+        <HIconButton variant="ghost" :size="28"
           class="icon-button"
           aria-label="回到起点"
           :disabled="!duration"
           @click="seek(0)"
         >
-          <SkipBack :size="17" /></button
-        ><button
+          <SkipBack :size="17" /></HIconButton><HIconButton variant="primary" :size="28"
           class="play-button"
           :aria-label="playing ? '暂停' : '播放'"
           :disabled="!duration"
@@ -49,14 +51,14 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
             :size="17"
             fill="currentColor"
           />
-        </button>
+        </HIconButton>
         <div class="playback-time">
           <strong>{{ formatTime(currentTime) }}</strong
           ><span>/ {{ formatTime(duration) }}</span>
         </div>
       </div>
       <div class="transport-meta">
-        <button
+        <HButton variant="ghost" size="sm"
           v-if="profile.geometry"
           class="text-button"
           :aria-label="profile.collapsed ? '展开曲线' : '收起曲线'"
@@ -69,17 +71,17 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
             v-else
             :size="14"
           />
-        </button>
+        </HButton>
         <span v-if="asset && alignmentKnown" class="sync-meta"
           ><Link2 :size="13" /> {{ offsetLabel }}</span
-        ><button
+        ><HIconButton variant="ghost" :size="28"
           class="icon-button"
           :aria-label="muted ? '取消静音' : '静音'"
           :disabled="!asset"
           @click="muted = !muted"
         >
           <VolumeX v-if="muted" :size="17" /><Volume2 v-else :size="17" />
-        </button>
+        </HIconButton>
       </div>
     </div>
     <TelemetryChart v-if="!profile.collapsed" />
@@ -103,17 +105,7 @@ const { timelineTicks, coverageRanges, absoluteTime, sample } =
             width: `${duration ? (currentTime / duration) * 100 : 0}%`,
           }"
         ></div>
-        <input
-          aria-label="播放进度"
-          data-testid="timeline"
-          type="range"
-          min="0"
-          :max="duration || 1"
-          step="0.01"
-          :value="currentTime"
-          :disabled="!duration"
-          @input="seek(Number(($event.target as HTMLInputElement).value))"
-        />
+        <HSlider aria-label="播放进度" data-testid="timeline" :min="0" :max="duration || 1" :step="0.01" :model-value="currentTime" :disabled="!duration" @update:model-value="seek" />
       </div>
       <div v-if="coverageRanges.length" class="timeline-legend">
         <span><i></i> GPX 覆盖范围</span

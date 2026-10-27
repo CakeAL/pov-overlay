@@ -3,19 +3,16 @@
 .preferences-header h1 { font-size: 20px; margin: 0; }
 .preferences-content { max-width: 820px; margin: 24px auto; padding: 0 24px 32px; }
 .preferences-content fieldset, .preferences-section { margin: 0 0 24px; padding: 20px 24px; border: 1px solid var(--line); border-radius: 10px; background: white; min-width: 0; }
-.preferences-content h2 { font-size: 16px; font-weight: 600; margin: 0 0 18px; padding: 0; }
+.preferences-content h2 { font-size: 16px; font-weight: 600; margin: 0 0 18px; }
 .preferences-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; font-size: 14px; }
-.preferences-row input { width: 120px; text-align: right; }
-.preferences-row select { max-width: 250px; }
-.preferences-content input, .preferences-content select { border: 1px solid #ced6c8; border-radius: 6px; padding: 8px 10px; background: #fff; min-height: 36px; font: inherit; }
-.preferences-content button, .preferences-header button { padding: 8px 12px; border-radius: 6px; font-size: 14px; }
-.preferences-content button:hover:not(:disabled), .preferences-header button:hover:not(:disabled) { background: #edf2e7; }
-.api-key-setting + .api-key-setting { margin-top: 22px; }
-.api-key-setting .preferences-row span { margin-left: auto; color: #748269; font-size: 13px; }
-.api-key-input { display: flex; gap: 8px; }
-.api-key-input input { flex: 1; min-width: 0; }
-.settings-note { color: #697363; font-size: 13px; margin: 14px 0 0; }
+.preferences-row > .hk-number-input { width: 150px; min-width: 0; }
+.preferences-row > .hk-select-wrapper { width: 250px; max-width: 50%; min-width: 0; }
+.api-key-setting .preferences-row { flex-wrap: wrap; }
+.api-key-setting .preferences-row span { margin-left: auto; color: var(--muted); font-size: 12px; }
+.api-key-input { display: flex; align-items: center; gap: 8px; }
+.api-key-input > .hk-input-wrapper { flex: 1; min-width: 0; }
+.settings-note { color: var(--muted); font-size: 12px; margin: 14px 0 0; }
 .cache-summary { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.cache-summary code { flex-basis: 100%; overflow-wrap: anywhere; font-size: 12px; color: #697363; }
-.provider-links button { display: inline-flex; margin-right: 10px; }
-.settings-link { color: #526f3e; }
+.cache-summary code { flex-basis: 100%; overflow-wrap: anywhere; font-size: 12px; color: var(--muted); }
+.provider-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.provider-links h2 { flex-basis: 100%; }

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import HCheckbox from "@celestia-island/hikari/components/HkCheckbox.tsx";
+import HSelect from "@celestia-island/hikari/components/HkSelect.tsx";
+import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import { Route, Check, Plus, FileVideo } from "lucide-vue-next";
 import { toRefs } from "vue";
 import TrackTimeZoneField from "./TrackTimeZoneField.vue";
@@ -18,7 +21,7 @@ const { routePath, routePoint } = toRefs(timeline);
 <template>
   <section class="panel-section">
     <div class="section-title">素材</div>
-    <button
+    <HButton variant="outline" size="sm"
       class="asset-card"
       :class="{ imported: track }"
       :disabled="busy"
@@ -36,23 +39,16 @@ const { routePath, routePoint } = toRefs(timeline);
         v-else
         :size="17"
       />
-    </button>
+    </HButton>
     <div class="track-sources">
       <div v-for="source in sources" :key="source.id" class="track-source-item">
         <div class="track-source">
-          <label
-            ><input
-              type="checkbox"
-              :checked="source.enabled !== false"
-              :aria-label="`启用 ${source.name}`"
-              @change="media.toggleSource(source.id)"
-            /><span>{{ source.name }}</span></label
-          ><button
+          <HCheckbox :model-value="source.enabled !== false" :label="source.name" @update:model-value="media.toggleSource(source.id)" /><HButton variant="ghost" size="sm"
             :aria-label="`移除 ${source.name}`"
             @click="media.removeSource(source.id)"
           >
             ×
-          </button>
+          </HButton>
         </div>
         <TrackTimeZoneField
           :source="source"
@@ -60,16 +56,11 @@ const { routePath, routePoint } = toRefs(timeline);
         />
       </div>
     </div>
-    <label v-if="sources.length > 1" class="field-label"
-      ><input
-        type="checkbox"
-        v-model="joinSources"
-      />连接相邻文件的连续点</label
-    >
+    <HCheckbox v-if="sources.length > 1" v-model="joinSources" label="连接相邻文件的连续点" />
     <p v-if="sources.length > 1" class="field-hint">
       已替换 {{ mergeInfo.overwritten }} 点 · {{ mergeInfo.breaks }} 处断点
     </p>
-    <button
+    <HButton variant="outline" size="sm"
       class="asset-card"
       :class="{ imported: asset }"
       :disabled="busy"
@@ -84,8 +75,8 @@ const { routePath, routePoint } = toRefs(timeline);
         v-else
         :size="17"
       />
-    </button>
-    <button
+    </HButton>
+    <HButton variant="outline" size="sm"
       class="asset-card"
       :disabled="busy"
       @click="chooseImage"
@@ -95,7 +86,7 @@ const { routePath, routePoint } = toRefs(timeline);
         ><strong>{{ image?.name || "导入背景图" }}</strong
         ><small v-if="image">{{ image.width }} × {{ image.height }}</small></span
       ><Plus :size="17" />
-    </button>
+    </HButton>
     <input
       ref="imageInput"
       class="file-input"
@@ -104,12 +95,8 @@ const { routePath, routePoint } = toRefs(timeline);
       accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
       @change="selectedImage"
     />
-    <label class="field-label background-selector"
-      >背景<select aria-label="预览背景" v-model="backgroundMode">
-        <option value="none">无背景</option>
-        <option value="image" :disabled="!image">图片</option>
-        <option value="video" :disabled="!asset">视频</option>
-      </select></label
+    <div class="field-label background-selector"
+      ><span>背景</span><HSelect panel-title="预览背景" v-model="backgroundMode" :options="[{ value: 'none', label: '无背景' }, { value: 'image', label: '图片', disabled: !image }, { value: 'video', label: '视频', disabled: !asset }]" /></div
     >
     <input
       ref="gpxInput"

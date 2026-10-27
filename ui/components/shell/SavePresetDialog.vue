@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { ref, toRefs, watch, nextTick } from 'vue';
-import { X } from 'lucide-vue-next';
+import { toRefs } from 'vue';
+import HModal from '@celestia-island/hikari/components/HkModal.tsx';
+import HInput from '@celestia-island/hikari/components/HkInput.tsx';
+import HButton from '@celestia-island/hikari/components/HkButton.tsx';
 import { useEditorContext } from '../../editor/context';
 const { documents } = useEditorContext();
 const { saveOpen, draftName, busy } = toRefs(documents);
-const dialog = ref<HTMLDialogElement>(), input = ref<HTMLInputElement>();
-watch(saveOpen, async value => { if (value) { dialog.value?.showModal(); await nextTick(); input.value?.select(); } else dialog.value?.close(); }, { flush: 'post' });
-function close() { if (!busy.value) saveOpen.value = false; }
 </script>
 <template>
-  <dialog ref="dialog" class="export-dialog preset-save-dialog" aria-label="保存预设" @cancel.prevent="close" @close="saveOpen = false" @keydown.stop @drop.prevent.stop @dragover.prevent.stop>
-    <form @submit.prevent="documents.saveCurrent('preset', draftName)">
-      <header class="export-header"><h2>保存预设</h2><button type="button" class="icon-button" aria-label="关闭保存预设" :disabled="busy" @click="close"><X :size="18" /></button></header>
-      <label class="export-row">名称<input ref="input" aria-label="预设名称" v-model="draftName" autofocus maxlength="60" required :disabled="busy" /></label>
-      <footer class="export-actions"><button type="button" :disabled="busy" @click="close">取消</button><button type="submit" :disabled="busy || !draftName.trim()">保存</button></footer>
+  <HModal v-model="saveOpen" title="保存预设" width="sm" :closable="!busy">
+    <form id="save-preset-form" @submit.prevent="documents.saveCurrent('preset', draftName)" @drop.prevent.stop @dragover.prevent.stop>
+      <HInput label="名称" aria-label="预设名称" v-model="draftName" align="start" maxlength="60" required :disabled="busy" @focus="($event.target as HTMLInputElement).select()" :submit-on-enter="() => draftName.trim() && !busy && documents.saveCurrent('preset', draftName)" />
     </form>
-  </dialog>
+    <template #footer>
+      <HButton variant="ghost" :disabled="busy" @click="saveOpen = false">取消</HButton>
+      <HButton type="submit" form="save-preset-form" :disabled="busy || !draftName.trim()" :loading="busy">保存</HButton>
+    </template>
+  </HModal>
 </template>

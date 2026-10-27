@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import HNumberInput from "@celestia-island/hikari/components/HkNumberInput.tsx";
+import HInput from "@celestia-island/hikari/components/HkInput.tsx";
 import { Settings2, ChevronRight } from "lucide-vue-next";
 import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import { toRefs } from "vue";
@@ -28,27 +30,27 @@ const { autoAlign, setManualOffset, applyManualTime } = alignment;
     <div class="offset-control">
       <span>视频起点在 GPX 的位置</span
       ><label
-        ><input
+        ><HNumberInput
           aria-label="时间偏移（秒）"
           data-testid="time-offset"
-          type="number"
-          step="0.1"
+
+          :step="0.1"
           :disabled="!track"
-          :value="offset"
-          @change="setManualOffset"
+          :model-value="offset"
+          @update:model-value="setManualOffset"
         /><span>s</span></label
       >
     </div>
-    <button class="text-button timing-toggle" @click="showTiming = !showTiming">
+    <HButton variant="ghost" size="sm" class="text-button timing-toggle" @click="showTiming = !showTiming">
       <Settings2 :size="13" />
       {{ showTiming ? "收起时间设置" : "调整起始时间"
       }}<ChevronRight :size="13" :class="{ rotated: showTiming }" />
-    </button>
+    </HButton>
     <div v-if="showTiming" class="timing-details">
       <label class="field-label" for="video-start"
         >视频起始时间 <span>{{ timeZone }}</span></label
       >
-      <input
+      <HInput
         id="video-start"
         data-testid="video-start"
         class="text-input"
@@ -64,13 +66,13 @@ const { autoAlign, setManualOffset, applyManualTime } = alignment;
           :disabled="!track || !manualStart"
           @click="applyManualTime"
           >应用时间</HButton
-        ><button
+        ><HButton variant="ghost" size="sm"
           class="text-button"
           :disabled="!track || asset?.capturedAtMs == null"
           @click="autoAlign"
         >
           恢复自动对齐
-        </button>
+        </HButton>
       </div>
       <p class="field-hint" :title="asset.timeSource ?? undefined">
         {{

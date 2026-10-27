@@ -1,4 +1,5 @@
 import { onBeforeUnmount, onMounted } from "vue";
+import { isOverlayOpen } from '@celestia-island/hikari/runtime';
 import type { WidgetLayout } from "./useWidgetLayout";
 import type { Playback } from "./usePlayback";
 import type { CanvasViewport } from "./useCanvasViewport";
@@ -14,8 +15,9 @@ export function useEditorShortcuts(
   const { stageSize } = viewport;
   function handleKey(event: KeyboardEvent) {
     if (!enabled()) return;
+    if (['hk-modal', 'hk-select-panel', 'hk-color-picker'].some(isOverlayOpen)) return;
     const target = event.target as HTMLElement;
-    if (target.closest('input, textarea, select, [contenteditable="true"], dialog')) return;
+    if (target.closest('input, textarea, select, [contenteditable="true"], dialog, [role="dialog"], [role="slider"], [role="menu"]')) return;
     if ((event.key === 'Delete' || event.key === 'Backspace') && selected.value && viewport.stage.value?.contains(target)) {
       event.preventDefault();
       if (!event.repeat) layout.removeWidget(selected.value.id);

@@ -51,8 +51,7 @@ export function useVideoExport(timeline: Timeline, layout: WidgetLayout, playbac
     progress.value = 0; phase.value = ""; encoderLabel.value = "";
     await checkEncoder();
   }
-  function resolution(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
+  function resolution(value: string) {
     if (value) [width.value, height.value] = value.split("x").map(Number) as [number, number];
   }
   async function cancel() {

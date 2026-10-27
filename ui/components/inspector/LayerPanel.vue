@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import HIconButton from "@celestia-island/hikari/components/HkIconButton.tsx";
+import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import {
   Gauge,
   CodeXml,
@@ -23,13 +25,13 @@ const { toggleVisible, toggleLock } = layout;
     <div class="section-title">画布元素</div>
     <ElementCatalog />
     <div class="element-actions">
-      <button
+      <HButton variant="ghost" size="sm"
         v-if="svgElements.canSplitTelemetryStrip"
         class="text-button"
         @click="svgElements.splitTelemetryStrip"
       >
         拆分数据条
-      </button>
+      </HButton>
     </div>
     <input
       ref="svgInput"
@@ -48,23 +50,23 @@ const { toggleVisible, toggleLock } = layout;
         hidden: !widget.visible,
       }"
     >
-      <button class="layer-select" @click="selectedId = widget.id">
+      <HButton :variant="selectedId === widget.id ? 'secondary' : 'ghost'" size="sm" class="layer-select" @click="selectedId = widget.id">
         <span class="layer-icon"
           ><Gauge v-if="widget.kind === 'speed'" :size="18" /><MapPin
             v-else-if="widget.kind === 'coordinates'"
             :size="18" /><CodeXml v-else :size="18" /></span
         ><strong>{{ widget.label }}</strong>
-      </button>
-      <button class="icon-button layer-delete" :aria-label="`删除${widget.label}`" title="删除元素" @click="layout.removeWidget(widget.id)"><Trash2 :size="15" /></button>
-      <button
+      </HButton>
+      <HIconButton variant="ghost" :size="28" class="icon-button layer-delete" :aria-label="`删除${widget.label}`" title="删除元素" @click="layout.removeWidget(widget.id)"><Trash2 :size="15" /></HIconButton>
+      <HIconButton variant="ghost" :size="28"
         class="icon-button"
         :aria-label="`${widget.visible ? '隐藏' : '显示'}${widget.label}`"
         :title="widget.visible ? '隐藏' : '显示'"
         @click="toggleVisible(widget)"
       >
         <Eye v-if="widget.visible" :size="15" /><EyeOff v-else :size="15" />
-      </button>
-      <button
+      </HIconButton>
+      <HIconButton variant="ghost" :size="28"
         class="icon-button"
         :aria-label="`${widget.locked ? '解锁' : '锁定'}${widget.label}`"
         :title="widget.locked ? '解锁位置' : '锁定位置'"
@@ -74,7 +76,7 @@ const { toggleVisible, toggleLock } = layout;
           v-else
           :size="14"
         />
-      </button>
+      </HIconButton>
     </div>
   </section>
 </template>

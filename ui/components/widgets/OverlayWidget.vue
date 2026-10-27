@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import { LockKeyhole } from "lucide-vue-next";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
@@ -44,11 +45,11 @@ const { widgetStyle, startDrag, moveDrag, endDrag } = layout;
     <template v-if="selectedId === widget.id && !widget.locked"
       ><i class="selection-corner tl"></i><i class="selection-corner tr"></i
       ><i class="selection-corner bl"></i
-      ><button
+      ><HButton variant="ghost" size="sm"
         class="resize-handle"
         :aria-label="`缩放${widget.label}`"
         @pointerdown.stop="startDrag($event, widget, 'resize')"
-      ></button
+      ></HButton
     ></template>
   </div>
 </template>

@@ -19,31 +19,6 @@
   gap: 10px;
 }
 
-.play-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  width: 33px;
-  height: 33px;
-  background: #31432e !important;
-  color: #dfefcc;
-  padding: 0;
-}
-
-.play-button:not(:disabled):hover {
-  background: #4d663e !important;
-}
-
-.play-button svg {
-  width: 14px;
-  height: 14px;
-}
-
-.play-button svg.lucide-play {
-  margin-left: 2px;
-}
-
 .playback-time {
   display: flex;
   gap: 8px;
@@ -115,35 +90,6 @@
   pointer-events: none;
 }
 
-.timeline-rail input {
-  position: absolute;
-  left: -6px;
-  width: calc(100% + 12px);
-  margin: 0;
-  appearance: none;
-  background: transparent;
-  height: 20px;
-  z-index: 1;
-  outline-offset: 3px;
-}
-
-.timeline-rail input::-webkit-slider-thumb {
-  appearance: none;
-  width: 3px;
-  height: 23px;
-  background: #648341;
-  border-radius: 1px;
-  box-shadow: 0 0 0 2px #f7faf1;
-}
-
-.timeline-rail input::-moz-range-thumb {
-  width: 3px;
-  height: 23px;
-  background: #648341;
-  border-radius: 1px;
-  border: 0;
-}
-
 .timeline-legend {
   display: flex;
   justify-content: space-between;
@@ -165,3 +111,5 @@
   background: #c5d9ab;
   border-radius: 1px;
 }
+
+.timeline-rail > .hk-slider { position: relative; width: 100%; z-index: 1; }

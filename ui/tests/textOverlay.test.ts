@@ -122,10 +122,13 @@ test('the property editor inserts parameters at the caret and preserves multilin
   input.value = '道路：\n速度：';
   input.dispatchEvent(new Event('change', { bubbles: true }));
   await nextTick();
+  input.focus();
   input.setSelectionRange(3, 3);
-  const select = host.querySelector('select')!;
-  select.value = 'Road';
-  select.dispatchEvent(new Event('change', { bubbles: true }));
+  const select = host.querySelector<HTMLButtonElement>('.hk-select-trigger')!;
+  select.click();
+  await nextTick();
+  const road = [...document.querySelectorAll<HTMLElement>('.hk-select-option')].find(item => item.textContent?.includes('{$Road}'))!;
+  road.click();
   await nextTick();
   expect(input.value).toBe('道路：{$Road}\n速度：');
   expect(input.selectionStart).toBe(10);

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import { toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
 const { media } = useEditorContext();
@@ -7,9 +8,9 @@ const { track, busy } = toRefs(media);
 <template>
   <div class="empty-stage">
     <div v-if="!track" class="empty-content">
-      <button class="text-button" :disabled="busy" @click="media.chooseGpx">
+      <HButton variant="ghost" size="sm" class="text-button" :disabled="busy" @click="media.chooseGpx">
         选择 GPX
-      </button>
+      </HButton>
     </div>
   </div>
 </template>

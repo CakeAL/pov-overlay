@@ -29,8 +29,8 @@ export function useAlignment(
     syncMode.value = "auto";
     manualStart.value = localInput(asset.value.capturedAtMs);
   }
-  function setManualOffset(event: Event) {
-    const value = Number((event.target as HTMLInputElement).value);
+  function setManualOffset(event: Event | number) {
+    const value = typeof event === 'number' ? event : Number((event.target as HTMLInputElement).value);
     if (!Number.isFinite(value)) return;
     offset.value = value;
     alignmentKnown.value = true;

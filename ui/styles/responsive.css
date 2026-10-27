@@ -129,10 +129,6 @@
     gap: 8px;
   }
 }
-input[type="checkbox"] {
-  accent-color: var(--green);
-}
-
 .properties-inspector { width: 302px; min-width: 302px; display: flex; flex-direction: column; background: white; border-left: 1px solid var(--line); }
 .properties-inspector .panel-section { padding: 18px; }
 .properties-inspector .properties-section { border-bottom: 1px solid var(--line); }

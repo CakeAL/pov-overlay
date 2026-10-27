@@ -176,9 +176,9 @@ export function useWidgetLayout(
     remember();
     widget.locked = !widget.locked;
   }
-  function updatePosition(axis: "x" | "y", event: Event) {
+  function updatePosition(axis: "x" | "y", event: Event | number) {
     if (!selected.value || selected.value.locked) return;
-    const value = Number((event.target as HTMLInputElement).value);
+    const value = typeof event === 'number' ? event : Number((event.target as HTMLInputElement).value);
     if (Number.isFinite(value)) {
       selected.value[axis] = value / 100;
       clampWidget(selected.value);
