@@ -124,6 +124,65 @@ pub fn resolve_address(
 mod tests {
     use super::*;
     #[test]
+    fn crossing_candidates_do_not_flicker_and_turn_updates_only_after_exit() {
+        let incoming = Road {
+            id: "a".into(),
+            name: "原道路".into(),
+            distance: 2.,
+        };
+        let outgoing = Road {
+            id: "b".into(),
+            name: "转入道路".into(),
+            distance: 1.,
+        };
+        let approach = ReverseLocation {
+            roads: vec![incoming.clone()],
+            ..Default::default()
+        };
+        for (junction_distance, incoming_distance, crossing_distance) in [
+            (35., 1., 8.),
+            (12., 8., 1.),
+            (0., 1., 0.),
+            (18., 18., 1.),
+            (35., 35., 0.),
+        ] {
+            let current = ReverseLocation {
+                roads: vec![
+                    Road {
+                        distance: crossing_distance,
+                        ..outgoing.clone()
+                    },
+                    Road {
+                        distance: incoming_distance,
+                        ..incoming.clone()
+                    },
+                ],
+                intersections: vec![Intersection {
+                    distance: junction_distance,
+                    roads: [incoming.clone(), outgoing.clone()],
+                }],
+                ..Default::default()
+            };
+            assert_eq!(resolve_address(&current, Some(&approach)).road, "原道路");
+            // Some responses omit the incoming road from nearby roads but retain it in the junction.
+            let missing_candidate = ReverseLocation {
+                roads: vec![outgoing.clone()],
+                ..current.clone()
+            };
+            assert_eq!(
+                resolve_address(&missing_candidate, Some(&approach)).road,
+                "原道路"
+            );
+        }
+        for (name, roads) in [("转入道路", vec![outgoing]), ("原道路", vec![incoming])] {
+            let outside = ReverseLocation {
+                roads,
+                ..Default::default()
+            };
+            assert_eq!(resolve_address(&outside, Some(&approach)).road, name);
+        }
+    }
+    #[test]
     fn intersection_keeps_incoming_road_and_switches_after_leaving() {
         let incoming = Road {
             id: "a".into(),

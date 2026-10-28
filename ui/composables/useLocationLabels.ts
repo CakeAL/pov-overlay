@@ -9,7 +9,10 @@ import type { EditorMessages } from './useMessages';
 export function useLocationLabels(timeline: Timeline, layout: WidgetLayout, paused: () => boolean, messages: EditorMessages) {
   const address = ref<LocationAddress | null>(null), loading = ref(false), error = ref(''), retryCount = ref(0);
   const enabled = computed(() => !paused() && layout.widgets.value.some(widget => widget.visible && widget.scale > 0 && hasLocationFields(widget)));
-  const query = computed(() => enabled.value ? locationQuery(timeline.sample.value, timeline.context.value) : null);
+  const query = computed(() => {
+    retryCount.value;
+    return enabled.value ? locationQuery(timeline.sample.value, timeline.context.value, mapRuntimeSettings().locationRefreshSeconds) : null;
+  });
   let request: AbortController | undefined, timer: ReturnType<typeof setTimeout> | undefined, revision = 0, previous: LocationQuery | undefined;
   watch([() => query.value ? locationKey(query.value) : '', retryCount], () => {
     const current = ++revision;

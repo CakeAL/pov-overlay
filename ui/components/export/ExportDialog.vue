@@ -36,7 +36,8 @@ const resolutions = computed(() => {
       </div>
       <p v-if="mismatch" class="export-hint">画布将等比居中，空白区域{{ background === 'green' ? '为绿色' : '透明' }}。</p>
       <div class="export-row"><span>帧率</span><HNumberInput v-model="fps" :min="0.1" :max="120" :step="0.001" :disabled="disabled" suffix="fps" /></div>
-      <p class="export-hint">推荐 {{ recommendedFps }} fps（1 / {{ telemetry.refreshSeconds }} 秒），减少重复帧可加快导出。<HButton v-if="fps !== recommendedFps" variant="ghost" size="xs" :disabled="disabled" @click="fps = recommendedFps">使用推荐</HButton></p>
+      <p class="export-hint">常速推荐 {{ recommendedFps }} fps = 1 ÷ 数据刷新间隔 {{ telemetry.refreshSeconds }} 秒，减少重复帧可加快导出。<HButton v-if="fps !== recommendedFps" variant="ghost" size="xs" :disabled="disabled" @click="fps = recommendedFps">使用推荐</HButton></p>
+      <p class="export-hint">后期加速时：导出帧率 = 目标帧率 ÷ 倍速。例如制作 8 倍速、30 fps 视频，可导出 3.75 fps（约 4 fps），再在剪辑软件中加速 8 倍。数据刷新间隔也建议设为 8 ÷ 30 ≈ 0.267 秒；本次导出不改变播放速度。</p>
       <div class="export-dimensions">
         <HNumberInput label="起始秒" v-model="start" :min="0" :max="playback.duration" :step="0.01" :disabled="disabled" /><span>—</span>
         <HNumberInput label="结束秒" v-model="end" :min="0" :max="playback.duration" :step="0.01" :disabled="disabled" />

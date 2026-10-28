@@ -19,6 +19,6 @@ export function lookupLocation(query: LocationQuery, signal?: AbortSignal): Prom
   }, signal);
 }
 export async function addressForFrame(sample: Sample | null, context: OverlayContext, signal?: AbortSignal) {
-  const query = locationQuery(sample, context);
+  const query = locationQuery(sample, context, mapRuntimeSettings().locationRefreshSeconds);
   return query ? lookupLocation(query, signal) : null;
 }
