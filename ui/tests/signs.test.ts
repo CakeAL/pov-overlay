@@ -362,10 +362,12 @@ test("roundabout supports distinct diagonal exits and never invents an unconfigu
   });
   validateSign(d);
   const next = renderSign(d).source;
-  const paths = (s: string) =>
-    new DOMParser().parseFromString(s, "image/svg+xml").querySelectorAll("path")
-      .length;
-  expect(paths(next) - paths(first)).toBe(2);
+  const straightHead = (source: string) =>
+    new DOMParser()
+      .parseFromString(source, "image/svg+xml")
+      .querySelector('path[transform*="rotate(0)"]');
+  expect(straightHead(first)).toBeNull();
+  expect(straightHead(next)).not.toBeNull();
   d.destinations[4]!.direction = "left";
   expect(() => validateSign(d)).toThrow("每个方向");
 });
@@ -502,6 +504,6 @@ test("roundabout endpoint names keep the same visible height with and without ro
       Math.max(...boxes.map((b) => b.bottom)) -
         Math.min(...boxes.map((b) => b.top)),
       name,
-    ).toBeCloseTo(32, 3);
+    ).toBeCloseTo(50, 3);
   }
 });

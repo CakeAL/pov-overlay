@@ -1,3 +1,4 @@
+import { roundaboutSymbol } from "./roundabout";
 import { lettering as text, panel, SIGN_COLORS as C } from "./primitives";
 import type { SignDesign, SignDestination } from "./model";
 export type BadgeRenderer = (
@@ -29,42 +30,20 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
               : 620,
     h = tall ? 320 : round ? 400 : split ? 300 : tee ? 320 : 280;
   let source = panel(w, h, d.green ? C.green : C.blue);
-  const cx = tall ? 44 : tee ? 64 : w / 2,
+  const cx = tall ? 44 : tee ? 64 : round ? w / 2 + 4 : w / 2,
     cy = tall ? 190 : tee ? 188 : round ? 224 : split ? 195 : 205;
   const head = (x: number, y: number, angle: number) =>
     `<path d="${split ? "M0-25L25 0H9V16H-9V0H-25Z" : "M0-10L9-1V12H-9V-1Z"}" fill="white" transform="translate(${x} ${y}) rotate(${angle})"/>`;
   const arm = (x: number, y: number) =>
     `<path d="M${cx} ${cy}L${x} ${y}" stroke="white" stroke-width="18" stroke-linecap="round"/>`;
   if (round) {
-    const r = 26;
-    source += `<path d="M${cx} ${h - 38}V${cy + r}" stroke="white" stroke-width="18"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="white" stroke-width="18"/>`;
-    const ends = [
-      [-1, 0],
-      [1, 0],
-      [-0.65, -0.76],
-      [0.65, -0.76],
-      [0, -1],
-    ];
-    for (const [index, [dx, dy]] of ends.entries()) {
-      if (
-        !d.destinations.some(
-          (row) =>
-            row.direction ===
-            (["left", "right", "upperLeft", "upperRight", "straight"] as const)[
-              index
-            ],
-        )
-      )
-        continue;
-      const length = dy === 0 ? 110 : 78;
-      const x = cx + dx * (r + length),
-        y = cy + dy * (r + length);
-      source +=
-        `<path d="M${cx + dx * r} ${cy + dy * r}L${x} ${y}" stroke="white" stroke-width="18"/>` +
-        head(x, y, (Math.atan2(dx, -dy) * 180) / Math.PI);
-    }
-    // The ring is interrupted at the lower-left approach, as in figure 206.
-    source += `<path data-roundabout-notch="true" d="M${cx - 10} ${cy + 14}L${cx - 20} ${cy + 39}L${cx - 29} ${cy + 26}Z" fill="${d.green ? C.green : C.blue}"/>`;
+    source += roundaboutSymbol(
+      cx,
+      cy,
+      h - 38,
+      d.destinations.map((row) => row.direction),
+      d.green ? C.green : C.blue,
+    );
   } else {
     source +=
       `<path d="M${cx} ${h - 34}V${tee ? 110 : 105}" stroke="white" stroke-width="18"/>` +
@@ -110,10 +89,10 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
     let x: number, y: number, box: number;
     if (round) {
       const loc = {
-        left: [24, 294, 155],
-        right: [270, 270, 150],
-        upperLeft: [22, 60, 150],
-        upperRight: [270, 40, 150],
+        left: [24, 280, 155],
+        right: [281, 248, 150],
+        upperLeft: [40, 62, 150],
+        upperRight: [281, 60, 150],
         straight: [155, 20, 130],
       }[row.direction];
       [x, y, box] = loc as [number, number, number];
@@ -140,7 +119,15 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
                 : cx + 36,
           by = row.direction === "straight" ? cy - (tee ? 58 : 65) : cy - 14;
         source += badge(row, bx, by, 28, true);
-      } else source += badge(row, x + box / 2, y - 18, 45, false, true);
+      } else
+        source += badge(
+          row,
+          x + box / 2,
+          y - (round ? 32 : 18),
+          round ? 62 : 45,
+          false,
+          true,
+        );
       if (row.onArrow && row.endpointRouteCode)
         source += badge(
           {
@@ -162,11 +149,19 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
           x,
           y + (!row.onArrow ? 42 : 0),
           box,
-          round ? 32 : 30,
-          round ? 6 : 4,
+          round ? 50 : 30,
+          round ? 12 : 4,
         );
-    } else source += text(row.name, x, y, box, round ? 32 : 34, 6);
-    if (row.english) source += text(row.english, x, y + 44, box, 15, 1);
+    } else source += text(row.name, x, y, box, round ? 50 : 34, round ? 12 : 6);
+    if (row.english)
+      source += text(
+        row.english,
+        x,
+        y + (round ? (row.content === "route" ? 98 : 56) : 44),
+        box,
+        15,
+        1,
+      );
   }
   return { width: w, height: h, source };
 }
