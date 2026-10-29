@@ -1,3 +1,4 @@
+import { useRoadTable } from "../composables/useRoadTable";
 import { useSignMaker } from "../composables/useSignMaker";
 import { useLocationLabels } from "../composables/useLocationLabels";
 import { useAppSettings } from "../composables/useAppSettings";
@@ -37,6 +38,7 @@ export function createEditor() {
   const signMaker = useSignMaker(playback, messages);
   const timeline = useTimeline(media, playback, alignment, telemetry);
   const locationLabels = useLocationLabels(timeline, layout, () => appSettings.pageOpen.value || signMaker.pageOpen.value, messages);
+  const roadTable = useRoadTable(timeline, layout, locationLabels, messages);
   const profile = useTrackProfile(timeline, playback, alignment, media);
   const documents = useDocuments(
     media,
@@ -65,6 +67,7 @@ export function createEditor() {
     layout,
     timeline,
     locationLabels,
+    roadTable,
     profile,
     telemetry,
     svgElements,

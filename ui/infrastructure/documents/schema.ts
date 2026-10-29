@@ -1,4 +1,4 @@
-import { ROAD_TYPES, roadCodeType, validRoadType, type RoadInfoOptions } from "../../domain/roadIdentity";
+import { ROAD_TYPES, roadCodeType, validRoadType, roadMappingKey, type RoadInfoOptions, type RoadMapping } from "../../domain/roadIdentity";
 import { ROAD_INFO_SOURCE } from "../../domain/roadInfoOverlay";
 import { isMapProvider } from "../../domain/appSettings";
 import type {
@@ -107,14 +107,22 @@ export function validateWidgets(v: unknown): Widget[] {
                 if (svg.textTemplate != null) throw new Error('道路元素不能同时包含文本模板。');
                 const r = object(svg.roadInfo);
                 if (r.badgePosition != null && !['before', 'after'].includes(String(r.badgePosition))) throw new Error('编号牌位置无效。');
-                if (r.typeOverride != null && !ROAD_TYPES.includes(r.typeOverride as typeof ROAD_TYPES[number])) throw new Error('道路类型无效。');
-                const numberOverride = r.numberOverride == null ? undefined : text(r.numberOverride, 5).trim().toUpperCase();
-                const typeOverride = r.typeOverride as RoadInfoOptions['typeOverride'];
-                if (numberOverride && (!roadCodeType(numberOverride) || typeOverride && !validRoadType(numberOverride, typeOverride))) throw new Error('道路编号格式或类型无效。');
+                if (r.roads != null && (!Array.isArray(r.roads) || r.roads.length > 2000)) throw new Error("道路编号表最多 2000 条。");
+                const roads: RoadMapping[] = (r.roads as unknown[] ?? []).map(value => {
+                  const row = object(value);
+                  const name = text(row.name, 200).trim(), province = text(row.province, 100).trim(), city = text(row.city, 100).trim();
+                  const code = text(row.code, 5).trim().toUpperCase();
+                  if (!name) throw new Error('道路名称不能为空。');
+                  if (row.type != null && !ROAD_TYPES.includes(row.type as typeof ROAD_TYPES[number])) throw new Error('道路类型无效。');
+                  const type = row.type as RoadMapping['type'];
+                  if (code && (!roadCodeType(code) || type && !validRoadType(code, type))) throw new Error('道路编号格式或类型无效。');
+                  return { name, province, city, code, type };
+                });
+                if (new Set(roads.map(roadMappingKey)).size !== roads.length) throw new Error('道路编号表存在重复的道路与省市。');
+                // Older element-wide overrides have no road scope and must not follow the whole trip.
                 const roadInfo: RoadInfoOptions = {
                   badgePosition: r.badgePosition as RoadInfoOptions['badgePosition'],
-                  showEnglish: r.showEnglish == null ? undefined : bool(r.showEnglish),
-                  numberOverride, typeOverride,
+                  showEnglish: r.showEnglish == null ? undefined : bool(r.showEnglish), roads,
                 };
                 return { ...sanitizeSvg(ROAD_INFO_SOURCE), roadInfo };
               }

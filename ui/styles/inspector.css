@@ -78,3 +78,6 @@
 .text-properties { display: grid; gap: 8px; margin: 14px 0 18px; }
 
 .road-info-properties { display: flex; flex-direction: column; gap: 10px; }
+.road-table-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.road-table-content { overflow: auto; max-height: 55vh; }
+.road-table-grid { min-width: 850px; }

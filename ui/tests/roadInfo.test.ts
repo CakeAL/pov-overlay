@@ -2,7 +2,7 @@
 import { readFile } from "node:fs/promises";
 import { afterEach, expect, test, vi } from "vitest";
 import { createApp, ref, nextTick } from "vue";
-import { roadIdentity } from "../domain/roadIdentity";
+import { roadIdentity, type RoadMapping } from "../domain/roadIdentity";
 import { hasLocationFields, type LocationAddress } from "../domain/location";
 import { widgetSvg } from "../domain/widgetSvg";
 import { roadBadgeFor } from "../infrastructure/roadBadges";
@@ -33,6 +33,9 @@ const address = (road: string, province = "安徽省"): LocationAddress => ({
   district: "",
   street: "",
 });
+const rows: RoadMapping[] = [
+  { name: "沈海高速", province: "安徽省", city: "", code: "G15" },
+];
 const widget = (): Widget => ({
   id: "road",
   kind: "svg",
@@ -48,7 +51,11 @@ const widget = (): Widget => ({
   svg: {
     source: ROAD_INFO_SOURCE,
     aspectRatio: 7.2,
-    roadInfo: { badgePosition: "before", showEnglish: true },
+    roadInfo: {
+      badgePosition: "before",
+      showEnglish: true,
+      roads: rows.map((r) => ({ ...r })),
+    },
   },
 });
 const dom = (svg: string) =>
@@ -68,14 +75,15 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-test("uses explicit codes or exact verified names and never guesses IDs, unknown names, intersecting roads or auxiliary roads", () => {
-  expect(roadIdentity(address("沈海高速"))).toMatchObject({
-    name: "沈海高速",
+test("uses explicit codes or scoped user records and never guesses IDs, unknown names, intersecting roads or auxiliary roads", () => {
+  expect(roadIdentity(address("沈海高速"))).toBeNull();
+  expect(roadIdentity(address("沈海高速"), { roads: rows })).toMatchObject({
     code: "G15",
-    type: "nationalExpressway",
   });
-  expect(roadIdentity(address("宁信高速"))?.code).toBe("G3611");
-  expect(roadIdentity(address("杭州湾环线高速"))?.code).toBe("G92");
+  expect(roadIdentity(address("松白路"), { roads: rows })).toBeNull();
+  expect(
+    roadIdentity(address("沈海高速", "广东省"), { roads: rows }),
+  ).toBeNull();
   expect(roadIdentity(address("G15 沈海高速公路"))).toMatchObject({
     name: "沈海高速",
     code: "G15",
@@ -96,7 +104,7 @@ test("uses explicit codes or exact verified names and never guesses IDs, unknown
   expect(roadIdentity(address("沈海高速连接线"))).toBeNull();
 });
 
-test("distinguishes national, provincial and local road classes, preserves zeroes, and permits manual overrides without inventing a position", () => {
+test("distinguishes national, provincial and local road classes, preserves zeroes, and permits scoped records without inventing a position", () => {
   for (const [name, code, type] of [
     ["G104京福线", "G104", "national"],
     ["201省道", "S201", "provincial"],
@@ -112,29 +120,19 @@ test("distinguishes national, provincial and local road classes, preserves zeroe
       province: "粤",
     });
   expect(
-    roadIdentity(address("未知高速"), { numberOverride: "G15" }),
-  ).toMatchObject({ code: "G15" });
-  expect(
-    roadIdentity(address("未知高速"), {
-      numberOverride: "S326",
-      typeOverride: "provincialExpressway",
-    }),
-  ).toMatchObject({ type: "provincialExpressway" });
-  expect(
-    roadIdentity(address("未知路"), {
-      numberOverride: "G15",
-      typeOverride: "provincial",
-    }),
+    roadIdentity(address("沈海高速"), { roads: [{ ...rows[0]!, code: "" }] }),
   ).toBeNull();
-  expect(roadIdentity(address(""), { numberOverride: "G15" })).toBeNull();
-  expect(roadIdentity(null, { numberOverride: "G15" })).toBeNull();
+  expect(roadIdentity(null, { roads: rows })).toBeNull();
+  expect(
+    roadIdentity(address("沈海高速"), { numberOverride: "G42" } as never),
+  ).toBeNull();
 });
 
 test("composes a path-only number shield and Chinese/English name, supports either side, hides unavailable and stale shields, and escapes external names", async () => {
   fonts();
   const w = widget(),
     a = address("沈海高速");
-  const badge = await roadBadgeFor(roadIdentity(a)!);
+  const badge = await roadBadgeFor(roadIdentity(a, w.svg!.roadInfo)!);
   expect(dom(badge!.source).querySelector("text,image")).toBeNull();
   expect(dom(badge!.source).querySelector("path")).not.toBeNull();
   let svg = widgetSvg(w, null, 0, 16 / 9, { address: a, roadBadge: badge });
@@ -144,7 +142,11 @@ test("composes a path-only number shield and Chinese/English name, supports eith
   expect(doc.querySelector("svg svg")!.getAttribute("x")).toBe("0");
   expect(doc.querySelector("text")!.textContent).toBe("沈海高速");
   expect(doc.documentElement.textContent).toContain("Shenyang-Haikou Expy.");
-  w.svg!.roadInfo = { badgePosition: "after", showEnglish: false };
+  w.svg!.roadInfo = {
+    ...w.svg!.roadInfo,
+    badgePosition: "after",
+    showEnglish: false,
+  };
   doc = dom(widgetSvg(w, null, 0, 16 / 9, { address: a, roadBadge: badge }));
   expect(
     Number(doc.querySelector("svg svg")!.getAttribute("x")),
@@ -186,8 +188,15 @@ test("library insertion, undo/redo and preset restore preserve the composite con
     expect(layout.widgets.value[0]!.svg?.roadInfo).toBeDefined();
     w.svg!.roadInfo = {
       badgePosition: "after",
-      numberOverride: "S12",
-      typeOverride: "provincialExpressway",
+      roads: [
+        {
+          name: "京杭高速",
+          province: "安徽省",
+          city: "",
+          code: "S12",
+          type: "provincialExpressway",
+        },
+      ],
       showEnglish: false,
     };
     w.svg!.source =
@@ -209,9 +218,10 @@ test("library insertion, undo/redo and preset restore preserve the composite con
     for (const bad of [
       { showEnglish: "true" },
       { badgePosition: "invalid" },
-      { numberOverride: "G15", typeOverride: "county" },
-      { numberOverride: "G15000" },
-      { typeOverride: "bogus" },
+      { roads: [{ ...rows[0], code: "G15", type: "county" }] },
+      { roads: [{ ...rows[0], code: "G15000" }] },
+      { roads: [rows[0], rows[0]] },
+      { roads: "bogus" },
     ])
       expect(() =>
         validateWidgets([{ ...w, svg: { ...w.svg, roadInfo: bad } }]),
@@ -225,7 +235,9 @@ test("export awaits the same cached vector shield and emits name-only when the a
   fonts();
   const w = widget();
   const result = await renderWidgetSvg(w, {} as never, 0, 16 / 9);
-  const badge = await roadBadgeFor(roadIdentity(address("沈海高速"))!);
+  const badge = await roadBadgeFor(
+    roadIdentity(address("沈海高速"), w.svg!.roadInfo)!,
+  );
   expect(result).toBe(
     widgetSvg(w, null, 0, 16 / 9, {
       address: address("沈海高速"),
@@ -250,7 +262,7 @@ test("preview discards an earlier shield immediately when the road changes and i
   });
   app.mount(document.createElement("div"));
   try {
-    await roadBadgeFor(roadIdentity(a.value)!);
+    await roadBadgeFor(roadIdentity(a.value, w.value.svg!.roadInfo)!);
     await nextTick();
     await Promise.resolve();
     expect(badge.value?.code).toBe("G15");
