@@ -74,7 +74,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
       >
     </div>
     <label v-if="selected.svg?.source.includes('{$SpeedRatio}') || selected.svg?.source.includes('{$SpeedPercent}') || selected.svg?.source.includes('{$SpeedAngle}')" class="setting-row">速度满刻度<HNumberInput @pointerdown.capture="remember" aria-label="速度满刻度 km/h" :min="1" :max="2000" :model-value="selected.speedMaxKmh ?? 60" :disabled="selected.locked" @focus.capture="remember" @update:model-value="selected.speedMaxKmh = Math.max(1, Math.min(2000, Number($event) || 60))" /></label>
-    <div class="typography-fields">
+    <div v-if="selected.svg?.roadInfo?.mode !== 'badge'" class="typography-fields">
       <div class="font-field"><span>字体</span><FontFamilySelect :key="selected.id" :disabled="selected.locked" :model-value="selected.typography?.fontFamily" @update:model-value="typography('fontFamily', $event)" /></div>
       <div class="font-controls"><label>字号<HInput aria-label="元素字号" type="number" min="8" max="200" placeholder="自动" :disabled="selected.locked" :model-value="String((selected.typography?.fontSize) ?? '')" @change="typography('fontSize', ($event.target as HTMLInputElement).value ? Math.max(8, Math.min(200, Number(($event.target as HTMLInputElement).value))) : undefined)" /></label>
       <HIconButton :variant="selected.typography?.bold ? 'secondary' : 'ghost'" :size="28" :disabled="selected.locked" :aria-pressed="selected.typography?.bold === true" aria-label="加粗" @click="typography('bold', !selected.typography?.bold)"><Bold :size="16" /></HIconButton>

@@ -2,9 +2,10 @@ import { roadInfoHeight } from "./roadInfoOverlay";
 import type { Widget } from "./types";
 import { textOverlayAspect } from "./textOverlay";
 export function widgetAspect(widget: Widget): number {
+  if (widget.kind === 'svg' && widget.svg?.roadInfo?.mode === 'badge') return 2;
   if (widget.kind === 'svg' && widget.svg?.roadInfo) return 720 / roadInfoHeight(widget);
   if (widget.kind === 'svg' && widget.svg?.textTemplate != null)
-    return textOverlayAspect(widget.svg.textTemplate, widget.typography?.fontSize);
+    return textOverlayAspect(widget.svg.textTemplate, widget.typography?.fontSize, widget.svg.lineFontSizes);
   return widget.svg?.aspectRatio ?? ((widget.kind === "route" || widget.kind === "minimap") ? 1 : widget.kind === "speed" ? 1.55 : 3.35);
 }
 export function widgetMaximumScale(widget: Widget, canvasRatio: number): number {

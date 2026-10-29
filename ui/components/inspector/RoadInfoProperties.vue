@@ -2,17 +2,18 @@
 import { computed } from "vue";
 import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import RoadTableDialog from "./RoadTableDialog.vue";
+import HNumberInput from "@celestia-island/hikari/components/HkNumberInput.tsx";
 import HSelect from "@celestia-island/hikari/components/HkSelect.tsx";
 import HCheckbox from "@celestia-island/hikari/components/HkCheckbox.tsx";
 import { useEditorContext } from "../../editor/context";
 import type { RoadInfoOptions } from "../../domain/roadIdentity";
-const { layout, roadTable } = useEditorContext();
+const { layout, roadTable, svgElements } = useEditorContext();
 const widget = computed(() =>
   layout.selected?.svg?.roadInfo ? layout.selected : null,
 );
 function change(
   key: keyof RoadInfoOptions,
-  value: string | boolean,
+  value: string | boolean | number,
   remember = true,
 ) {
   if (!widget.value?.svg || widget.value.locked) return;
@@ -21,11 +22,12 @@ function change(
     ...widget.value.svg.roadInfo,
     [key]: value,
   };
+  layout.clampWidget(widget.value);
 }
 </script>
 <template>
   <div v-if="widget" class="road-info-properties">
-    <label class="setting-row"
+    <label v-if="!widget.svg!.roadInfo?.mode" class="setting-row"
       >编号牌位置<HSelect
         :disabled="widget.locked"
         :model-value="widget.svg!.roadInfo?.badgePosition ?? 'before'"
@@ -36,6 +38,7 @@ function change(
         @update:model-value="change('badgePosition', String($event))"
     /></label>
     <HCheckbox
+      v-if="widget.svg!.roadInfo?.mode !== 'badge'"
       label="显示可用英文"
       :disabled="widget.locked"
       :model-value="widget.svg!.roadInfo?.showEnglish !== false"

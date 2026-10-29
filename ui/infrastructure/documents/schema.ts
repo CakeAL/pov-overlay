@@ -1,5 +1,5 @@
 import { ROAD_TYPES, roadCodeType, validRoadType, roadMappingKey, type RoadInfoOptions, type RoadMapping } from "../../domain/roadIdentity";
-import { ROAD_INFO_SOURCE } from "../../domain/roadInfoOverlay";
+import { ROAD_INFO_SOURCE, ROAD_BADGE_SOURCE } from "../../domain/roadInfoOverlay";
 import { isMapProvider } from "../../domain/appSettings";
 import type {
   Widget,
@@ -108,6 +108,7 @@ export function validateWidgets(v: unknown): Widget[] {
                 const r = object(svg.roadInfo);
                 if (r.badgePosition != null && !['before', 'after'].includes(String(r.badgePosition))) throw new Error('编号牌位置无效。');
                 if (r.roads != null && (!Array.isArray(r.roads) || r.roads.length > 2000)) throw new Error("道路编号表最多 2000 条。");
+                if (r.mode != null && !['badge', 'name'].includes(String(r.mode))) throw new Error('道路元素类型无效。');
                 const roads: RoadMapping[] = (r.roads as unknown[] ?? []).map(value => {
                   const row = object(value);
                   const name = text(row.name, 200).trim(), province = text(row.province, 100).trim(), city = text(row.city, 100).trim();
@@ -121,14 +122,19 @@ export function validateWidgets(v: unknown): Widget[] {
                 if (new Set(roads.map(roadMappingKey)).size !== roads.length) throw new Error('道路编号表存在重复的道路与省市。');
                 // Older element-wide overrides have no road scope and must not follow the whole trip.
                 const roadInfo: RoadInfoOptions = {
+                  mode: r.mode as RoadInfoOptions['mode'],
+                  nameFontSize: r.nameFontSize == null ? undefined : num(r.nameFontSize, 8, 200),
+                  englishFontSize: r.englishFontSize == null ? undefined : num(r.englishFontSize, 8, 200),
                   badgePosition: r.badgePosition as RoadInfoOptions['badgePosition'],
                   showEnglish: r.showEnglish == null ? undefined : bool(r.showEnglish), roads,
                 };
-                return { ...sanitizeSvg(ROAD_INFO_SOURCE), roadInfo };
+                return { ...sanitizeSvg(roadInfo.mode === "badge" ? ROAD_BADGE_SOURCE : ROAD_INFO_SOURCE), roadInfo };
               }
               if (svg.textTemplate != null) {
                 const textTemplate = text(svg.textTemplate, MAX_TEXT_LENGTH);
-                return { ...sanitizeSvg(textOverlaySource(textTemplate)), textTemplate };
+                if (svg.lineFontSizes != null && (!Array.isArray(svg.lineFontSizes) || svg.lineFontSizes.length > 20)) throw new Error("逐行字号配置无效，最多 20 行。");
+                const lineFontSizes = (svg.lineFontSizes as unknown[] | undefined)?.map(value => value == null ? null : num(value, 8, 200));
+                return { ...sanitizeSvg(textOverlaySource(textTemplate, undefined, lineFontSizes)), textTemplate, lineFontSizes };
               }
               const exampleKey = svg.exampleKey == null ? undefined : text(svg.exampleKey);
               if (exampleKey && !['gauge', 'bar', 'ring'].includes(exampleKey)) throw new Error('SVG 范例标识无效。');

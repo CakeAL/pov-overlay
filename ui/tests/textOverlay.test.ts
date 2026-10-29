@@ -141,3 +141,43 @@ test('the property editor inserts parameters at the caret and preserves multilin
   expect(input.disabled).toBe(true);
   expect(select.disabled).toBe(true);
 });
+
+test("each text line keeps its own size through binding, fitting, export, history and preset restore", async () => {
+  const { layout, elements } = setup();
+  elements.updateText("道路".repeat(35) + "\n{$Speed} km/h");
+  layout.selected.value!.typography = { fontSize: 40 };
+  elements.updateTextLineSize(0, 64);
+  elements.updateTextLineSize(1, 18);
+  const w = layout.selected.value!;
+  const source = widgetSvg(w, null, 0, 16 / 9);
+  const doc = new DOMParser().parseFromString(source, "image/svg+xml");
+  const lines = [...doc.querySelectorAll("text")];
+  expect(lines.map((line) => line.getAttribute("font-size"))).toEqual([
+    "64",
+    "18",
+  ]);
+  expect(lines[0]!.getAttribute("textLength")).toBe("768");
+  expect(lines[1]!.getAttribute("textLength")).toBeNull();
+  expect(Number(lines[1]!.getAttribute("y"))).toBeGreaterThan(
+    Number(lines[0]!.getAttribute("y")) + 18,
+  );
+  expect(await renderWidgetSvg(w, null, 0, 16 / 9)).toBe(source);
+  expect(
+    validateWidgets(JSON.parse(JSON.stringify([w])))[0]!.svg!.lineFontSizes,
+  ).toEqual([64, 18]);
+  layout.undo();
+  expect(layout.selected.value!.svg!.lineFontSizes).toEqual([64]);
+  layout.redo();
+  expect(layout.selected.value!.svg!.lineFontSizes).toEqual([64, 18]);
+  elements.updateTextLineSize(1, null);
+  expect(layout.selected.value!.svg!.lineFontSizes).toEqual([64, null]);
+  elements.updateText("one");
+  expect(layout.selected.value!.svg!.lineFontSizes).toEqual([64]);
+  layout.selected.value!.locked = true;
+  elements.updateTextLineSize(0, 90);
+  expect(layout.selected.value!.svg!.lineFontSizes).toEqual([64]);
+  for (const bad of [[0], [201], Array(21).fill(20), "bad"])
+    expect(() =>
+      validateWidgets([{ ...w, svg: { ...w.svg, lineFontSizes: bad } }]),
+    ).toThrow();
+});

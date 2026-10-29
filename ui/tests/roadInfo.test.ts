@@ -276,3 +276,73 @@ test("preview discards an earlier shield immediately when the road changes and i
     app.unmount();
   }
 });
+
+test("independent number widgets render only glyph paths, hide missing numbers, and name line sizes persist separately", async () => {
+  fonts();
+  const w = widget();
+  w.svg!.roadInfo!.mode = "badge";
+  const a = address("沈海高速"),
+    badge = await roadBadgeFor(roadIdentity(a, w.svg!.roadInfo)!);
+  const doc = dom(
+    widgetSvg(w, null, 0, 16 / 9, { address: a, roadBadge: badge }),
+  );
+  expect(doc.querySelector("text")).toBeNull();
+  expect(doc.querySelector("path")).not.toBeNull();
+  const hidden = dom(
+    widgetSvg(w, null, 0, 16 / 9, {
+      address: address("松白路"),
+      roadBadge: badge,
+    }),
+  );
+  expect(hidden.documentElement.children).toHaveLength(0);
+  expect(hidden.documentElement.textContent).toBe("");
+  w.svg!.roadInfo = { mode: "name", nameFontSize: 52, englishFontSize: 18 };
+  const text = dom(
+    widgetSvg(w, null, 0, 16 / 9, { address: a, roadBadge: badge }),
+  );
+  expect(
+    [...text.querySelectorAll("text")].map((t) => t.getAttribute("font-size")),
+  ).toEqual(["52", "18"]);
+  expect(text.querySelector("path")).toBeNull();
+  expect(validateWidgets([w])[0]!.svg!.roadInfo).toMatchObject({
+    mode: "name",
+    nameFontSize: 52,
+    englishFontSize: 18,
+  });
+});
+
+test("legacy road composites split into independently editable layers in one undo step without losing route mappings", () => {
+  const layout = useWidgetLayout(ref(16 / 9), ref<HTMLElement>());
+  const old = widget();
+  layout.widgets.value = [old];
+  layout.selectedId.value = old.id;
+  let elements!: ReturnType<typeof useSvgElements>;
+  const app = createApp({
+    setup() {
+      elements = useSvgElements(layout, useMessages());
+      return () => null;
+    },
+  });
+  app.mount(document.createElement("div"));
+  try {
+    elements.splitRoadInfo();
+    expect(layout.widgets.value.map((w) => w.svg?.roadInfo?.mode)).toEqual([
+      "badge",
+      "name",
+    ]);
+    expect(layout.widgets.value[0]!.svg!.roadInfo?.roads).toEqual(
+      old.svg!.roadInfo!.roads,
+    );
+    layout.widgets.value[0]!.x = 0.7;
+    expect(layout.widgets.value[1]!.x).not.toBe(0.7);
+    layout.undo();
+    expect(layout.widgets.value).toHaveLength(1);
+    expect(layout.widgets.value[0]!.id).toBe(old.id);
+    layout.redo();
+    expect(layout.widgets.value).toHaveLength(2);
+    elements.addTelemetryItem("roadBadge");
+    expect(layout.selected.value?.svg?.roadInfo?.mode).toBe("badge");
+  } finally {
+    app.unmount();
+  }
+});

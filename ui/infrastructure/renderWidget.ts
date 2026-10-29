@@ -27,7 +27,7 @@ export function prepareMapRender(widget: Widget, sample: Sample | null, context:
 export async function renderWidgetSvg(widget: Widget, sample: Sample | null, elapsed: number, ratio: number, context: OverlayContext = {}, signal?: AbortSignal): Promise<string> {
   if (hasLocationFields(widget)) {
     const address = await addressForFrame(sample, context, signal);
-    const identity = widget.svg?.roadInfo ? roadIdentity(address, widget.svg.roadInfo) : null;
+    const identity = widget.svg?.roadInfo && widget.svg.roadInfo.mode !== "name" ? roadIdentity(address, widget.svg.roadInfo) : null;
     const roadBadge = identity ? await roadBadgeFor(identity) : null;
     if (signal?.aborted) throw new DOMException('导出已取消。', 'AbortError');
     return widgetSvg(widget, sample, elapsed, ratio, { ...context, address, roadBadge });

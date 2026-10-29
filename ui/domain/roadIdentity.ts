@@ -9,6 +9,9 @@ export const ROAD_TYPES = [
 ] as const;
 export type RoadType = (typeof ROAD_TYPES)[number];
 export interface RoadInfoOptions {
+  mode?: "badge" | "name";
+  nameFontSize?: number;
+  englishFontSize?: number;
   badgePosition?: "before" | "after";
   showEnglish?: boolean;
   roads?: RoadMapping[];
@@ -71,6 +74,7 @@ const englishNames: Record<string, string> = {
   沈海高速: "Shenyang-Haikou Expy.",
   宁信高速: "Nanjing-Xinyang Expy.",
 };
+export const roadEnglishName = (road: string) => englishNames[normalizeRoadName(road)];
 const provinces: Record<string, string> = {
   北京: "京",
   天津: "津",

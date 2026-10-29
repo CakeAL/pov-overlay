@@ -1,3 +1,4 @@
+import { ROAD_INFO_SOURCE, ROAD_BADGE_SOURCE } from "../domain/roadInfoOverlay";
 import type { MapProvider } from "../domain/appSettings";
 import { ref, computed } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -100,7 +101,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages, d
       x: parent.x + (size.width * item.x) / 960,
       y: parent.y + (size.height * item.y) / 130,
       widthRatio: ((parent.scale > 0 ? size.width / parent.scale : parent.widthRatio ?? 0.9) * item.width) / 960,
-      svg: { ...sanitizeSvg(item.source), ...(item.key === 'roadInfo' ? { roadInfo: { badgePosition: 'before' as const, showEnglish: true } } : {}) },
+      svg: { ...sanitizeSvg(item.source), ...(['roadInfo', 'roadName', 'roadBadge'].includes(item.key) ? { roadInfo: { ...(item.key === 'roadInfo' ? { badgePosition: 'before' as const } : { mode: item.key === 'roadBadge' ? 'badge' as const : 'name' as const }), showEnglish: true } } : {}) },
     };
   }
   function stripAnchor(): Widget {
@@ -134,7 +135,8 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages, d
     const item = ALL_TELEMETRY_ITEMS.find((item) => item.key === key);
     if (!item) return;
     const widget = makeItem(item, stripAnchor());
-    if (key === 'roadInfo') widget.widthRatio = .42;
+    if (key === 'roadInfo' || key === 'roadName') widget.widthRatio = .42;
+    if (key === 'roadBadge') widget.widthRatio = .12;
     widget.x = 0.05;
     widget.y = 0.05;
     insert([widget]);
@@ -147,6 +149,16 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages, d
       parent.id,
     );
   }
+  function splitRoadInfo() {
+    const parent = layout.selected.value;
+    if (!parent?.svg?.roadInfo || parent.svg.roadInfo.mode || parent.locked) return;
+    const base = parent.widthRatio ?? .42;
+    const badge: Widget = { ...parent, id: crypto.randomUUID(), label: '道路编号', widthRatio: base * .24, svg: { ...sanitizeSvg(ROAD_BADGE_SOURCE), roadInfo: { ...structuredClone(JSON.parse(JSON.stringify(parent.svg.roadInfo))), mode: 'badge' } } };
+    const name: Widget = { ...parent, id: crypto.randomUUID(), label: '道路名称', svg: { ...sanitizeSvg(ROAD_INFO_SOURCE), roadInfo: { ...structuredClone(JSON.parse(JSON.stringify(parent.svg.roadInfo))), mode: 'name' } } };
+    if (parent.svg.roadInfo.badgePosition === 'after') badge.x += base * parent.scale * .65;
+    else name.x += base * parent.scale * .27;
+    insert([badge, name], parent.id);
+  }
   function removeSelected() { layout.removeWidget(layout.selectedId.value); }
   function addText() {
     const template = DEFAULT_LOCATION_TEXT;
@@ -158,24 +170,35 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages, d
     if (!widget?.svg || widget.svg.textTemplate == null || widget.locked) return false;
     if (widget.svg.textTemplate === template) return true;
     try {
-      const svg = sanitizeSvg(textOverlaySource(template));
+      const lineFontSizes = widget.svg.lineFontSizes?.slice(0, template.replace(/\r\n?/g, "\n").split("\n").length);
+      const svg = sanitizeSvg(textOverlaySource(template, widget.typography?.fontSize, lineFontSizes));
       layout.remember();
-      widget.svg = { ...svg, textTemplate: template };
+      widget.svg = { ...svg, textTemplate: template, lineFontSizes };
       layout.clampWidget(widget);
       return true;
     } catch (reason) { messages.report(reason); return false; }
+  }
+  function updateTextLineSize(index: number, size: number | null) {
+    const widget = layout.selected.value;
+    if (widget?.svg?.textTemplate == null || widget.locked || index < 0 || index >= widget.svg.textTemplate.replace(/\r\n?/g, "\n").split("\n").length) return;
+    if (size != null && (!Number.isFinite(size) || size < 8 || size > 200)) return;
+    layout.remember();
+    const sizes = [...(widget.svg.lineFontSizes ?? [])];
+    while (sizes.length <= index) sizes.push(null);
+    sizes[index] = size; widget.svg.lineFontSizes = sizes;
+    layout.clampWidget(widget);
   }
   return {
     svgInput,
     chooseSvg,
     selectedSvg,
     addSvg, inspectSource,
-    addText, updateText,
+    addText, updateText, updateTextLineSize,
     addRoute,
     addMinimap,
     addTelemetryStrip,
     addTelemetryItem,
-    splitTelemetryStrip,
+    splitTelemetryStrip, splitRoadInfo,
     canSplitTelemetryStrip,
     removeSelected,
   };

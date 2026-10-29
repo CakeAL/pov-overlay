@@ -1,6 +1,7 @@
 import { escapeXml, type LocationAddress } from "./location";
 import {
   roadIdentity,
+  roadEnglishName,
   roadBadgeKey,
   type RoadBadge,
   type RoadInfoOptions,
@@ -8,8 +9,19 @@ import {
 import type { Widget } from "./types";
 export const ROAD_INFO_SOURCE =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 100"><text x="0" y="64" font-size="40" fill="{$Color}">{$Road}</text></svg>';
+export const ROAD_BADGE_SOURCE =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><rect x="4" y="4" width="192" height="92" rx="10" fill="#319543"/><text x="100" y="62" text-anchor="middle" font-size="30" fill="white">道路编号</text></svg>';
 export const roadInfoHeight = (widget: Widget) =>
-  Math.max(100, (widget.typography?.fontSize ?? 40) * 2.5);
+  Math.max(
+    100,
+    (widget.svg?.roadInfo?.nameFontSize ?? widget.typography?.fontSize ?? 40) *
+      1.5 +
+      (widget.svg?.roadInfo?.englishFontSize ??
+        (widget.svg?.roadInfo?.nameFontSize ??
+          widget.typography?.fontSize ??
+          40) * 0.55) *
+        1.5,
+  );
 export function roadInfoSvg(
   widget: Widget,
   address: LocationAddress | null | undefined,
@@ -18,12 +30,27 @@ export function roadInfoSvg(
   const options: RoadInfoOptions = widget.svg?.roadInfo ?? {},
     identity = roadIdentity(address, options);
   const visibleBadge =
-    identity && badge && roadBadgeKey(identity) === roadBadgeKey(badge)
+    options.mode !== "name" &&
+    identity &&
+    badge &&
+    roadBadgeKey(identity) === roadBadgeKey(badge)
       ? badge
       : null;
+  if (options.mode === "badge") {
+    if (!visibleBadge)
+      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"></svg>';
+    return visibleBadge.source.replace(
+      /<svg\b([^>]*)>/,
+      (_, attrs: string) =>
+        `<svg${attrs.replace(/\s(?:width|height)="[^"]*"/g, "")} width="100%" height="100%" preserveAspectRatio="xMinYMid">`,
+    );
+  }
   const raw = address?.road || "—",
     name = identity?.name ?? raw;
-  const caption = options.showEnglish !== false ? identity?.english : undefined;
+  const caption =
+    options.showEnglish !== false
+      ? (identity?.english ?? roadEnglishName(raw))
+      : undefined;
   const canvasHeight = roadInfoHeight(widget);
   const height = Math.max(
     20,
@@ -34,7 +61,8 @@ export function roadInfoSvg(
     : 0;
   const gap = visibleBadge ? 18 : 0,
     after = options.badgePosition === "after";
-  const nameSize = widget.typography?.fontSize ?? 40;
+  const nameSize = options.nameFontSize ?? widget.typography?.fontSize ?? 40;
+  const englishSize = options.englishFontSize ?? nameSize * 0.55;
   const estimate = (text: string, size: number) =>
     [...text].reduce(
       (n, char) => n + (/[^\x00-\xff]/.test(char) ? size : size * 0.6),
@@ -45,7 +73,7 @@ export function roadInfoSvg(
     available,
     Math.max(
       estimate(name, nameSize),
-      caption ? estimate(caption, nameSize * 0.55) : 0,
+      caption ? estimate(caption, englishSize) : 0,
     ),
   );
   const nameX = visibleBadge && !after ? badgeWidth + gap : 0;
@@ -56,12 +84,19 @@ export function roadInfoSvg(
     line(
       name,
       caption
-        ? canvasHeight / 2 + nameSize * 0.05
+        ? (canvasHeight - nameSize - englishSize - 8) / 2 + nameSize
         : canvasHeight / 2 + nameSize * 0.35,
       nameSize,
     ) +
     (caption
-      ? line(caption, canvasHeight / 2 + nameSize * 0.77, nameSize * 0.55)
+      ? line(
+          caption,
+          (canvasHeight - nameSize - englishSize - 8) / 2 +
+            nameSize +
+            8 +
+            englishSize,
+          englishSize,
+        )
       : "");
   if (visibleBadge) {
     const x = after ? textWidth + gap : 0,

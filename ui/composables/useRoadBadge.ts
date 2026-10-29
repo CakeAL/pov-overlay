@@ -15,7 +15,7 @@ export function useRoadBadge(
   const badge = ref<RoadBadge | null>(null);
   let revision = 0;
   const identity = computed(() =>
-    widget.value.visible && widget.value.scale > 0 && widget.value.svg?.roadInfo
+    widget.value.visible && widget.value.scale > 0 && widget.value.svg?.roadInfo && widget.value.svg.roadInfo.mode !== "name"
       ? roadIdentity(address.value, widget.value.svg.roadInfo)
       : null,
   );

@@ -13,9 +13,10 @@ export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number
   if (widget.scale <= 0) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>';
   if (widget.kind === "route") return styleWidgetSvg(routeOverlay(widget, sample, context), widget.typography);
   if (widget.kind === "svg") {
+    if (widget.svg?.roadInfo?.mode === "badge") return roadInfoSvg(widget, context.address, context.roadBadge);
     if (widget.svg?.roadInfo) return styleWidgetSvg(roadInfoSvg(widget, context.address, context.roadBadge), { ...widget.typography, fontSize: undefined });
     const template = widget.svg?.textTemplate;
-    const source = styleWidgetSvg(bindSvg(template == null ? widget.svg?.source ?? "" : textOverlaySource(template, widget.typography?.fontSize), sample, elapsed, widget.color, { ...context, speedMaxKmh: widget.speedMaxKmh }), widget.typography);
+    const source = styleWidgetSvg(bindSvg(template == null ? widget.svg?.source ?? "" : textOverlaySource(template, widget.typography?.fontSize, widget.svg?.lineFontSizes), sample, elapsed, widget.color, { ...context, speedMaxKmh: widget.speedMaxKmh }), template == null ? widget.typography : { ...widget.typography, fontSize: undefined });
     return widget.svg?.textTemplate == null ? source : fitTextOverlay(source, widget.typography?.fontSize ?? 32);
   }
   const width = widgetDimensions(widget, ratio).width * 1000;
