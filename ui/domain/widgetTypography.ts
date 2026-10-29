@@ -19,5 +19,15 @@ export function styleWidgetSvg(source: string, typography: Widget['typography'])
     source = source.replace(/(font-size\s*(?:=\s*["']|:\s*))([\d.]+)/gi, (_, prefix: string, n: string) => `${prefix}${Number(n) * factor}`);
   }
   const rules = [family && `font-family:${family}!important`, typography.bold != null && `font-weight:${typography.bold ? 700 : 400}!important`, typography.italic != null && `font-style:${typography.italic ? 'italic' : 'normal'}!important`, !sizes.length && typography.fontSize != null && `font-size:${typography.fontSize}px`].filter(Boolean).join(';');
-  return source.replace(/(<svg\b[^>]*>)/, root => `${root}<style>text,tspan{${rules}}</style>`);
+  // Put overrides on the text nodes: template inline styles (including !important)
+  // otherwise win over a root stylesheet, making the font picker appear ineffective.
+  if (!rules) return source;
+  const xml = (value: string) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
+  return source.replace(/<(?:text|tspan)\b[^>]*>/gi, tag => {
+    const style = tag.match(/\sstyle\s*=\s*(["'])(.*?)\1/i);
+    const replaced = [family && 'family', typography.bold != null && 'weight', typography.italic != null && 'style'].filter(Boolean).join('|');
+    const preserved = style?.[2]?.replace(new RegExp(`(?:^|;)\\s*font-(?:${replaced})\\s*:[^;]*`, 'gi'), '') ?? '';
+    const clean = tag.replace(/\sstyle\s*=\s*(["'])(.*?)\1/i, '');
+    return clean.replace(/\/?\s*>$/, end => ` style="${preserved}${preserved ? ';' : ''}${xml(rules)}"${end}`);
+  });
 }

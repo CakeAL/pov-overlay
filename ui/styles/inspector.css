@@ -59,7 +59,9 @@
 .font-field { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
 .font-picker { display: grid; gap: 8px; flex: 1; min-width: 0; }
 .font-picker-actions { display: flex; align-items: center; gap: 4px; }
-.font-picker-actions > .hk-select-wrapper { flex: 1; min-width: 0; }
+.font-picker-trigger { flex: 1; min-width: 0; }
+.font-picker-trigger > * { width: 100%; }
+.font-picker-panel { display: grid; gap: 8px; min-width: 220px; }
 @keyframes font-spin { to { transform: rotate(360deg); } }
 .spinning { animation: font-spin 1s linear infinite; }
 .scale-value { display: flex; align-items: center; gap: 3px; }
