@@ -31,7 +31,6 @@ test("all templates generate isolated SVGs and use the supplied fonts as portabl
   d.province = "苏";
   d.roadName = "南京路";
   d.english = "NANJING LU";
-  d.exitNumber = "12";
   d.destinations = [
     { name: "南京", english: "Nanjing", distance: "12.5", direction: "right" },
   ];
@@ -117,6 +116,9 @@ test("the Hikari sign page isolates editor shortcuts and keeps the draft without
       x = editor.layout.selected!.x;
     editor.signMaker.open();
     expect(editor.signMaker.items.length).toBeGreaterThan(10);
+    expect(
+      [...host.querySelectorAll('[role="tab"]')].map((t) => t.textContent),
+    ).toEqual(["道路名称标识", "交叉路口", "地点距离标识"]);
     expect(host.textContent).not.toContain("国标示例");
     expect(host.textContent).not.toContain("文字栅格化");
     const green = host.querySelector<HTMLElement>(".hk-tag-success")!;
@@ -134,6 +136,21 @@ test("the Hikari sign page isolates editor shortcuts and keeps the draft without
     expect(host.querySelector("img")?.getAttribute("src")).toContain(
       "data:image/svg+xml",
     );
+    const name = editor.signMaker.artwork!.texts.find(
+      (t) => t.label === "沪蓉高速",
+    )!;
+    editor.signMaker.textEditing.select(name.key);
+    const oldX = editor.signMaker.textEditing.position!.x;
+    editor.signMaker.textEditing.update("x", oldX + 40);
+    editor.signMaker.textEditing.update(
+      "height",
+      editor.signMaker.textEditing.position!.height * 1.1,
+    );
+    await nextTick();
+    expect(editor.signMaker.textEditing.position!.x).toBeCloseTo(oldX + 40);
+    expect(host.querySelector(".sign-text-resize")).not.toBeNull();
+    expect(editor.signMaker.source).toContain("scale(1.1)");
+    const editedSource = editor.signMaker.source;
     document.body.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
     );
@@ -146,6 +163,7 @@ test("the Hikari sign page isolates editor shortcuts and keeps the draft without
     editor.signMaker.pageOpen = false;
     editor.signMaker.open();
     expect(editor.signMaker.design!.code).toBe("42");
+    expect(editor.signMaker.source).toBe(editedSource);
     expect(editor.layout.widgets).toHaveLength(before);
   } finally {
     app.unmount();
@@ -210,7 +228,7 @@ test("four-digit highway signs use Appendix C panel ratio and a two-thirds-heigh
   expect(doc.querySelector('[aria-label="许广高速"]')).not.toBeNull();
 });
 
-test("Appendix B assigns normal English to A and road/exit numbers to B", async () => {
+test("Appendix B assigns normal English to A and road numbers to B", async () => {
   fonts();
   const d = newSignDesign("direction");
   d.destinations = [
@@ -224,18 +242,15 @@ test("Appendix B assigns normal English to A and road/exit numbers to B", async 
     (p) => p.getAttribute("transform")!.match(/scale\(([^)]+)\)/)![1],
   );
   expect(new Set(scales).size).toBe(1); // Preserve lowercase proportions and common baseline.
-  d.template = "exit";
-  d.exitNumber = "12";
+  d.template = "national";
+  d.code = "318";
   const exit = new DOMParser().parseFromString(
     await outlineSign(renderSign(d).source),
     "image/svg+xml",
   );
   expect(
-    exit.querySelector('[aria-label="12"]')?.getAttribute("data-sign-font"),
+    exit.querySelector('[aria-label="G318"]')?.getAttribute("data-sign-font"),
   ).toBe("B");
-  expect(
-    exit.querySelector('[aria-label="出口"]')?.getAttribute("data-sign-font"),
-  ).toBe("A");
 });
 
 test("named expressways preserve full names, Appendix C ratios and centered short names", async () => {
@@ -544,4 +559,131 @@ test("roundabout notch faces are radial and extend through the full ring", async
   expect(
     Math.hypot(points[0]!.x - points[3]!.x, points[0]!.y - points[3]!.y),
   ).toBeGreaterThan(5);
+});
+
+test("all sign text exposes stable unique identities and nested route text uses board coordinates", async () => {
+  fonts();
+  const { SIGN_EXAMPLES } = await import("../domain/signs/examples");
+  const { outlineSignArtwork } = await import("../infrastructure/signFonts");
+  for (const e of SIGN_EXAMPLES) {
+    const art = await outlineSignArtwork(renderSign(e.design).source);
+    expect(new Set(art.texts.map((t) => t.key)).size, e.label).toBe(
+      art.texts.length,
+    );
+  }
+  const example = SIGN_EXAMPLES.find((e) => e.figure === "图 205 c")!;
+  const art = await outlineSignArtwork(renderSign(example.design).source);
+  const code = art.texts.find((t) => t.label === "G2")!;
+  expect(code.frame.scale).toBeCloseTo(45 / 200);
+  expect(code.base.height).toBeCloseTo((90 * 45) / 200);
+  expect(code.key).toContain(".route.highway.code");
+  const { applySignTextEdits } = await import(
+    "../infrastructure/signTextTransforms"
+  );
+  const edited = applySignTextEdits(art, {
+    [code.key]: { offsetX: 30, offsetY: 40, scale: 2 },
+  });
+  const text = edited.texts.find((t) => t.key === code.key)!;
+  expect(text.bounds.x).toBeCloseTo(code.base.x + 30);
+  expect(text.bounds.height).toBeCloseTo(code.base.height * 2);
+  const clean = sanitizeSvg(edited.source).source;
+  expect(clean).not.toMatch(/<text|<image/);
+  expect(clean).toContain('overflow="visible"');
+  expect(clean).toContain("scale(2)");
+});
+
+test("manual edits stay with a destination when content, captions or destination order change", async () => {
+  fonts();
+  const { outlineSignArtwork } = await import("../infrastructure/signFonts");
+  const { applySignTextEdits } = await import(
+    "../infrastructure/signTextTransforms"
+  );
+  const d = newSignDesign("direction");
+  d.destinations = [
+    {
+      id: "first",
+      name: "昌平",
+      english: "",
+      distance: "",
+      direction: "straight",
+    },
+    {
+      id: "second",
+      name: "顺义",
+      english: "",
+      distance: "",
+      direction: "right",
+    },
+  ];
+  const before = await outlineSignArtwork(renderSign(d).source),
+    key = before.texts.find((t) => t.label === "顺义")!.key;
+  d.textEdits = { [key]: { offsetX: 10, offsetY: 3, scale: 1.2 } };
+  d.destinations[0]!.english = "Changping";
+  d.destinations.splice(0, 1);
+  d.destinations[0]!.name = "南京";
+  const updated = applySignTextEdits(
+    await outlineSignArtwork(renderSign(d).source),
+    d.textEdits,
+  );
+  expect(updated.texts).toHaveLength(1);
+  const text = updated.texts[0]!;
+  expect(text.key).toBe(key);
+  expect(text.label).toBe("南京");
+  expect(text.bounds.height / text.base.height).toBeCloseTo(1.2);
+  expect(text.bounds.x - text.base.x).toBeCloseTo(10);
+});
+
+test("manual positions and scale are constrained to the board and reject nonfinite values", async () => {
+  const { editedTextBox } = await import("../domain/signs/textLayout");
+  const base = { x: 20, y: 30, width: 100, height: 50 },
+    board = { width: 300, height: 200 };
+  const result = editedTextBox(
+    base,
+    { offsetX: -1000, offsetY: 1000, scale: 8 },
+    board,
+  );
+  expect(result.bounds).toEqual({ x: 0, y: 50, width: 300, height: 150 });
+  expect(() => editedTextBox(base, { offsetX: NaN }, board)).toThrow();
+  const { useSignTextPointer } = await import(
+    "../composables/useSignTextPointer"
+  );
+  const pointer = useSignTextPointer();
+  const item = {
+    key: "name",
+    label: "名称",
+    base,
+    bounds: base,
+    local: base,
+    frame: { x: 0, y: 0, scale: 1 },
+  };
+  pointer.begin(
+    item,
+    false,
+    0,
+    0,
+    { left: 0, top: 0, width: 600, height: 400 },
+    board,
+  );
+  expect(pointer.move(40, 20)).toMatchObject({ x: 40, y: 40, scale: 1 });
+  pointer.end();
+  expect(pointer.move(80, 30)).toBeNull();
+  pointer.begin(
+    item,
+    true,
+    0,
+    0,
+    { left: 0, top: 0, width: 600, height: 400 },
+    board,
+  );
+  expect(pointer.move(-1000, -1000)!.scale).toBeGreaterThan(0);
+});
+
+test("T-junction labels start at the route endpoints", async () => {
+  fonts();
+  const { SIGN_EXAMPLES } = await import("../domain/signs/examples");
+  const { outlineSignArtwork } = await import("../infrastructure/signFonts");
+  const d = SIGN_EXAMPLES.find((e) => e.figure === "图 205 a")!.design;
+  const art = await outlineSignArtwork(renderSign(d).source);
+  expect(art.texts.find((t) => t.label === "昌平")!.base.x).toBeCloseTo(25);
+  expect(art.texts.find((t) => t.label === "顺义")!.base.x).toBeCloseTo(82);
 });

@@ -23,26 +23,22 @@ const rows = computed(
     !route.value && !["roadName", "urbanExpressway"].includes(d.value.template),
 );
 const rowLimit = computed(() =>
-  d.value.template === "free"
-    ? 6
-    : d.value.template === "roundabout"
-      ? 5
-      : ["interchange", "fork", "tJunction", "wideTJunction"].includes(
-            d.value.template,
-          )
-        ? 2
-        : 3,
+  d.value.template === "roundabout"
+    ? 5
+    : ["tJunction", "wideTJunction"].includes(d.value.template)
+      ? 2
+      : 3,
 );
 function addRow() {
   const row = emptyDestination();
-  row.direction = ["interchange", "fork"].includes(d.value.template)
-    ? "right"
-    : (((["tJunction", "wideTJunction"].includes(d.value.template)
-        ? ["straight", "right"]
-        : DIRECTIONS.map((x) => x.value)
-      ).find(
-        (value) => !d.value.destinations.some((r) => r.direction === value),
-      ) as typeof row.direction) ?? "straight");
+  row.id = crypto.randomUUID();
+  row.direction =
+    ((["tJunction", "wideTJunction"].includes(d.value.template)
+      ? ["straight", "right"]
+      : DIRECTIONS.map((x) => x.value)
+    ).find(
+      (value) => !d.value.destinations.some((r) => r.direction === value),
+    ) as typeof row.direction) ?? "straight";
   d.value.destinations.push(row);
 }
 </script>
@@ -72,18 +68,7 @@ function addRow() {
       v-model="d.english"
       :maxlength="80"
   /></template>
-  <template v-if="d.template === 'exit' || d.template === 'entrance'"
-    ><HInput label="出入口编号" v-model="d.exitNumber" :maxlength="8" /><HInput
-      label="预告距离（可选）"
-      v-model="d.exitDistance"
-      :maxlength="12"
-      placeholder="例如 500 m"
-  /></template>
-  <label
-    v-if="
-      rows && !['interchange', 'fork', 'exit', 'entrance'].includes(d.template)
-    "
-    class="sign-maker-toggle"
+  <label v-if="rows" class="sign-maker-toggle"
     >高速公路绿底<HSwitch v-model="d.green" aria-label="高速公路绿底"
   /></label>
   <label
@@ -115,7 +100,7 @@ function addRow() {
   <template v-if="rows"
     ><section
       v-for="(row, index) in d.destinations"
-      :key="index"
+      :key="row.id ?? index"
       class="sign-destination"
     >
       <div class="sign-destination-heading">
@@ -137,17 +122,6 @@ function addRow() {
       >添加目的地</HButton
     ></template
   >
-  <template v-if="d.template === 'free'"
-    ><HNumberInput
-      label="画板宽度"
-      v-model="d.freeWidth"
-      :min="200"
-      :max="4000" /><HNumberInput
-      label="画板高度"
-      v-model="d.freeHeight"
-      :min="200"
-      :max="4000"
-  /></template>
   <HNumberInput
     label="输出宽度（px）"
     v-model="d.outputWidth"

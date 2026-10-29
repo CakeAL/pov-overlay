@@ -25,9 +25,6 @@ const label = computed(
       {
         junctions: "交叉口",
         distances: "地点距离",
-        interchanges: "立交",
-        exits: "出入口",
-        free: "自由",
       } as Record<string, string>
     )[signCategory(props.design.template)],
 );

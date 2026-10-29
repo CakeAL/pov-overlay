@@ -8,6 +8,7 @@ export const SIGN_COLORS = {
   blue: "#2c5190",
 };
 export function lettering(
+  key: string,
   value: string,
   x: number,
   y: number,
@@ -19,7 +20,7 @@ export function lettering(
   font: "A" | "B" | "C" = "A",
 ) {
   return value
-    ? `<text data-sign-font="${font}" data-letter-box="${x} ${y} ${w} ${h}" data-gap="${gap}" data-align="${align}" x="${x}" y="${y + h}" font-size="${h}" fill="${ink}">${escapeXml(value)}</text>`
+    ? `<text data-sign-key="${escapeXml(key)}" data-sign-font="${font}" data-letter-box="${x} ${y} ${w} ${h}" data-gap="${gap}" data-align="${align}" x="${x}" y="${y + h}" font-size="${h}" fill="${ink}">${escapeXml(value)}</text>`
     : "";
 }
 export function panel(w: number, h: number, fill: string) {

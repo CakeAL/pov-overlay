@@ -35,9 +35,7 @@ const directionChoices = computed(() =>
       ? ["straight", "right"].includes(x.value)
       : ["crossroads", "dividedJunction"].includes(props.template)
         ? ["straight", "left", "right"].includes(x.value)
-        : ["interchange", "fork"].includes(props.template)
-          ? ["left", "right"].includes(x.value)
-          : true,
+        : true,
   ),
 );
 </script>

@@ -108,6 +108,7 @@
   gap: 8px;
 }
 .sign-maker-preview-stage {
+  --sign-preview-height: 65vh;
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -116,10 +117,62 @@
   justify-content: center;
   padding: 32px;
 }
-.sign-maker-preview-stage img {
-  object-fit: contain;
-  max-height: 65vh;
+.sign-artwork {
+  position: relative;
   flex-shrink: 0;
+}
+.sign-artwork img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+.sign-text-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  outline: none;
+  touch-action: none;
+}
+.sign-text-hit {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  pointer-events: all;
+  cursor: move;
+}
+.sign-text-hit:hover,
+.sign-text-hit.is-selected {
+  stroke: rgb(var(--color-primary));
+}
+.sign-text-resize {
+  fill: rgb(var(--color-primary));
+  stroke: rgb(var(--color-background));
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: all;
+  cursor: nwse-resize;
+}
+.sign-text-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.sign-text-coordinates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.sign-text-reset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 .sign-maker-note {
   font-size: 12px;
@@ -133,6 +186,7 @@
     overflow: auto;
   }
   .sign-maker-preview-stage {
+    --sign-preview-height: 65vh;
     padding: 12px;
   }
 }
@@ -162,9 +216,15 @@
     border-top: 1px solid var(--line);
   }
   .sign-maker-preview-stage {
+    --sign-preview-height: 65vh;
     padding: 8px;
   }
-  .sign-maker-preview-stage img {
-    max-height: calc(50vh - 140px);
+  .sign-maker-preview-stage {
+    --sign-preview-height: calc(50vh - 140px);
   }
+}
+
+.sign-text-overlay:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
 }

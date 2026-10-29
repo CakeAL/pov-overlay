@@ -33,6 +33,7 @@ export function distanceGeometry(d: SignDesign, badge: BadgeRenderer) {
     h = 28 + rows.length * rowH;
   let source = panel(w, h, d.green ? C.green : C.blue);
   rows.forEach((row, i) => {
+    const key = `destination.${row.id ?? d.destinations.indexOf(row)}`;
     const y = 20 + i * rowH,
       numberX = w - 24 - 34 - 18 - numberWidth;
     if (row.content === "route" && row.routeCode)
@@ -40,10 +41,32 @@ export function distanceGeometry(d: SignDesign, badge: BadgeRenderer) {
     else if (row.content === "roadName")
       source +=
         `<rect x="22" y="${y - 4.5}" width="${nameWidth + 4}" height="45" rx="3" fill="${C.blue}" stroke="white" stroke-width="2"/>` +
-        text(row.name, 28, y + 2, nameWidth - 8, 32, 5, "white", "start");
-    else source += text(row.name, 24, y, nameWidth, 36, 6, "white", "start");
+        text(
+          `${key}.name`,
+          row.name,
+          28,
+          y + 2,
+          nameWidth - 8,
+          32,
+          5,
+          "white",
+          "start",
+        );
+    else
+      source += text(
+        `${key}.name`,
+        row.name,
+        24,
+        y,
+        nameWidth,
+        36,
+        6,
+        "white",
+        "start",
+      );
     if (row.english)
       source += text(
+        `${key}.english`,
         row.english,
         24,
         y + 48,
@@ -55,6 +78,7 @@ export function distanceGeometry(d: SignDesign, badge: BadgeRenderer) {
       );
     source +=
       text(
+        `${key}.distance`,
         row.distance || "0",
         numberX,
         y,
@@ -63,7 +87,8 @@ export function distanceGeometry(d: SignDesign, badge: BadgeRenderer) {
         numberGap,
         "white",
         "end",
-      ) + text("km", w - 58, y + 18, 34, 18, 4, "white", "start");
+      ) +
+      text(`${key}.unit`, "km", w - 58, y + 18, 34, 18, 4, "white", "start");
   });
   return { width: w, height: h, source };
 }

@@ -1,3 +1,6 @@
+import { useSignTextEditing } from "./useSignTextEditing";
+import { applySignTextEdits } from "../infrastructure/signTextTransforms";
+import type { SignArtwork } from "../domain/signs/textLayout";
 import { SIGN_EXAMPLES } from "../domain/signs/examples";
 import { computed, ref, watch } from "vue";
 import {
@@ -9,7 +12,7 @@ import {
   type SignCategory,
 } from "../domain/signs/model";
 import { renderSign } from "../domain/signs/render";
-import { outlineSign } from "../infrastructure/signFonts";
+import { outlineSignArtwork } from "../infrastructure/signFonts";
 import { saveSvg } from "../infrastructure/saveSvg";
 import type { Playback } from "./usePlayback";
 import type { EditorMessages } from "./useMessages";
@@ -17,13 +20,19 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
   const pageOpen = ref(false),
     busy = ref(false),
     loading = ref(false),
-    source = ref(""),
+    baseArtwork = ref<SignArtwork | null>(null),
     error = ref(""),
     category = ref<SignCategory>("names");
   const items = ref<{ id: string; design: SignDesign }[]>(
       SIGN_EXAMPLES.map((e) => ({
         id: crypto.randomUUID(),
-        design: JSON.parse(JSON.stringify(e.design)) as SignDesign,
+        design: {
+          ...JSON.parse(JSON.stringify(e.design)),
+          destinations: e.design.destinations.map((row) => ({
+            ...row,
+            id: crypto.randomUUID(),
+          })),
+        } as SignDesign,
       })),
     ),
     selectedId = ref(items.value[0]?.id ?? ""),
@@ -43,6 +52,17 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
       return null;
     }
   });
+  const artwork = computed(() =>
+    baseArtwork.value
+      ? applySignTextEdits(baseArtwork.value, design.value?.textEdits)
+      : null,
+  );
+  const source = computed(() => artwork.value?.source ?? "");
+  const textEditing = useSignTextEditing(design, artwork);
+  watch(selectedId, () => {
+    baseArtwork.value = null;
+    textEditing.select("");
+  });
   const validation = computed(() => {
     try {
       if (design.value) validateSign(design.value);
@@ -55,10 +75,9 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
     selectedId.value = visibleItems.value[0]?.id ?? "";
   });
   let revision = 0;
-  watch([preview, pageOpen], async () => {
+  watch([() => preview.value?.source, pageOpen, selectedId], async () => {
     const current = ++revision;
     if (!pageOpen.value) return;
-    source.value = "";
     error.value = "";
     loading.value = true;
     try {
@@ -66,11 +85,13 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
         if (design.value) throw new Error(validation.value || "请检查输入。");
         return;
       }
-      const value = await outlineSign(preview.value.source);
-      if (current === revision) source.value = value;
+      const value = await outlineSignArtwork(preview.value.source);
+      if (current === revision) baseArtwork.value = value;
     } catch (e) {
-      if (current === revision)
+      if (current === revision) {
+        baseArtwork.value = null;
         error.value = e instanceof Error ? e.message : String(e);
+      }
     } finally {
       if (current === revision) loading.value = false;
     }
@@ -82,6 +103,7 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
     }
     const design = newSignDesign(template as SignTemplate),
       id = crypto.randomUUID();
+    design.destinations.forEach((row) => (row.id = crypto.randomUUID()));
     items.value.push({ id, design });
     selectedId.value = id;
   }
@@ -124,6 +146,8 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
     busy,
     loading,
     source,
+    artwork,
+    textEditing,
     error,
     category,
     items,

@@ -12,7 +12,7 @@ import {
   Plus,
   RotateCcw,
 } from "lucide-vue-next";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useEditorContext } from "../../editor/context";
 import {
   SIGN_CATEGORIES,
@@ -21,9 +21,11 @@ import {
   isRouteNumber,
   signCode,
 } from "../../domain/signs/model";
-import { svgDataUrl } from "../../domain/widgetSvg";
+import SignPreview from "./SignPreview.vue";
+import SignTextControls from "./SignTextControls.vue";
 import SignContentFields from "./SignContentFields.vue";
 const { signMaker: maker } = useEditorContext();
+const editing = ref(true);
 const choices = computed(() =>
   SIGN_TEMPLATES.filter((t) => t.category === maker.category).map((t) => ({
     value: t.value,
@@ -142,17 +144,15 @@ const disabled = computed(
             @click="maker.zoom = 100"
             ><RotateCcw :size="16"
           /></HIconButton>
+          <HButton
+            :variant="editing ? 'secondary' : 'ghost'"
+            size="sm"
+            :aria-pressed="editing"
+            @click="editing = !editing"
+            >编辑文字</HButton
+          >
         </div>
-        <div class="sign-maker-preview-stage">
-          <img
-            v-if="maker.source"
-            :src="svgDataUrl(maker.source)"
-            :style="{ width: `${maker.zoom}%`, maxWidth: 'none' }"
-            alt="道路交通牌预览"
-          />
-          <p v-else-if="maker.loading" role="status">正在生成标牌…</p>
-          <p v-else-if="maker.error" role="alert">{{ maker.error }}</p>
-        </div>
+        <SignPreview :editing="editing" />
         <p v-if="maker.preview" class="sign-maker-note">
           {{ maker.preview.width }} × {{ maker.preview.height }} · SVG
         </p>
@@ -162,7 +162,8 @@ const disabled = computed(
       </section>
       <aside class="sign-maker-controls" aria-label="标牌设置">
         <template v-if="maker.design"
-          ><SignContentFields :design="maker.design" />
+          ><SignTextControls />
+          <SignContentFields :design="maker.design" />
           <p class="sign-maker-note">
             字体按用途自动选择：一般文字 A 型，道路及出口编号 B
             型；箭杆内道路编号使用 C 型。

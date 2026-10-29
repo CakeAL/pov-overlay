@@ -10,21 +10,10 @@ import {
   signLabel,
   validateSign,
   type SignDesign,
-  type SignDirection,
 } from "./model";
 import { SIGN_COLORS, lettering, panel } from "./primitives";
 export { SIGN_COLORS } from "./primitives";
 const C = SIGN_COLORS;
-function arrow(direction: SignDirection, x: number, y: number, scale = 1) {
-  const angle = {
-    straight: 0,
-    left: -90,
-    right: 90,
-    upperLeft: -45,
-    upperRight: 45,
-  }[direction];
-  return `<path d="M-4 18V-7L-13 2L-18-3L0-21L18-3L13 2L4-7V18Z" transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})" fill="white"/>`;
-}
 export function renderSign(d: SignDesign) {
   validateSign(d, false);
   let w = 400,
@@ -59,6 +48,7 @@ export function renderSign(d: SignDesign) {
             ? 140
             : 100;
     s += lettering(
+      "highway.banner",
       banner,
       (w - bw) / 2,
       named ? 22 : 16,
@@ -73,6 +63,7 @@ export function renderSign(d: SignDesign) {
         s +=
           `<g data-number-cluster="${w}" data-cluster-gap="11" data-cluster-y="${named ? 68 : 74}">` +
           lettering(
+            "highway.code",
             code.slice(0, 3),
             0,
             0,
@@ -83,10 +74,22 @@ export function renderSign(d: SignDesign) {
             "center",
             "B",
           ) +
-          lettering(code.slice(3), 0, 30, 84, 60, 10, C.white, "center", "B") +
+          lettering(
+            "highway.suffix",
+            code.slice(3),
+            0,
+            30,
+            84,
+            60,
+            10,
+            C.white,
+            "center",
+            "B",
+          ) +
           "</g>";
       } else
         s += lettering(
+          "highway.code",
           code,
           20,
           named ? 68 : 74,
@@ -105,6 +108,7 @@ export function renderSign(d: SignDesign) {
         (w - 40) / (count + Math.max(0, count - 1) * 0.22),
       );
       s += lettering(
+        "road.name",
         d.roadName,
         20,
         172 + (40 - nameHeight) / 2,
@@ -126,6 +130,7 @@ export function renderSign(d: SignDesign) {
     s =
       `<rect width="420" height="200" rx="38" fill="${fill}"/><rect x="10" y="10" width="400" height="180" rx="27" fill="${ink}"/><rect x="19" y="19" width="382" height="162" rx="18" fill="${fill}"/>` +
       lettering(
+        "road.code",
         d.code ? signCode(d) : "",
         58,
         43,
@@ -146,8 +151,17 @@ export function renderSign(d: SignDesign) {
     h = d.english ? 170 : 150;
     s =
       panel(w, h, d.template === "urbanExpressway" ? C.green : C.blue) +
-      lettering(d.roadName, 32, d.english ? 28 : 43, w - 64, 64, 13);
-    if (d.english) s += lettering(d.english, 32, 115, w - 64, 22, 2);
+      lettering(
+        "road.name",
+        d.roadName,
+        32,
+        d.english ? 28 : 43,
+        w - 64,
+        64,
+        13,
+      );
+    if (d.english)
+      s += lettering("road.english", d.english, 32, 115, w - 64, 22, 2);
   } else if (
     [
       "crossroads",
@@ -167,6 +181,7 @@ export function renderSign(d: SignDesign) {
       height: number,
       onArrow = false,
       centered = false,
+      key = `destination.${row.id ?? d.destinations.indexOf(row)}.route`,
     ) => {
       const type =
         row.routeType ??
@@ -179,6 +194,12 @@ export function renderSign(d: SignDesign) {
       const view = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(raw)!;
       const width = (height * Number(view[1])) / Number(view[2]);
       return raw
+        .replace("<svg ", '<svg overflow="visible" ')
+        .replace(
+          /data-sign-key="([^"]+)"/g,
+          (_, nestedKey: string) =>
+            `data-sign-key="${xml(`${key}.${nestedKey}`)}"`,
+        )
         .replace(
           /width="[^"]+" height="[^"]+"/,
           `x="${centered ? x - width / 2 : x}" y="${y}" width="${width}" height="${height}"`,
@@ -197,53 +218,15 @@ export function renderSign(d: SignDesign) {
     w = geometry.width;
     h = geometry.height;
     s = geometry.source;
-  } else if (["interchange", "fork"].includes(d.template)) {
-    w = 600;
-    h = 390;
-    s =
-      panel(w, h, C.green) +
-      `<path d="M300 340V200L160 95M300 200L440 95" fill="none" stroke="white" stroke-width="14"/>` +
-      arrow("upperLeft", 155, 90, 1.4) +
-      arrow("upperRight", 445, 90, 1.4);
-    d.destinations.forEach((r, i) => {
-      const left = r.direction === "left" || r.direction === "upperLeft";
-      s += lettering(r.name, left ? 25 : 365, 150, 210, 42, 4);
-      if (r.english)
-        s += lettering(r.english, left ? 25 : 365, 210, 210, 22, 1);
-    });
-  } else {
-    const exit = d.template === "exit" || d.template === "entrance",
-      free = d.template === "free";
-    w = free ? d.freeWidth : 500;
-    const rowH = 100,
-      top = exit ? 90 : 20;
-    h = free ? d.freeHeight : top + d.destinations.length * rowH + 20;
-    s = panel(w, h, exit || d.green ? C.green : C.blue);
-    if (exit)
-      s +=
-        lettering(
-          d.template === "exit" ? "出口" : "入口",
-          25,
-          25,
-          65,
-          32,
-          3,
-          C.white,
-          "start",
-        ) +
-        lettering(d.exitNumber, 105, 25, 130, 32, 3, C.white, "start", "B") +
-        lettering(d.exitDistance, w - 200, 25, 175, 32, 2, C.white, "end") +
-        `<path d="M15 77H${w - 15}" stroke="white" stroke-width="2"/>`;
-    d.destinations.forEach((r, i) => {
-      const y = top + i * (free ? (h - 40) / d.destinations.length : rowH),
-        rh = free ? Math.min(60, ((h - 40) / d.destinations.length) * 0.6) : 40;
-      s += arrow(r.direction, 45, y + 40);
-      s += lettering(r.name, 85, y + 14, w - 110, rh, 4, C.white, "start");
-      if (r.english)
-        s += lettering(r.english, 85, y + 70, w - 110, 18, 1, C.white, "start");
-    });
   }
   const height = Math.round((d.outputWidth * h) / w);
   const source = `<svg xmlns="http://www.w3.org/2000/svg" width="${d.outputWidth}" height="${height}" viewBox="0 0 ${w} ${h}" role="img"><title>${xml(label)}</title>${s}</svg>`;
-  return { source, width: d.outputWidth, height, label };
+  return {
+    source,
+    width: d.outputWidth,
+    height,
+    label,
+    viewWidth: w,
+    viewHeight: h,
+  };
 }

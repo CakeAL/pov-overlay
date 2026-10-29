@@ -1,10 +1,8 @@
+import type { SignTextEdit } from "./textLayout";
 export const SIGN_CATEGORIES = [
   { key: "names", label: "道路名称标识" },
   { key: "junctions", label: "交叉路口" },
   { key: "distances", label: "地点距离标识" },
-  { key: "interchanges", label: "立交枢纽指引" },
-  { key: "exits", label: "出入口指引" },
-  { key: "free", label: "自由模式" },
 ] as const;
 export type SignCategory = (typeof SIGN_CATEGORIES)[number]["key"];
 export const SIGN_TEMPLATES = [
@@ -24,11 +22,6 @@ export const SIGN_TEMPLATES = [
   { value: "crossroads", label: "十字路口图形式", category: "junctions" },
   { value: "roundabout", label: "环岛图形式", category: "junctions" },
   { value: "distance", label: "地点距离", category: "distances" },
-  { value: "interchange", label: "分向指路", category: "interchanges" },
-  { value: "fork", label: "道路分岔预告", category: "interchanges" },
-  { value: "exit", label: "出口预告", category: "exits" },
-  { value: "entrance", label: "入口预告", category: "exits" },
-  { value: "free", label: "自由文字与方向", category: "free" },
 ] as const;
 export type SignTemplate = (typeof SIGN_TEMPLATES)[number]["value"];
 export const DIRECTIONS = [
@@ -40,6 +33,7 @@ export const DIRECTIONS = [
 ] as const;
 export type SignDirection = (typeof DIRECTIONS)[number]["value"];
 export interface SignDestination {
+  id?: string;
   name: string;
   english: string;
   distance: string;
@@ -62,16 +56,13 @@ export interface SignDesign {
   province: string;
   roadName: string;
   english: string;
-  exitNumber: string;
-  exitDistance: string;
   green: boolean;
   outputWidth: number;
   destinations: SignDestination[];
-  freeWidth: number;
-  freeHeight: number;
   cardinal?: string;
   cardinalSide?: "left" | "right";
   centerRoad?: string;
+  textEdits?: Record<string, SignTextEdit>;
 }
 export const emptyDestination = (): SignDestination => ({
   name: "",
@@ -87,20 +78,14 @@ export const newSignDesign = (
   province: "",
   roadName: "",
   english: "",
-  exitNumber: "",
-  exitDistance: "",
   green: false,
   outputWidth: 1200,
   destinations: [
     {
       ...emptyDestination(),
-      direction: ["interchange", "fork"].includes(template)
-        ? "left"
-        : "straight",
+      direction: "straight",
     },
   ],
-  freeWidth: 1000,
-  freeHeight: 600,
 });
 export const isExpressway = (template: SignTemplate) =>
   template === "nationalExpressway" || template === "provincialExpressway";
@@ -152,8 +137,6 @@ export function validateSign(d: SignDesign, complete = true) {
     throw new Error("方位角标位置无效。");
   if (d.cardinal && !["东", "南", "西", "北"].includes(d.cardinal))
     throw new Error("方位角标无效。");
-  check(d.exitNumber, 8);
-  check(d.exitDistance, 12);
   if (
     isRouteNumber(d.template) &&
     (complete || d.code) &&
@@ -168,10 +151,9 @@ export function validateSign(d: SignDesign, complete = true) {
     throw new Error("请填写省份简称。");
   if (
     d.destinations.length < 1 ||
-    d.destinations.length >
-      (d.template === "free" ? 6 : d.template === "roundabout" ? 5 : 3)
+    d.destinations.length > (d.template === "roundabout" ? 5 : 3)
   )
-    throw new Error("目的地最多三行，环岛最多五个方向，自由模式最多六行。");
+    throw new Error("目的地最多三行，环岛最多五个方向。");
   for (const row of d.destinations) {
     check(row.name, 20);
     if (row.endpointRouteCode && !/^[GS]\d{3}$/.test(row.endpointRouteCode))
@@ -216,13 +198,6 @@ export function validateSign(d: SignDesign, complete = true) {
       throw new Error("距离填写公里数，最多两位小数。");
   }
   if (
-    d.template === "free" &&
-    ![d.freeWidth, d.freeHeight].every(
-      (n) => Number.isFinite(n) && n >= 200 && n <= 4000,
-    )
-  )
-    throw new Error("自由画板尺寸须为 200–4000。");
-  if (
     [
       "crossroads",
       "roundabout",
@@ -245,29 +220,6 @@ export function validateSign(d: SignDesign, complete = true) {
     if (new Set(directions).size !== directions.length)
       throw new Error("图形式每个方向只能设置一组目的地。");
   }
-  if (["interchange", "fork"].includes(d.template) && d.destinations.length > 2)
-    throw new Error("此分向版式最多两个方向。");
-  if (
-    d.template === "free" &&
-    d.freeHeight <
-      (d.destinations.some((row) => row.english) ? 110 : 80) *
-        d.destinations.length +
-        40
-  )
-    throw new Error("画板高度不足，请增加高度或减少文字行数。");
-  if (
-    ["interchange", "fork"].includes(d.template) &&
-    new Set(
-      d.destinations
-        .filter((r) => r.name || r.routeCode)
-        .map((r) =>
-          r.direction === "left" || r.direction === "upperLeft"
-            ? "left"
-            : "right",
-        ),
-    ).size !== d.destinations.filter((r) => r.name || r.routeCode).length
-  )
-    throw new Error("分向标志的两个目的地应分属左右方向。");
   if (
     ["tJunction", "wideTJunction"].includes(d.template) &&
     (d.destinations.length > 2 ||
@@ -277,6 +229,18 @@ export function validateSign(d: SignDesign, complete = true) {
   )
     throw new Error("丁字路口支持直行、右转两个方向。");
   if (!complete) return;
+  if (d.textEdits) {
+    if (Object.keys(d.textEdits).length > 128)
+      throw new Error("文字排版项目过多。");
+    for (const [key, edit] of Object.entries(d.textEdits))
+      if (
+        !/^[\w.-]{1,160}$/.test(key) ||
+        ![edit.offsetX, edit.offsetY, edit.scale].every(Number.isFinite) ||
+        edit.scale <= 0 ||
+        edit.scale > 8
+      )
+        throw new Error("文字位置或大小无效。");
+  }
   if (
     ["roadName", "urbanExpressway"].includes(d.template) &&
     !d.roadName.trim()

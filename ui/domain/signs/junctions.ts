@@ -8,6 +8,7 @@ export type BadgeRenderer = (
   height: number,
   onArrow?: boolean,
   centered?: boolean,
+  key?: string,
 ) => string;
 export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
   const t = d.template,
@@ -62,6 +63,7 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
       source +=
         `<path d="M${cx - 82} ${cy}l24-24h116l24 24-24 24H${cx - 58}Z" fill="${d.green ? C.green : C.blue}" stroke="white" stroke-width="4"/>` +
         text(
+          "junction.center",
           d.centerRoad ?? "",
           cx - 62,
           cy - 12,
@@ -73,19 +75,24 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
           "A",
         );
   }
-  if (d.cardinal)
-    source +=
-      `<rect x="${d.cardinalSide === "right" ? w - 44 : 8}" y="8" width="36" height="36" fill="white"/>` +
-      text(
-        d.cardinal,
-        d.cardinalSide === "right" ? w - 40 : 12,
-        12,
-        28,
-        28,
-        0,
-        C.blue,
-      );
+  if (d.cardinal) {
+    const right = d.cardinalSide === "right";
+    source += right
+      ? `<path data-sign-corner="true" d="M${w - 44.5} 4.5H${w - 16}A11.5 11.5 0 0 1 ${w - 4.5} 16V44.5H${w - 44.5}Z" fill="white"/>`
+      : `<path data-sign-corner="true" d="M16 4.5H44.5V44.5H4.5V16A11.5 11.5 0 0 1 16 4.5Z" fill="white"/>`;
+    source += text(
+      "junction.cardinal",
+      d.cardinal,
+      right ? w - 40 : 12,
+      12,
+      28,
+      28,
+      0,
+      C.blue,
+    );
+  }
   for (const row of d.destinations) {
+    const key = `destination.${row.id ?? d.destinations.indexOf(row)}`;
     let x: number, y: number, box: number;
     if (round) {
       const loc = {
@@ -142,19 +149,35 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
           45,
           false,
           true,
+          `${key}.endpoint-route`,
         );
       if (row.name)
         source += text(
+          `${key}.name`,
           row.name,
           x,
           y + (!row.onArrow ? 42 : 0),
           box,
           round ? 50 : 30,
           round ? 12 : 4,
+          "white",
+          tee ? "start" : "center",
         );
-    } else source += text(row.name, x, y, box, round ? 50 : 34, round ? 12 : 6);
+    } else
+      source += text(
+        `${key}.name`,
+        row.name,
+        x,
+        y,
+        box,
+        round ? 50 : 34,
+        round ? 12 : 6,
+        "white",
+        tee ? "start" : "center",
+      );
     if (row.english)
       source += text(
+        `${key}.english`,
         row.english,
         x,
         y + (round ? (row.content === "route" ? 98 : 56) : 44),
@@ -182,6 +205,7 @@ export function stackedGeometry(d: SignDesign, badge: BadgeRenderer) {
     h = lane ? 180 : d.destinations.length * rowHeight + 16;
   let source = panel(w, h, d.green ? C.green : C.blue);
   d.destinations.forEach((row, i) => {
+    const key = `destination.${row.id ?? i}`;
     const right = row.direction === "right" || row.direction === "upperRight";
     const centerY = 8 + (i + 0.5) * rowHeight;
     const x = lane ? (i * w) / d.destinations.length + 15 : right ? 20 : 80,
@@ -198,6 +222,7 @@ export function stackedGeometry(d: SignDesign, badge: BadgeRenderer) {
       );
     else
       source += text(
+        `${key}.name`,
         row.name,
         x,
         y,
@@ -207,7 +232,8 @@ export function stackedGeometry(d: SignDesign, badge: BadgeRenderer) {
         "white",
         !lane && right ? "start" : "center",
       );
-    if (row.english) source += text(row.english, x, y + 44, bw, 15, 1);
+    if (row.english)
+      source += text(`${key}.english`, row.english, x, y + 44, bw, 15, 1);
     const ax = lane
         ? ((i + 0.5) * w) / d.destinations.length
         : right
