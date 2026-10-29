@@ -4,6 +4,7 @@ import HNumberInput from "@celestia-island/hikari/components/HkNumberInput.tsx";
 import HSelect from "@celestia-island/hikari/components/HkSelect.tsx";
 import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import HSwitch from "@celestia-island/hikari/components/HkSwitch.tsx";
+import SignDestinationFields from "./SignDestinationFields.vue";
 import { computed } from "vue";
 import {
   DIRECTIONS,
@@ -24,17 +25,24 @@ const rows = computed(
 const rowLimit = computed(() =>
   d.value.template === "free"
     ? 6
-    : ["interchange", "fork"].includes(d.value.template)
-      ? 2
-      : 3,
+    : d.value.template === "roundabout"
+      ? 5
+      : ["interchange", "fork", "tJunction", "wideTJunction"].includes(
+            d.value.template,
+          )
+        ? 2
+        : 3,
 );
 function addRow() {
   const row = emptyDestination();
   row.direction = ["interchange", "fork"].includes(d.value.template)
     ? "right"
-    : d.value.destinations.length === 1
-      ? "left"
-      : "right";
+    : (((["tJunction", "wideTJunction"].includes(d.value.template)
+        ? ["straight", "right"]
+        : DIRECTIONS.map((x) => x.value)
+      ).find(
+        (value) => !d.value.destinations.some((r) => r.direction === value),
+      ) as typeof row.direction) ?? "straight");
   d.value.destinations.push(row);
 }
 </script>
@@ -58,13 +66,7 @@ function addRow() {
     ><HInput
       :label="express ? '高速名称（可选）' : '道路名称'"
       v-model="d.roadName"
-      :maxlength="
-        express
-          ? d.template === 'provincialExpressway' || d.code.length === 4
-            ? 6
-            : 4
-          : 20
-      " /><HInput
+      :maxlength="20" /><HInput
       v-if="!express"
       label="英文 / 拼音（可选）"
       v-model="d.english"
@@ -84,6 +86,32 @@ function addRow() {
     class="sign-maker-toggle"
     >高速公路绿底<HSwitch v-model="d.green" aria-label="高速公路绿底"
   /></label>
+  <label
+    v-if="
+      ['crossroads', 'wideTJunction', 'dividedJunction'].includes(d.template)
+    "
+    >方位角标<HSelect
+      v-model="d.cardinal"
+      :options="[
+        { value: '', label: '无' },
+        ...['东', '南', '西', '北'].map((value) => ({ value, label: value })),
+      ]"
+  /></label>
+  <label v-if="d.cardinal"
+    >角标位置<HSelect
+      :model-value="d.cardinalSide ?? 'left'"
+      :options="[
+        { value: 'left', label: '左上' },
+        { value: 'right', label: '右上' },
+      ]"
+      @update:model-value="d.cardinalSide = $event as 'left' | 'right'"
+  /></label>
+  <HInput
+    v-if="d.template === 'dividedJunction'"
+    label="中间道路名称"
+    v-model="d.centerRoad"
+    :maxlength="10"
+  />
   <template v-if="rows"
     ><section
       v-for="(row, index) in d.destinations"
@@ -100,28 +128,7 @@ function addRow() {
           >删除</HButton
         >
       </div>
-      <HInput label="名称" v-model="row.name" :maxlength="20" /><HInput
-        label="英文 / 拼音（可选）"
-        v-model="row.english"
-        :maxlength="80"
-      /><HInput
-        v-if="d.template === 'distance'"
-        label="距离（km）"
-        v-model="row.distance"
-        :maxlength="8"
-      /><label v-else
-        >方向<HSelect
-          panel-title="目的地方向"
-          v-model="row.direction"
-          :options="
-            ['interchange', 'fork'].includes(d.template)
-              ? DIRECTIONS.filter(
-                  (direction) =>
-                    direction.value === 'left' || direction.value === 'right',
-                )
-              : [...DIRECTIONS]
-          "
-      /></label>
+      <SignDestinationFields :row="row" :template="d.template" />
     </section>
     <HButton
       variant="outline"

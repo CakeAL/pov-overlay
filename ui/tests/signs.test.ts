@@ -116,6 +116,13 @@ test("the Hikari sign page isolates editor shortcuts and keeps the draft without
     const before = editor.layout.widgets.length,
       x = editor.layout.selected!.x;
     editor.signMaker.open();
+    expect(editor.signMaker.items.length).toBeGreaterThan(10);
+    expect(host.textContent).not.toContain("国标示例");
+    expect(host.textContent).not.toContain("文字栅格化");
+    const green = host.querySelector<HTMLElement>(".hk-tag-success")!;
+    expect(green.textContent).toBe("高速");
+    expect(green.style.getPropertyValue("--hi-color-success")).toBe("#166534");
+    expect(host.querySelector(".hk-tag-danger")?.textContent).toBe("国道");
     editor.signMaker.add("nationalExpressway");
     editor.signMaker.design!.code = "42";
     editor.signMaker.design!.roadName = "沪蓉高速";
@@ -203,60 +210,162 @@ test("four-digit highway signs use Appendix C panel ratio and a two-thirds-heigh
   expect(doc.querySelector('[aria-label="许广高速"]')).not.toBeNull();
 });
 
-test("raster export replaces only lettering, preserving vector panels and embedding PNG", async () => {
-  const { rasterizeSignText } = await import(
-    "../infrastructure/rasterizeSignText"
+test("Appendix B assigns normal English to A and road/exit numbers to B", async () => {
+  fonts();
+  const d = newSignDesign("direction");
+  d.destinations = [
+    { name: "南京", english: "Nanjing", distance: "", direction: "straight" },
+  ];
+  const output = await outlineSign(renderSign(d).source);
+  const doc = new DOMParser().parseFromString(output, "image/svg+xml");
+  const english = doc.querySelector('[aria-label="Nanjing"]')!;
+  expect(english.getAttribute("data-sign-font")).toBe("A");
+  const scales = [...english.querySelectorAll("path")].map(
+    (p) => p.getAttribute("transform")!.match(/scale\(([^)]+)\)/)![1],
   );
-  let imageSource = "";
-  vi.stubGlobal(
-    "Image",
-    class {
-      onload?: () => void;
-      onerror?: () => void;
-      set src(value: string) {
-        imageSource = value;
-        queueMicrotask(() => this.onload?.());
-      }
-    },
+  expect(new Set(scales).size).toBe(1); // Preserve lowercase proportions and common baseline.
+  d.template = "exit";
+  d.exitNumber = "12";
+  const exit = new DOMParser().parseFromString(
+    await outlineSign(renderSign(d).source),
+    "image/svg+xml",
   );
-  const context = vi
-    .spyOn(HTMLCanvasElement.prototype, "getContext")
-    .mockReturnValue({
-      drawImage: vi.fn(),
-    } as unknown as CanvasRenderingContext2D);
-  const png = vi
-    .spyOn(HTMLCanvasElement.prototype, "toDataURL")
-    .mockReturnValue("data:image/png;base64,AA==");
-  try {
-    const source =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 400 200"><rect width="400" height="200" fill="green"/><g data-sign-text="true"><path d="M1 1L2 2"/></g></svg>';
-    const output = await rasterizeSignText(source);
-    const doc = new DOMParser().parseFromString(output, "image/svg+xml");
-    expect(doc.querySelector("rect")).not.toBeNull();
-    expect(doc.querySelector("[data-sign-text]")).toBeNull();
-    expect(doc.querySelector("image")?.getAttribute("href")).toBe(
-      "data:image/png;base64,AA==",
-    );
-    expect(doc.querySelector("image")?.getAttribute("width")).toBe("400");
-    expect(decodeURIComponent(imageSource)).not.toContain("<rect");
-    await expect(
-      rasterizeSignText(source.replace('width="1200"', 'width="100000"')),
-    ).rejects.toThrow("8K");
-  } finally {
-    context.mockRestore();
-    png.mockRestore();
-  }
+  expect(
+    exit.querySelector('[aria-label="12"]')?.getAttribute("data-sign-font"),
+  ).toBe("B");
+  expect(
+    exit.querySelector('[aria-label="出口"]')?.getAttribute("data-sign-font"),
+  ).toBe("A");
 });
 
-test('Appendix B assigns normal English to A and road/exit numbers to B', async () => {
+test("named expressways preserve full names, Appendix C ratios and centered short names", async () => {
   fonts();
-  const d=newSignDesign('direction');d.destinations=[{name:'南京',english:'Nanjing',distance:'',direction:'straight'}];
-  const output=await outlineSign(renderSign(d).source);const doc=new DOMParser().parseFromString(output,'image/svg+xml');
-  const english=doc.querySelector('[aria-label="Nanjing"]')!;expect(english.getAttribute('data-sign-font')).toBe('A');
-  const scales=[...english.querySelectorAll('path')].map(p=>p.getAttribute('transform')!.match(/scale\(([^)]+)\)/)![1]);
-  expect(new Set(scales).size).toBe(1); // Preserve lowercase proportions and common baseline.
-  d.template='exit';d.exitNumber='12';
-  const exit=new DOMParser().parseFromString(await outlineSign(renderSign(d).source),'image/svg+xml');
-  expect(exit.querySelector('[aria-label="12"]')?.getAttribute('data-sign-font')).toBe('B');
-  expect(exit.querySelector('[aria-label="出口"]')?.getAttribute('data-sign-font')).toBe('A');
+  for (const [code, name, w] of [
+    ["3", "京台高速", 250],
+    ["92", "杭州湾环线高速", 250],
+    ["1522", "常台高速", 340],
+  ] as const) {
+    const d = { ...newSignDesign("nationalExpressway"), code, roadName: name };
+    validateSign(d);
+    const raw = renderSign(d);
+    expect(raw.source).toContain(`viewBox="0 0 ${w} 240"`);
+    const doc = new DOMParser().parseFromString(raw.source, "image/svg+xml");
+    const text = [...doc.querySelectorAll("text")].find(
+      (t) => t.textContent === name,
+    )!;
+    expect(Number(text.getAttribute("data-gap"))).toBeGreaterThan(0);
+    expect(
+      Number(text.getAttribute("data-letter-box")!.split(" ")[3]),
+    ).toBeGreaterThanOrEqual(20);
+    const outlined = await outlineSign(raw.source);
+    expect(outlined).toContain(`aria-label="${name}"`);
+    expect(outlined).not.toMatch(/<text|<image/);
+  }
+  const road = { ...newSignDesign("urbanExpressway"), roadName: "北四环" };
+  const sign = renderSign(road);
+  expect(sign.width / sign.height).toBeCloseTo(2.05, 1);
+});
+
+test("all default signs export finite portable paths and retain separate B/C route roles", async () => {
+  fonts();
+  const { SIGN_EXAMPLES } = await import("../domain/signs/examples");
+  for (const example of SIGN_EXAMPLES) {
+    validateSign(example.design);
+    const source = renderSign(example.design).source;
+    const raw = new DOMParser().parseFromString(source, "image/svg+xml");
+    for (const text of raw.querySelectorAll("text")) {
+      const [x, y, w, h] = text
+        .getAttribute("data-letter-box")!
+        .split(" ")
+        .map(Number);
+      const view = text
+        .closest("svg")!
+        .getAttribute("viewBox")!
+        .split(" ")
+        .map(Number);
+      expect(x, example.label).toBeGreaterThanOrEqual(0);
+      expect(y, example.label).toBeGreaterThanOrEqual(0);
+      expect(x! + w!, example.label).toBeLessThanOrEqual(view[2]!);
+      expect(y! + h!, example.label).toBeLessThanOrEqual(view[3]!);
+    }
+    const outlined = await outlineSign(source);
+    expect(outlined, example.label).not.toMatch(/NaN|Infinity|<text|<image/);
+    expect(sanitizeSvg(outlined).source).toContain("<path");
+  }
+  const b1 = SIGN_EXAMPLES.find((e) => e.figure === "图 B.1 b")!;
+  const doc = new DOMParser().parseFromString(
+    await outlineSign(renderSign(b1.design).source),
+    "image/svg+xml",
+  );
+  expect(
+    doc.querySelector('[aria-label="G329"]')?.getAttribute("data-sign-font"),
+  ).toBe("C");
+  expect(
+    doc.querySelector('[aria-label="S226"]')?.getAttribute("data-sign-font"),
+  ).toBe("C");
+  expect(
+    doc.querySelector('[aria-label="S206"]')?.getAttribute("data-sign-font"),
+  ).toBe("B");
+});
+
+test("distance signs sort a copy, align numeric columns and space smaller km units separately", () => {
+  const d = newSignDesign("distance");
+  d.destinations = [
+    { name: "天津", english: "", distance: "95", direction: "straight" },
+    { name: "采育", english: "", distance: "14", direction: "straight" },
+    { name: "廊坊", english: "", distance: "37", direction: "straight" },
+  ];
+  const source = renderSign(d).source;
+  const doc = new DOMParser().parseFromString(source, "image/svg+xml");
+  const texts = [...doc.querySelectorAll("text")];
+  expect(
+    texts
+      .filter((t) => ["采育", "廊坊", "天津"].includes(t.textContent!))
+      .map((t) => t.textContent),
+  ).toEqual(["采育", "廊坊", "天津"]);
+  expect(d.destinations[0]!.name).toBe("天津");
+  const boxes = (t: Element) =>
+    t.getAttribute("data-letter-box")!.split(" ").map(Number);
+  const numbers = texts.filter((t) =>
+      ["14", "37", "95"].includes(t.textContent!),
+    ),
+    units = texts.filter((t) => t.textContent === "km");
+  expect(new Set(numbers.map((t) => boxes(t)[0]))).toHaveLength(1);
+  units.forEach((unit, i) => {
+    const n = boxes(numbers[i]!),
+      u = boxes(unit);
+    expect(u[3]! / n[3]!).toBe(0.5);
+    expect(u[0]! - (n[0]! + n[2]!)).toBeGreaterThanOrEqual(18);
+    expect(u[1]! + u[3]!).toBe(n[1]! + n[3]!);
+    expect(Number(unit.getAttribute("data-gap"))).toBeGreaterThan(0);
+  });
+  expect(renderSign(d).width / renderSign(d).height).toBeCloseTo(1.39, 1);
+});
+
+test("roundabout supports distinct diagonal exits and never invents an unconfigured straight exit", () => {
+  const d = newSignDesign("roundabout");
+  d.destinations = ["left", "right", "upperLeft", "upperRight"].map(
+    (direction) => ({
+      name: "地点",
+      english: "",
+      distance: "",
+      direction: direction as "left",
+    }),
+  );
+  validateSign(d);
+  const first = renderSign(d).source;
+  d.destinations.push({
+    name: "前方",
+    english: "",
+    distance: "",
+    direction: "straight",
+  });
+  validateSign(d);
+  const next = renderSign(d).source;
+  const paths = (s: string) =>
+    new DOMParser().parseFromString(s, "image/svg+xml").querySelectorAll("path")
+      .length;
+  expect(paths(next) - paths(first)).toBe(2);
+  d.destinations[4]!.direction = "left";
+  expect(() => validateSign(d)).toThrow("每个方向");
 });

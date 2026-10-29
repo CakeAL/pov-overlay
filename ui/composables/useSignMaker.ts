@@ -1,3 +1,4 @@
+import { SIGN_EXAMPLES } from "../domain/signs/examples";
 import { computed, ref, watch } from "vue";
 import {
   newSignDesign,
@@ -9,7 +10,6 @@ import {
 } from "../domain/signs/model";
 import { renderSign } from "../domain/signs/render";
 import { outlineSign } from "../infrastructure/signFonts";
-import { rasterizeSignText } from "../infrastructure/rasterizeSignText";
 import { saveSvg } from "../infrastructure/saveSvg";
 import type { Playback } from "./usePlayback";
 import type { EditorMessages } from "./useMessages";
@@ -20,9 +20,13 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
     source = ref(""),
     error = ref(""),
     category = ref<SignCategory>("names");
-  const items = ref<{ id: string; design: SignDesign }[]>([]),
-    selectedId = ref(""),
-    rasterText = ref(false),
+  const items = ref<{ id: string; design: SignDesign }[]>(
+      SIGN_EXAMPLES.map((e) => ({
+        id: crypto.randomUUID(),
+        design: JSON.parse(JSON.stringify(e.design)) as SignDesign,
+      })),
+    ),
+    selectedId = ref(items.value[0]?.id ?? ""),
     zoom = ref(100);
   const visibleItems = computed(() =>
     items.value.filter(
@@ -107,10 +111,7 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
     if (!source.value || validation.value || busy.value) return;
     busy.value = true;
     try {
-      const output = rasterText.value
-        ? await rasterizeSignText(source.value)
-        : source.value;
-      if (await saveSvg(output, preview.value!.label))
+      if (await saveSvg(source.value, preview.value!.label))
         messages.notice.value = "SVG 已导出。";
     } catch (e) {
       messages.report(e);
@@ -129,7 +130,6 @@ export function useSignMaker(playback: Playback, messages: EditorMessages) {
     visibleItems,
     selectedId,
     design,
-    rasterText,
     zoom,
     preview,
     validation,

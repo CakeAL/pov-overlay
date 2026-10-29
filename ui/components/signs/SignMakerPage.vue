@@ -3,7 +3,7 @@ import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import HIconButton from "@celestia-island/hikari/components/HkIconButton.tsx";
 import HSelect from "@celestia-island/hikari/components/HkSelect.tsx";
 import HTabs from "@celestia-island/hikari/components/HkTabs.tsx";
-import HSwitch from "@celestia-island/hikari/components/HkSwitch.tsx";
+import SignCategoryTag from "./SignCategoryTag.vue";
 import {
   ArrowUp,
   ArrowDown,
@@ -87,13 +87,12 @@ const disabled = computed(
             :variant="maker.selectedId === item.id ? 'secondary' : 'ghost'"
             class="sign-library-select"
             @click="maker.selectedId = item.id"
-            ><span>{{
-              isRouteNumber(item.design.template) && item.design.code
-                ? signCode(item.design)
-                : SIGN_TEMPLATES.find((t) => t.value === item.design.template)
-                    ?.label
-            }}</span
-            ><strong>{{ signLabel(item.design) }}</strong></HButton
+            ><SignCategoryTag :design="item.design" />
+            <strong>{{
+              isRouteNumber(item.design.template)
+                ? `${signCode(item.design)} ${item.design.roadName}`.trim()
+                : signLabel(item.design)
+            }}</strong></HButton
           >
           <div class="sign-library-tools">
             <HIconButton
@@ -167,14 +166,6 @@ const disabled = computed(
           <p class="sign-maker-note">
             字体按用途自动选择：一般文字 A 型，道路及出口编号 B
             型；箭杆内道路编号使用 C 型。
-          </p>
-          <label class="sign-maker-toggle"
-            >导出时文字栅格化<HSwitch
-              v-model="maker.rasterText"
-              aria-label="导出时文字栅格化"
-          /></label>
-          <p class="sign-maker-note">
-            关闭时文字转矢量轮廓；开启时在 SVG 内嵌文字 PNG。
           </p>
           <p v-if="maker.validation" role="status" class="sign-maker-note">
             {{ maker.validation }}

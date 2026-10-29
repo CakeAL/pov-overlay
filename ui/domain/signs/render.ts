@@ -1,5 +1,9 @@
+import { junctionGeometry, stackedGeometry } from "./junctions";
+import { distanceGeometry } from "./distances";
 import { escapeXml as xml } from "../location";
 import {
+  newSignDesign,
+  type SignDestination,
   isExpressway,
   isRouteNumber,
   signCode,
@@ -8,34 +12,9 @@ import {
   type SignDesign,
   type SignDirection,
 } from "./model";
-export const SIGN_COLORS = {
-  green: "#359b47",
-  red: "#ee2d2d",
-  white: "#ffffff",
-  yellow: "#f4eb35",
-  black: "#000000",
-  blue: "#2c64ad",
-};
+import { SIGN_COLORS, lettering, panel } from "./primitives";
+export { SIGN_COLORS } from "./primitives";
 const C = SIGN_COLORS;
-// Bounding boxes describe visible glyph height, rather than font em size (GB 5768.2 Appendix C).
-function lettering(
-  value: string,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  gap = 0,
-  ink = C.white,
-  align = "center",
-  font: "A" | "B" | "C" = "A",
-) {
-  return value
-    ? `<text data-sign-font="${font}" data-letter-box="${x} ${y} ${w} ${h}" data-gap="${gap}" data-align="${align}" x="${x}" y="${y + h}" font-size="${h}" fill="${ink}">${xml(value)}</text>`
-    : "";
-}
-function panel(w: number, h: number, fill: string) {
-  return `<rect width="${w}" height="${h}" rx="14" fill="${fill}"/><rect x="6" y="6" width="${w - 12}" height="${h - 12}" rx="10" fill="none" stroke="${C.white}" stroke-width="3"/>`;
-}
 function arrow(direction: SignDirection, x: number, y: number, scale = 1) {
   const angle = {
     straight: 0,
@@ -60,6 +39,7 @@ export function renderSign(d: SignDesign) {
       named = !!d.roadName.trim();
     w = ({ 1: 200, 2: 250, 3: 300, 4: 340 } as Record<number, number>)[digits]!;
     h = named ? 240 : 200;
+    if (named && digits <= 2) w = 250;
     const border = named ? 12 : 6,
       round = named ? 10 : 16;
     s = named
@@ -118,7 +98,21 @@ export function renderSign(d: SignDesign) {
           "B",
         );
     }
-    if (named) s += lettering(d.roadName, 20, 172, w - 40, 40, -1);
+    if (named) {
+      const count = [...d.roadName].length;
+      const nameHeight = Math.min(
+        40,
+        (w - 40) / (count + Math.max(0, count - 1) * 0.22),
+      );
+      s += lettering(
+        d.roadName,
+        20,
+        172 + (40 - nameHeight) / 2,
+        w - 40,
+        nameHeight,
+        nameHeight * 0.22,
+      );
+    }
   } else if (route) {
     w = 420;
     h = 200;
@@ -143,38 +137,66 @@ export function renderSign(d: SignDesign) {
         "B",
       );
   } else if (["roadName", "urbanExpressway"].includes(d.template)) {
-    w = 380;
+    w = Math.max(
+      220,
+      [...d.roadName].length * 64 +
+        Math.max(0, [...d.roadName].length - 1) * 13 +
+        90,
+    );
     h = d.english ? 170 : 150;
     s =
       panel(w, h, d.template === "urbanExpressway" ? C.green : C.blue) +
-      lettering(d.roadName, 32, d.english ? 28 : 43, 316, 64, 13);
-    if (d.english) s += lettering(d.english, 32, 115, 316, 22, 2);
-  } else if (["crossroads", "roundabout"].includes(d.template)) {
-    w = 500;
-    h = 420;
-    s = panel(w, h, d.green ? C.green : C.blue);
-    if (d.template === "roundabout")
-      s +=
-        '<circle cx="250" cy="215" r="35" fill="none" stroke="white" stroke-width="14"/><path d="M250 250V370M215 215H70M285 215H430M250 180V90" fill="none" stroke="white" stroke-width="14"/>';
-    else
-      s +=
-        '<path d="M250 370V100M90 230H410" stroke="white" stroke-width="16"/>';
-    s +=
-      arrow("straight", 250, 90) +
-      arrow("left", 75, 230) +
-      arrow("right", 425, 230);
-    for (const row of d.destinations) {
-      const side =
-        row.direction === "left" || row.direction === "upperLeft"
-          ? "left"
-          : row.direction === "straight"
-            ? "straight"
-            : "right";
-      const x = side === "left" ? 24 : side === "right" ? 310 : 150,
-        y = side === "straight" ? 30 : 260;
-      s += lettering(row.name, x, y, side === "straight" ? 200 : 165, 36, 4);
-      if (row.english) s += lettering(row.english, x, y + 52, 165, 17, 1);
-    }
+      lettering(d.roadName, 32, d.english ? 28 : 43, w - 64, 64, 13);
+    if (d.english) s += lettering(d.english, 32, 115, w - 64, 22, 2);
+  } else if (
+    [
+      "crossroads",
+      "roundabout",
+      "tJunction",
+      "wideTJunction",
+      "dividedJunction",
+      "direction",
+      "laneGuidance",
+      "distance",
+    ].includes(d.template)
+  ) {
+    const badge = (
+      row: SignDestination,
+      x: number,
+      y: number,
+      height: number,
+      onArrow = false,
+      centered = false,
+    ) => {
+      const type =
+        row.routeType ??
+        (row.routeCode?.startsWith("S") ? "provincial" : "national");
+      const nested = newSignDesign(type);
+      nested.code = (row.routeCode ?? "G101").slice(1);
+      nested.province = "";
+      nested.outputWidth = 300;
+      const raw = renderSign(nested).source;
+      const view = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(raw)!;
+      const width = (height * Number(view[1])) / Number(view[2]);
+      return raw
+        .replace(
+          /width="[^"]+" height="[^"]+"/,
+          `x="${centered ? x - width / 2 : x}" y="${y}" width="${width}" height="${height}"`,
+        )
+        .replaceAll(
+          'data-sign-font="B"',
+          `data-sign-font="${onArrow ? "C" : "B"}"`,
+        );
+    };
+    const geometry =
+      d.template === "distance"
+        ? distanceGeometry(d, badge)
+        : d.template === "direction" || d.template === "laneGuidance"
+          ? stackedGeometry(d, badge)
+          : junctionGeometry(d, badge);
+    w = geometry.width;
+    h = geometry.height;
+    s = geometry.source;
   } else if (["interchange", "fork"].includes(d.template)) {
     w = 600;
     h = 390;
@@ -190,8 +212,7 @@ export function renderSign(d: SignDesign) {
         s += lettering(r.english, left ? 25 : 365, 210, 210, 22, 1);
     });
   } else {
-    const dist = d.template === "distance",
-      exit = d.template === "exit" || d.template === "entrance",
+    const exit = d.template === "exit" || d.template === "entrance",
       free = d.template === "free";
     w = free ? d.freeWidth : 500;
     const rowH = 100,
@@ -216,44 +237,10 @@ export function renderSign(d: SignDesign) {
     d.destinations.forEach((r, i) => {
       const y = top + i * (free ? (h - 40) / d.destinations.length : rowH),
         rh = free ? Math.min(60, ((h - 40) / d.destinations.length) * 0.6) : 40;
-      const rightArrow =
-        d.template === "direction" &&
-        (r.direction === "right" || r.direction === "upperRight");
-      if (!dist) s += arrow(r.direction, rightArrow ? w - 45 : 45, y + 40);
-      s += lettering(
-        r.name,
-        dist ? 28 : rightArrow ? 25 : 85,
-        y + 14,
-        dist ? w - 200 : w - 110,
-        rh,
-        4,
-        C.white,
-        "start",
-      );
+      s += arrow(r.direction, 45, y + 40);
+      s += lettering(r.name, 85, y + 14, w - 110, rh, 4, C.white, "start");
       if (r.english)
-        s += lettering(
-          r.english,
-          dist ? 28 : rightArrow ? 25 : 85,
-          y + 70,
-          dist ? w - 200 : w - 110,
-          18,
-          1,
-          C.white,
-          "start",
-        );
-      if (dist)
-        s += lettering(
-          `${r.distance || "0"} km`,
-          w - 150,
-          y + 25,
-          125,
-          34,
-          3,
-          C.white,
-          "end",
-        );
-      if (d.template === "direction" && i < d.destinations.length - 1)
-        s += `<path d="M10 ${y + rowH}H${w - 10}" stroke="white" stroke-width="2"/>`;
+        s += lettering(r.english, 85, y + 70, w - 110, 18, 1, C.white, "start");
     });
   }
   const height = Math.round((d.outputWidth * h) / w);

@@ -25,7 +25,7 @@
 }
 .sign-maker-body {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr) 300px;
+  grid-template-columns: 280px minmax(0, 1fr) 300px;
   flex: 1;
   min-height: 0;
 }
@@ -88,9 +88,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.sign-library-select span {
-  font-size: 12px;
 }
 .sign-library-tools {
   display: flex;
