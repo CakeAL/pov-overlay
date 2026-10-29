@@ -30,7 +30,7 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
     h = tall ? 320 : round ? 400 : split ? 300 : tee ? 320 : 280;
   let source = panel(w, h, d.green ? C.green : C.blue);
   const cx = tall ? 44 : tee ? 64 : w / 2,
-    cy = tall ? 190 : tee ? 188 : round ? 236 : split ? 195 : 205;
+    cy = tall ? 190 : tee ? 188 : round ? 224 : split ? 195 : 205;
   const head = (x: number, y: number, angle: number) =>
     `<path d="${split ? "M0-25L25 0H9V16H-9V0H-25Z" : "M0-10L9-1V12H-9V-1Z"}" fill="white" transform="translate(${x} ${y}) rotate(${angle})"/>`;
   const arm = (x: number, y: number) =>
@@ -63,6 +63,8 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
         `<path d="M${cx + dx * r} ${cy + dy * r}L${x} ${y}" stroke="white" stroke-width="18"/>` +
         head(x, y, (Math.atan2(dx, -dy) * 180) / Math.PI);
     }
+    // The ring is interrupted at the lower-left approach, as in figure 206.
+    source += `<path data-roundabout-notch="true" d="M${cx - 10} ${cy + 14}L${cx - 20} ${cy + 39}L${cx - 29} ${cy + 26}Z" fill="${d.green ? C.green : C.blue}"/>`;
   } else {
     source +=
       `<path d="M${cx} ${h - 34}V${tee ? 110 : 105}" stroke="white" stroke-width="18"/>` +
@@ -108,9 +110,9 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
     let x: number, y: number, box: number;
     if (round) {
       const loc = {
-        left: [24, 292, 155],
+        left: [24, 294, 155],
         right: [270, 270, 150],
-        upperLeft: [22, 56, 150],
+        upperLeft: [22, 60, 150],
         upperRight: [270, 40, 150],
         straight: [155, 20, 130],
       }[row.direction];
@@ -155,8 +157,15 @@ export function junctionGeometry(d: SignDesign, badge: BadgeRenderer) {
           true,
         );
       if (row.name)
-        source += text(row.name, x, y + (!row.onArrow ? 42 : 0), box, 30, 4);
-    } else source += text(row.name, x, y, box, 34, 6);
+        source += text(
+          row.name,
+          x,
+          y + (!row.onArrow ? 42 : 0),
+          box,
+          round ? 32 : 30,
+          round ? 6 : 4,
+        );
+    } else source += text(row.name, x, y, box, round ? 32 : 34, 6);
     if (row.english) source += text(row.english, x, y + 44, box, 15, 1);
   }
   return { width: w, height: h, source };
@@ -166,31 +175,50 @@ export function stackedGeometry(d: SignDesign, badge: BadgeRenderer) {
     w = lane
       ? Math.max(200, d.destinations.length * 150)
       : Math.max(
-          250,
+          220,
           ...d.destinations.map(
             (row) =>
               [...row.name].length * 34 +
               Math.max(0, [...row.name].length - 1) * 7 +
-              110,
+              100,
           ),
         ),
-    h = lane ? 180 : d.destinations.length * 80 + 16;
+    rowHeight = d.destinations.some((row) => row.english) ? 96 : 72,
+    h = lane ? 180 : d.destinations.length * rowHeight + 16;
   let source = panel(w, h, d.green ? C.green : C.blue);
   d.destinations.forEach((row, i) => {
     const right = row.direction === "right" || row.direction === "upperRight";
-    const x = lane ? (i * w) / d.destinations.length + 15 : right ? 20 : 88,
-      y = lane ? 24 : 18 + i * 80,
-      bw = lane ? w / d.destinations.length - 30 : w - 110;
+    const centerY = 8 + (i + 0.5) * rowHeight;
+    const x = lane ? (i * w) / d.destinations.length + 15 : right ? 20 : 80,
+      y = lane ? 24 : centerY - (row.english ? 30 : 17),
+      bw = lane ? w / d.destinations.length - 30 : w - 100;
     if (row.content === "route" && row.routeCode)
-      source += badge(row, x + 35, y - 4, 45);
-    else source += text(row.name, x, y, bw, 34, 7);
+      source += badge(
+        row,
+        x + (right ? 0 : bw / 2),
+        lane ? y - 4 : centerY - 22.5,
+        45,
+        false,
+        !right,
+      );
+    else
+      source += text(
+        row.name,
+        x,
+        y,
+        bw,
+        34,
+        7,
+        "white",
+        !lane && right ? "start" : "center",
+      );
     if (row.english) source += text(row.english, x, y + 44, bw, 15, 1);
     const ax = lane
         ? ((i + 0.5) * w) / d.destinations.length
         : right
-          ? w - 38
-          : 40,
-      ay = lane ? 125 : y + 23,
+          ? w - 36
+          : 36,
+      ay = lane ? 125 : centerY,
       angle = {
         straight: 0,
         left: -90,
@@ -201,11 +229,11 @@ export function stackedGeometry(d: SignDesign, badge: BadgeRenderer) {
     source +=
       lane && (row.direction === "right" || row.direction === "left")
         ? `<path d="M-7 25V2Q-7-13 10-13H24L14-23L22-31L45-8L22 15L14 7L24-3H12Q7-3 7 4V25Z" fill="white" transform="translate(${ax - 10} ${ay}) scale(${row.direction === "left" ? -1 : 1} 1)"/>`
-        : `<path d="M-5 22V-8L-16 3L-22-3L0-25L22-3L16 3L5-8V22Z" fill="white" transform="translate(${ax} ${ay}) rotate(${angle})"/>`;
+        : `<path d="M-5 22V-5L-16 6L-22 0L0-22L22 0L16 6L5-5V22Z" fill="white" transform="translate(${ax} ${ay}) rotate(${angle})"/>`;
     if (i < d.destinations.length - 1)
       source += lane
         ? `<path d="M${((i + 1) * w) / d.destinations.length} 14V${h - 14}" stroke="white" stroke-width="2" stroke-dasharray="8 8"/>`
-        : `<path d="M10 ${88 + i * 80}H${w - 10}" stroke="white" stroke-width="2"/>`;
+        : `<path d="M10 ${8 + (i + 1) * rowHeight}H${w - 10}" stroke="white" stroke-width="2"/>`;
   });
   return { width: w, height: h, source };
 }

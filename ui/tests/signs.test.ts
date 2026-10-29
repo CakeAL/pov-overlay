@@ -369,3 +369,139 @@ test("roundabout supports distinct diagonal exits and never invents an unconfigu
   d.destinations[4]!.direction = "left";
   expect(() => validateSign(d)).toThrow("每个方向");
 });
+
+async function visibleGlyphBoxes(group: Element) {
+  const { Path } = await import("opentype.js");
+  return [...group.querySelectorAll("path")].map((node) => {
+    const path = new Path();
+    (
+      path as typeof path & {
+        fromSVG(data: string, options: { flipY: boolean }): void;
+      }
+    ).fromSVG(node.getAttribute("d")!, { flipY: false });
+    const b = path.getBoundingBox();
+    const match = /translate\(([-\d.e]+) ([-\d.e]+)\) scale\(([-\d.e]+)\)/.exec(
+      node.getAttribute("transform")!,
+    )!;
+    const [, tx, ty, scale] = match.map(Number);
+    return {
+      left: tx! + b.x1 * scale!,
+      right: tx! + b.x2 * scale!,
+      top: ty! + b.y1 * scale!,
+      bottom: ty! + b.y2 * scale!,
+    };
+  });
+}
+
+test("distance glyphs retain their full height, visible tracking and shared unit baseline after outlining", async () => {
+  fonts();
+  const d = newSignDesign("distance");
+  const samples = [
+    "14",
+    "37",
+    "95",
+    "2",
+    "15",
+    "25",
+    "105",
+    "4444",
+    "9999",
+    "0.25",
+  ];
+  for (const number of samples) {
+    d.destinations = [
+      { name: "南直路", english: "", direction: "straight", distance: number },
+      {
+        name: "",
+        english: "",
+        direction: "straight",
+        distance: "9999",
+        content: "route",
+        routeCode: "G101",
+        routeType: "national",
+      },
+    ];
+    const doc = new DOMParser().parseFromString(
+      await outlineSign(renderSign(d).source),
+      "image/svg+xml",
+    );
+    const glyphs = await visibleGlyphBoxes(
+      doc.querySelector(`[aria-label="${number}"]`)!,
+    );
+    const bottom = Math.max(...glyphs.map((b) => b.bottom)),
+      top = Math.min(...glyphs.map((b) => b.top));
+    expect(bottom - top, number).toBeCloseTo(36, 3);
+    for (let i = 1; i < glyphs.length; i++)
+      expect(glyphs[i]!.left - glyphs[i - 1]!.right, number).toBeCloseTo(8, 2);
+    const km = await visibleGlyphBoxes(doc.querySelector('[aria-label="km"]')!);
+    expect(Math.max(...km.map((b) => b.bottom)), number).toBeCloseTo(bottom, 3);
+    const code = doc.querySelector("svg svg")!;
+    const codeNumber = await visibleGlyphBoxes(
+      [...doc.querySelectorAll('[aria-label="9999"]')].at(-1)!,
+    );
+    const codeNumberCenter =
+      (Math.max(...codeNumber.map((b) => b.bottom)) +
+        Math.min(...codeNumber.map((b) => b.top))) /
+      2;
+    expect(
+      Number(code.getAttribute("y")) + Number(code.getAttribute("height")) / 2,
+    ).toBeCloseTo(codeNumberCenter, 3);
+  }
+});
+
+test("stacked directions center the rendered glyphs and arrows within each compact row", async () => {
+  fonts();
+  const { SIGN_EXAMPLES } = await import("../domain/signs/examples");
+  const d = SIGN_EXAMPLES.find(
+    (e) => e.design.template === "direction",
+  )!.design;
+  const doc = new DOMParser().parseFromString(
+    await outlineSign(renderSign(d).source),
+    "image/svg+xml",
+  );
+  const arrows = [...doc.documentElement.children].filter(
+    (node) => node.localName === "path" && node.hasAttribute("transform"),
+  );
+  for (const [i, name] of ["大厂", "燕郊"].entries()) {
+    const boxes = await visibleGlyphBoxes(
+      doc.querySelector(`[aria-label="${name}"]`)!,
+    );
+    const center =
+      (Math.max(...boxes.map((b) => b.bottom)) +
+        Math.min(...boxes.map((b) => b.top))) /
+      2;
+    const arrowCenter = Number(
+      /translate\([^ ]+ ([\d.]+)\)/.exec(
+        arrows[i]!.getAttribute("transform")!,
+      )![1],
+    );
+    expect(center).toBeCloseTo(arrowCenter, 3);
+  }
+  const view = doc.documentElement
+    .getAttribute("viewBox")!
+    .split(" ")
+    .map(Number);
+  expect(view[2]! / view[3]!).toBeCloseTo(1.375, 3);
+});
+
+test("roundabout endpoint names keep the same visible height with and without route shields", async () => {
+  fonts();
+  const { SIGN_EXAMPLES } = await import("../domain/signs/examples");
+  const d = SIGN_EXAMPLES.find(
+    (e) => e.design.template === "roundabout",
+  )!.design;
+  const doc = new DOMParser().parseFromString(
+    await outlineSign(renderSign(d).source),
+    "image/svg+xml",
+  );
+  for (const name of ["白涧", "三河", "唐山", "双塔"]) {
+    const boxes = await visibleGlyphBoxes(
+      doc.querySelector(`[aria-label="${name}"]`)!,
+    );
+    expect(
+      Math.max(...boxes.map((b) => b.bottom)) -
+        Math.min(...boxes.map((b) => b.top)),
+      name,
+    ).toBeCloseTo(32, 3);
+  }
+});
