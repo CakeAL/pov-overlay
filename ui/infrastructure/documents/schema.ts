@@ -1,3 +1,5 @@
+import { ROAD_TYPES, roadCodeType, validRoadType, type RoadInfoOptions } from "../../domain/roadIdentity";
+import { ROAD_INFO_SOURCE } from "../../domain/roadInfoOverlay";
 import { isMapProvider } from "../../domain/appSettings";
 import type {
   Widget,
@@ -101,6 +103,21 @@ export function validateWidgets(v: unknown): Widget[] {
         w.kind === "svg"
           ? (() => {
               const svg = object(w.svg);
+              if (svg.roadInfo != null) {
+                if (svg.textTemplate != null) throw new Error('道路元素不能同时包含文本模板。');
+                const r = object(svg.roadInfo);
+                if (r.badgePosition != null && !['before', 'after'].includes(String(r.badgePosition))) throw new Error('编号牌位置无效。');
+                if (r.typeOverride != null && !ROAD_TYPES.includes(r.typeOverride as typeof ROAD_TYPES[number])) throw new Error('道路类型无效。');
+                const numberOverride = r.numberOverride == null ? undefined : text(r.numberOverride, 5).trim().toUpperCase();
+                const typeOverride = r.typeOverride as RoadInfoOptions['typeOverride'];
+                if (numberOverride && (!roadCodeType(numberOverride) || typeOverride && !validRoadType(numberOverride, typeOverride))) throw new Error('道路编号格式或类型无效。');
+                const roadInfo: RoadInfoOptions = {
+                  badgePosition: r.badgePosition as RoadInfoOptions['badgePosition'],
+                  showEnglish: r.showEnglish == null ? undefined : bool(r.showEnglish),
+                  numberOverride, typeOverride,
+                };
+                return { ...sanitizeSvg(ROAD_INFO_SOURCE), roadInfo };
+              }
               if (svg.textTemplate != null) {
                 const textTemplate = text(svg.textTemplate, MAX_TEXT_LENGTH);
                 return { ...sanitizeSvg(textOverlaySource(textTemplate)), textTemplate };

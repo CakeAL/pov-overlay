@@ -8,6 +8,7 @@ import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import { Settings2, Bold, Italic, FolderOpen } from "lucide-vue-next";
 import { computed, toRefs } from "vue";
 import { useEditorContext } from "../../editor/context";
+import RoadInfoProperties from "./RoadInfoProperties.vue";
 import LocationProperties from "./LocationProperties.vue";
 import TextProperties from "./TextProperties.vue";
 import MapProperties from "./MapProperties.vue";
@@ -28,7 +29,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
   if (!selected.value || selected.value.locked) return;
   remember();
   selected.value.typography = { ...selected.value.typography, [key]: value };
-  if (selected.value.svg?.textTemplate != null) layout.clampWidget(selected.value);
+  if (selected.value.svg?.textTemplate != null || selected.value.svg?.roadInfo) layout.clampWidget(selected.value);
 }
 </script>
 
@@ -41,6 +42,7 @@ function typography(key: 'fontFamily' | 'fontSize' | 'bold' | 'italic', value: s
     <RouteProperties />
     <MapProperties />
     <LocationProperties />
+    <RoadInfoProperties />
     <TextProperties />
     <div class="position-fields">
       <label

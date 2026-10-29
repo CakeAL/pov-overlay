@@ -100,7 +100,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages, d
       x: parent.x + (size.width * item.x) / 960,
       y: parent.y + (size.height * item.y) / 130,
       widthRatio: ((parent.scale > 0 ? size.width / parent.scale : parent.widthRatio ?? 0.9) * item.width) / 960,
-      svg: sanitizeSvg(item.source),
+      svg: { ...sanitizeSvg(item.source), ...(item.key === 'roadInfo' ? { roadInfo: { badgePosition: 'before' as const, showEnglish: true } } : {}) },
     };
   }
   function stripAnchor(): Widget {
@@ -134,6 +134,7 @@ export function useSvgElements(layout: WidgetLayout, messages: EditorMessages, d
     const item = ALL_TELEMETRY_ITEMS.find((item) => item.key === key);
     if (!item) return;
     const widget = makeItem(item, stripAnchor());
+    if (key === 'roadInfo') widget.widthRatio = .42;
     widget.x = 0.05;
     widget.y = 0.05;
     insert([widget]);

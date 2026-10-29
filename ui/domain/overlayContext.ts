@@ -1,3 +1,4 @@
+import type { RoadBadge } from "./roadIdentity";
 import type { LocationAddress } from "./location";
 import type { Track, Sample } from './types';
 export interface JourneyProgress {
@@ -11,6 +12,7 @@ export interface JourneyProgress {
 }
 export interface OverlayContext {
   address?: LocationAddress | null;
+  roadBadge?: RoadBadge | null;
   speedMaxKmh?: number;
   track?: Track | null;
   timestampMs?: number;

@@ -76,3 +76,5 @@
 .elevation-progress > .hk-progress-bar { width: 100px; }
 .map-opacity-label { margin-top: 16px; }
 .text-properties { display: grid; gap: 8px; margin: 14px 0 18px; }
+
+.road-info-properties { display: flex; flex-direction: column; gap: 10px; }

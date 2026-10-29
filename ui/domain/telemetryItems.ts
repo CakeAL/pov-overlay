@@ -1,3 +1,4 @@
+import { ROAD_INFO_SOURCE } from "./roadInfoOverlay";
 import { LOCATION_FIELDS } from "./location";
 /** Coordinates in the original 960 × 130 strip, with independently editable SVGs. */
 export interface TelemetryItem {
@@ -93,4 +94,5 @@ export const JOURNEY_ITEMS = [
   journeyItem('progress', '行程进度', 'Progress', '%'),
 ];
 export const LOCATION_ITEMS = LOCATION_FIELDS.map(field => item(field.key, field.label, 0, 0, 400, 52, `<text x="2" y="38" font-size="28">{\$${field.field}}</text>`));
+LOCATION_ITEMS.push({ key: 'roadInfo', label: '道路名称与编号', x: 0, y: 0, width: 720, height: 100, source: ROAD_INFO_SOURCE });
 export const ALL_TELEMETRY_ITEMS = [...TELEMETRY_ITEMS, ...JOURNEY_ITEMS, ...LOCATION_ITEMS];

@@ -11,7 +11,7 @@ export const LOCATION_FIELDS = [
   { key: 'street', field: 'Street', label: '当前街道' },
   { key: 'road', field: 'Road', label: '当前路名' },
 ] as const;
-export const hasLocationFields = (widget: Widget) => widget.kind === 'svg' && /\{\$(Province|City|District|Street|Road|HasAddress)\}/.test(widget.svg?.source ?? '');
+export const hasLocationFields = (widget: Widget) => widget.kind === 'svg' && (!!widget.svg?.roadInfo || /\{\$(Province|City|District|Street|Road|HasAddress)\}/.test(widget.svg?.source ?? ''));
 // About 20m cells in China: shared by all five labels, with no requests per video frame.
 const cell = (point: LocationCoordinate): LocationCoordinate => ({ latitude: Math.round(point.latitude * 5000) / 5000, longitude: Math.round(point.longitude * 5000) / 5000 });
 const starts = new WeakMap<Track, number[]>();

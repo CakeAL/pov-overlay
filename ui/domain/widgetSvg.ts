@@ -1,3 +1,4 @@
+import { roadInfoSvg } from "./roadInfoOverlay";
 import { routeOverlay } from "./routeOverlay";
 import type { OverlayContext } from "./overlayContext";
 import { styleWidgetSvg } from "./widgetTypography";
@@ -12,6 +13,7 @@ export function widgetSvg(widget: Widget, sample: Sample | null, elapsed: number
   if (widget.scale <= 0) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>';
   if (widget.kind === "route") return styleWidgetSvg(routeOverlay(widget, sample, context), widget.typography);
   if (widget.kind === "svg") {
+    if (widget.svg?.roadInfo) return styleWidgetSvg(roadInfoSvg(widget, context.address, context.roadBadge), { ...widget.typography, fontSize: undefined });
     const template = widget.svg?.textTemplate;
     const source = styleWidgetSvg(bindSvg(template == null ? widget.svg?.source ?? "" : textOverlaySource(template, widget.typography?.fontSize), sample, elapsed, widget.color, { ...context, speedMaxKmh: widget.speedMaxKmh }), widget.typography);
     return widget.svg?.textTemplate == null ? source : fitTextOverlay(source, widget.typography?.fontSize ?? 32);
