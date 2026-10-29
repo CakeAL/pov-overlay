@@ -60,7 +60,12 @@ export function roundaboutSymbol(
   });
   // Restore the circular island after merging the white arm junctions.
   source += `<circle cx="${cx}" cy="${cy}" r="${ringRadius - ringStroke / 2}" fill="${background}"/>`;
-  // A curved, open passage with two distinct sides, rather than a wedge.
-  source += `<path data-roundabout-notch="true" d="M${cx - 14} ${cy + 13}L${cx - 30} ${cy + 34}L${cx - 16} ${cy + 44}Q${cx - 10} ${cy + 32} ${cx - 8} ${cy + 20}Q${cx - 11} ${cy + 18} ${cx - 14} ${cy + 13}Z" fill="${background}"/>`;
+  // Both cut faces follow radii, perpendicular to the circle's local tangent.
+  // Start inside the island and end outside the ring to keep the slot open.
+  const corner = (radius: number, degrees: number) => {
+    const angle = (degrees * Math.PI) / 180;
+    return `${cx + radius * Math.cos(angle)} ${cy + radius * Math.sin(angle)}`;
+  };
+  source += `<path data-roundabout-notch="true" d="M${corner(16, 110)}L${corner(60, 110)}L${corner(60, 132)}L${corner(16, 132)}Z" fill="${background}"/>`;
   return source;
 }

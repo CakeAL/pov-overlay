@@ -507,3 +507,41 @@ test("roundabout endpoint names keep the same visible height with and without ro
     ).toBeCloseTo(50, 3);
   }
 });
+
+test("roundabout notch faces are radial and extend through the full ring", async () => {
+  const { roundaboutSymbol } = await import("../domain/signs/roundabout");
+  const cx = 224,
+    cy = 224;
+  const doc = new DOMParser().parseFromString(
+    `<svg xmlns="http://www.w3.org/2000/svg">${roundaboutSymbol(cx, cy, 362, ["left", "right", "upperLeft", "upperRight"], "#2c5190")}</svg>`,
+    "image/svg+xml",
+  );
+  const notch = doc.querySelector("[data-roundabout-notch]")!;
+  const coordinates = notch
+    .getAttribute("d")!
+    .match(/-?\d+(?:\.\d+)?(?:e[+-]?\d+)?/g)!
+    .map(Number);
+  expect(coordinates).toHaveLength(8);
+  const points = Array.from({ length: 4 }, (_, i) => ({
+    x: coordinates[i * 2]! - cx,
+    y: coordinates[i * 2 + 1]! - cy,
+  }));
+  for (const [inner, outer] of [
+    [points[0]!, points[1]!],
+    [points[3]!, points[2]!],
+  ]) {
+    const inside = Math.hypot(inner!.x, inner!.y),
+      outside = Math.hypot(outer!.x, outer!.y);
+    expect(inside).toBeLessThan(22);
+    expect(outside).toBeGreaterThan(40);
+    // A radial cut has no component along the circle's tangent at its inner end.
+    const face = { x: outer!.x - inner!.x, y: outer!.y - inner!.y };
+    expect(
+      (face.x * -inner!.y + face.y * inner!.x) /
+        (Math.hypot(face.x, face.y) * inside),
+    ).toBeCloseTo(0, 10);
+  }
+  expect(
+    Math.hypot(points[0]!.x - points[3]!.x, points[0]!.y - points[3]!.y),
+  ).toBeGreaterThan(5);
+});
