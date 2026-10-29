@@ -61,3 +61,10 @@ pub async fn save_library_document(
     .await
     .map_err(|e| e.to_string())?
 }
+
+#[tauri::command]
+pub async fn write_svg(path: String, content: String) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || documents::write_svg(Path::new(&path), &content))
+        .await
+        .map_err(|e| e.to_string())?
+}

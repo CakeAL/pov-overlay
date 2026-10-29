@@ -5,7 +5,7 @@ import { computed, ref, toRefs, type ComponentPublicInstance } from 'vue';
 import HButton from '@celestia-island/hikari/components/HkButton.tsx';
 import HMenu from '@celestia-island/hikari/components/HkMenu.tsx';
 import { useEditorContext } from '../../editor/context';
-const { documents, videoExport, appSettings } = useEditorContext();
+const { documents, videoExport, appSettings, signMaker } = useEditorContext();
 const { presetName, busy, presetInput } = toRefs(documents);
 const fileOpen = ref(false), trigger = ref<ComponentPublicInstance>();
 const items = computed(() => [
@@ -24,7 +24,7 @@ function choose(key: string) {
     <HButton ref="trigger" variant="ghost" size="sm" :aria-expanded="fileOpen" aria-haspopup="menu" @click="fileOpen = !fileOpen">文件</HButton>
     <HMenu v-model:open="fileOpen" title="文件" :anchor-ref="trigger?.$el" :items="items" @select="choose" />
     <span class="current-preset">{{ presetName || 'POV Overlay' }}</span>
-    <div class="document-actions"><HIconButton variant="ghost" :size="28" aria-label="应用设置" title="设置" @click="appSettings.open"><Settings :size="18" /></HIconButton><HButton size="sm" :disabled="!videoExport.ready || busy" @click="videoExport.show">导出视频</HButton></div>
+    <div class="document-actions"><HButton variant="ghost" size="sm" :disabled="videoExport.busy" @click="signMaker.open">道路交通牌</HButton><HIconButton variant="ghost" :size="28" aria-label="应用设置" title="设置" @click="appSettings.open"><Settings :size="18" /></HIconButton><HButton size="sm" :disabled="!videoExport.ready || busy" @click="videoExport.show">导出视频</HButton></div>
     <input ref="presetInput" class="file-input" data-testid="preset-file" type="file" accept=".json,application/json" @change="documents.selected($event, 'preset')" />
   </header>
 </template>

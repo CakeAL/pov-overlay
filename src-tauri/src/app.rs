@@ -30,6 +30,8 @@ pub fn run() {
             crate::commands::system::open_preset_folder,
             crate::commands::system::open_external_url,
             crate::commands::fonts::list_system_fonts,
+            crate::commands::fonts::load_sign_font,
+            crate::commands::documents::write_svg,
             crate::commands::maps::load_amap_map,
             crate::commands::maps::load_map_tile,
             crate::commands::maps::sample_terrain_tile,

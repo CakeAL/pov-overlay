@@ -2,6 +2,7 @@ import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 export default defineConfig({
+  publicDir: "src-tauri/resources",
   plugins: [vue(), vueJsx()],
   // Hikari ships Vue TSX sources; keep them on the Vue JSX transform path.
   optimizeDeps: {

@@ -1,3 +1,4 @@
+import { useSignMaker } from "../composables/useSignMaker";
 import { useLocationLabels } from "../composables/useLocationLabels";
 import { useAppSettings } from "../composables/useAppSettings";
 import { useSystemFonts } from "../composables/useSystemFonts";
@@ -33,8 +34,9 @@ export function createEditor() {
   const widgetMenu = useWidgetMenu(layout);
   const telemetry = useTelemetrySettings();
   const svgElements = useSvgElements(layout, messages, () => appSettings.settings.defaultMapProvider);
+  const signMaker = useSignMaker(playback, messages);
   const timeline = useTimeline(media, playback, alignment, telemetry);
-  const locationLabels = useLocationLabels(timeline, layout, () => appSettings.pageOpen.value, messages);
+  const locationLabels = useLocationLabels(timeline, layout, () => appSettings.pageOpen.value || signMaker.pageOpen.value, messages);
   const profile = useTrackProfile(timeline, playback, alignment, media);
   const documents = useDocuments(
     media,
@@ -46,9 +48,10 @@ export function createEditor() {
   );
   const videoExport = useVideoExport(timeline, layout, playback, alignment, media, telemetry, documents, messages);
   const drop = useFileDrop(media);
-  useEditorShortcuts(layout, playback, viewport, () => !appSettings.pageOpen.value);
+  useEditorShortcuts(layout, playback, viewport, () => !appSettings.pageOpen.value && !signMaker.pageOpen.value);
   return reactive({
     documents,
+    signMaker,
     appSettings,
     fonts,
     widgetMenu,

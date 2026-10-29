@@ -1,0 +1,173 @@
+.sign-maker-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgb(var(--color-background));
+}
+.sign-maker-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.sign-maker-header h1 {
+  font-size: 18px;
+  margin: 0;
+}
+.sign-export-action {
+  margin-left: auto;
+}
+.sign-maker-categories {
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.sign-maker-body {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 300px;
+  flex: 1;
+  min-height: 0;
+}
+.sign-maker-library,
+.sign-maker-controls {
+  padding: 20px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.sign-maker-library {
+  border-right: 1px solid var(--line);
+}
+.sign-maker-controls {
+  border-left: 1px solid var(--line);
+}
+.sign-maker-library h2,
+.sign-maker-controls h2 {
+  font-size: 14px;
+  margin: 0;
+}
+.sign-maker-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sign-maker-controls .sign-maker-toggle {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.sign-destination {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.sign-destination-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sign-destination-heading h3 {
+  font-size: 14px;
+  margin: 0;
+}
+.sign-library-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sign-library-select {
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+}
+.sign-library-select strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sign-library-select span {
+  font-size: 12px;
+}
+.sign-library-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.sign-maker-center {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.sign-preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sign-maker-preview-stage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+.sign-maker-preview-stage img {
+  object-fit: contain;
+  max-height: 65vh;
+  flex-shrink: 0;
+}
+.sign-maker-note {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0;
+}
+@media (max-width: 1050px) {
+  .sign-maker-body {
+    grid-template-columns: 190px minmax(200px, 1fr) 260px;
+    overflow: auto;
+  }
+  .sign-maker-preview-stage {
+    padding: 12px;
+  }
+}
+@media (max-width: 780px) {
+  .sign-maker-page {
+    height: 100dvh;
+    flex: none;
+  }
+  .sign-maker-body {
+    grid-template-columns: 160px minmax(0, 1fr);
+    grid-template-rows: minmax(280px, 50vh) minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .sign-maker-library {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    padding: 16px 12px;
+  }
+  .sign-maker-center {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 12px;
+  }
+  .sign-maker-controls {
+    grid-column: 2;
+    grid-row: 2;
+    border-top: 1px solid var(--line);
+  }
+  .sign-maker-preview-stage {
+    padding: 8px;
+  }
+  .sign-maker-preview-stage img {
+    max-height: calc(50vh - 140px);
+  }
+}
