@@ -28,13 +28,9 @@ pub struct EncoderInfo {
     pub webm_vp9: bool,
 }
 pub fn detect_encoder() -> Result<EncoderInfo, String> {
-    let candidates = [
-        "ffmpeg",
-        "/opt/homebrew/bin/ffmpeg",
-        "/usr/local/bin/ffmpeg",
-    ];
-    for path in candidates {
-        let available = available_encoders(path);
+    let custom = super::ffmpeg::configured();
+    for path in super::ffmpeg::candidates(custom.as_deref()) {
+        let available = available_encoders(&path);
         if available.is_empty() {
             continue;
         }
@@ -52,13 +48,16 @@ pub fn detect_encoder() -> Result<EncoderInfo, String> {
         return Ok(EncoderInfo {
             h264_mp4,
             webm_vp9: available.contains("libvpx-vp9"),
-            path: path.into(),
+            path,
             prores4444: available.contains("prores_ks")
                 || available.contains("prores_videotoolbox"),
             png_mov: available.contains("png"),
         });
     }
-    Err("未找到 FFmpeg，请安装后重试（macOS：brew install ffmpeg）。".into())
+    Err(custom.map_or_else(
+        || "未找到 FFmpeg，请在设置中指定路径（macOS 可通过 brew install ffmpeg 安装）。".into(),
+        |path| format!("无法使用配置的 FFmpeg：{path}，请检查路径与可执行权限。"),
+    ))
 }
 
 struct Input {

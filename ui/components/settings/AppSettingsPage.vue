@@ -5,6 +5,7 @@ import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import { useEditorContext } from '../../editor/context';
 import { MAP_PROVIDERS } from '../../domain/appSettings';
 import ApiKeySetting from './ApiKeySetting.vue';
+import FfmpegSetting from './FfmpegSetting.vue';
 const { appSettings } = useEditorContext();
 const size = (bytes: number) => bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 </script>
@@ -12,6 +13,7 @@ const size = (bytes: number) => bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(
   <main class="app-settings-page" aria-label="应用设置">
     <header class="preferences-header"><HButton variant="ghost" size="sm" :disabled="appSettings.busy" @click="appSettings.close">← 返回编辑器</HButton><h1>设置</h1></header>
     <div class="preferences-content" :aria-busy="appSettings.busy">
+      <FfmpegSetting v-if="appSettings.loaded && !appSettings.busy" />
       <fieldset :disabled="appSettings.busy" @change="appSettings.flush"><h2>地图</h2>
         <label class="preferences-row">新元素默认来源<HSelect panel-title="默认地图来源" v-model="appSettings.draft.defaultMapProvider" :disabled="appSettings.busy" :options="MAP_PROVIDERS.map(provider => ({ value: provider.value, label: provider.label }))" @update:model-value="appSettings.flush" /></label>
         <label class="preferences-row">拖动加载延迟（毫秒）<HNumberInput aria-label="地图加载延迟" :min="50" :max="1500" :step="10" :model-value="appSettings.draft.mapDebounceMs" @update:model-value="appSettings.draft.mapDebounceMs = Number($event)" /></label>

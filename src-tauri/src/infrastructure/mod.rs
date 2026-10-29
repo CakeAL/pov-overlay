@@ -38,3 +38,5 @@ pub mod cached_resources;
 pub mod map_http;
 
 pub mod geocoding;
+
+pub mod ffmpeg;

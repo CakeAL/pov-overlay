@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { native } from './media';
+import { open } from '@tauri-apps/plugin-dialog';
 import { DEFAULT_APP_SETTINGS, isMapProvider, validateAppSettings, type AppSettings } from '../domain/appSettings';
 export interface CacheStats { bytes: number; files: number; path: string }
 export interface SettingsSnapshot { settings: AppSettings; amapConfigured: boolean; cache: CacheStats }
@@ -23,3 +24,7 @@ export async function setMapApiKey(provider: 'amap', key: string | null) {
 }
 export const clearMapCache = () => invoke<CacheStats>('clear_map_cache');
 export const openMapCacheFolder = () => invoke('open_map_cache_folder');
+export async function chooseFfmpeg() {
+  return open({ multiple: false, title: '选择 FFmpeg 可执行文件' });
+}
+export const detectFfmpeg = () => invoke<{ path: string }>('export_encoder_info');

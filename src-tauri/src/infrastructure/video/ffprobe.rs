@@ -5,6 +5,9 @@ use std::{
     process::Command,
 };
 fn ffprobe_path() -> Option<PathBuf> {
+    if let Some(path) = crate::infrastructure::ffmpeg::sibling_probe() {
+        return Some(path);
+    }
     let executable = if cfg!(windows) {
         "ffprobe.exe"
     } else {

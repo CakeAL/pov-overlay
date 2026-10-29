@@ -19,6 +19,7 @@ pub async fn load_app_settings(app: tauri::AppHandle) -> Result<SettingsSnapshot
     tauri::async_runtime::spawn_blocking(move || {
         let settings = app_settings::read(&config)?;
         cached_resources::set_limit(settings.cache_limit_mb);
+        crate::infrastructure::ffmpeg::configure(&settings.ffmpeg_path);
         Ok(SettingsSnapshot {
             settings,
             amap_configured: api_keys::configured(&config, "amap"),
@@ -35,6 +36,7 @@ pub async fn save_app_settings(app: tauri::AppHandle, settings: AppSettings) -> 
     tauri::async_runtime::spawn_blocking(move || {
         app_settings::save(&config, &settings)?;
         cached_resources::set_limit(settings.cache_limit_mb);
+        crate::infrastructure::ffmpeg::configure(&settings.ffmpeg_path);
         cached_resources::enforce_limit(&cache)
     })
     .await

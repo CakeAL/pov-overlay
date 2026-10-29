@@ -39,7 +39,9 @@ pub fn available_encoders(ffmpeg: &str) -> HashSet<String> {
                 .collect::<HashSet<_>>()
         })
         .unwrap_or_default();
-    if let Ok(mut cache) = cache.lock() {
+    if !names.is_empty()
+        && let Ok(mut cache) = cache.lock()
+    {
         cache.insert(ffmpeg.to_owned(), names.clone());
     }
     names

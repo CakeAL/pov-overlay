@@ -9,6 +9,7 @@ pub fn run() {
                 && let Ok(settings) = crate::infrastructure::app_settings::read(&config)
             {
                 crate::infrastructure::cached_resources::set_limit(settings.cache_limit_mb);
+                crate::infrastructure::ffmpeg::configure(&settings.ffmpeg_path);
             }
             Ok(())
         })

@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct AppSettings {
+    pub ffmpeg_path: String,
     pub default_map_provider: String,
     pub map_debounce_ms: u64,
     pub map_concurrent_requests: usize,
@@ -13,6 +14,7 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
+            ffmpeg_path: String::new(),
             default_map_provider: "osm".into(),
             map_debounce_ms: 180,
             map_concurrent_requests: 2,
@@ -25,7 +27,9 @@ impl Default for AppSettings {
 }
 impl AppSettings {
     pub fn validate(&self) -> Result<(), String> {
-        if !["osm", "amap"].contains(&self.default_map_provider.as_str())
+        if self.ffmpeg_path.len() > 4096
+            || self.ffmpeg_path.chars().any(char::is_control)
+            || !["osm", "amap"].contains(&self.default_map_provider.as_str())
             || !(50..=1500).contains(&self.map_debounce_ms)
             || !(1..=4).contains(&self.map_concurrent_requests)
             || !(250..=5000).contains(&self.amap_min_interval_ms)
