@@ -42,9 +42,9 @@ export const TELEMETRY_ITEMS: TelemetryItem[] = [
     "经纬度",
     125,
     25,
-    350,
-    40,
-    `<text x="0" y="28" font-size="19">{$Latitude}°, {$Longitude}°</text>`,
+    270,
+    80,
+    `<text x="2" y="30" font-size="25">{$LatitudeDirection}</text><text x="2" y="66" font-size="25">{$LongitudeDirection}</text>`,
   ),
   item(
     "elapsed",

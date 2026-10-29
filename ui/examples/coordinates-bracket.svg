@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 110" font-family="monospace" fill="{$Color}">
+  <path d="M25 6H7V104H25M435 6H453V104H435" fill="none" stroke="{$Color}" stroke-width="2"/>
+  <text x="29" y="42" font-size="14" opacity=".6">LAT</text><text x="87" y="43" font-size="29">{$LatitudeDirection}</text>
+  <text x="29" y="84" font-size="14" opacity=".6">LON</text><text x="87" y="85" font-size="29">{$LongitudeDirection}</text>
+</svg>

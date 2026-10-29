@@ -82,6 +82,6 @@ export function formatCoordinate(
   value: number | undefined,
   axis: "lat" | "lon",
 ): string {
-  if (value === undefined) return "—";
+  if (value == null || !Number.isFinite(value)) return "—";
   return `${Math.abs(value).toFixed(6)}° ${axis === "lat" ? (value >= 0 ? "N" : "S") : value >= 0 ? "E" : "W"}`;
 }

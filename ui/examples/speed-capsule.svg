@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" font-family="sans-serif" fill="{$Color}">
+  <rect x="2" y="2" width="356" height="116" rx="58" fill="none" stroke="{$Color}" stroke-width="3"/>
+  <path d="M37 74a28 28 0 1 1 46 0M60 55l15-15" stroke="{$Color}" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <text x="112" y="82" font-size="64" font-weight="700">{$Speed}</text><text x="308" y="82" text-anchor="middle" font-size="19">km/h</text>
+</svg>

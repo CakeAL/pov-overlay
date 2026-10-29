@@ -24,6 +24,26 @@ pub fn resolve(
         return Ok(path.to_owned());
     }
     let example = match example_key {
+        Some("digital") => Some((
+            "speed-digital.svg",
+            include_str!("../../../ui/examples/speed-digital.svg"),
+        )),
+        Some("capsule") => Some((
+            "speed-capsule.svg",
+            include_str!("../../../ui/examples/speed-capsule.svg"),
+        )),
+        Some("elevation") => Some((
+            "elevation-profile.svg",
+            include_str!("../../../ui/examples/elevation-profile.svg"),
+        )),
+        Some("coordinatesBracket") => Some((
+            "coordinates-bracket.svg",
+            include_str!("../../../ui/examples/coordinates-bracket.svg"),
+        )),
+        Some("minecraftCompass") => Some((
+            "minecraft-compass.svg",
+            include_str!("../../../ui/examples/minecraft-compass.svg"),
+        )),
         Some("gauge") => Some((
             "speed-gauge.svg",
             include_str!("../../../ui/examples/speed-gauge.svg"),

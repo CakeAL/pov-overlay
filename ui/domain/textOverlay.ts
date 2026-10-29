@@ -17,6 +17,8 @@ export const TEXT_FIELDS = [
   { field: "Progress", label: "行程进度（%）" },
   { field: "Latitude", label: "纬度" },
   { field: "Longitude", label: "经度" },
+  { field: "LatitudeDirection", label: "纬度（N/S）" },
+  { field: "LongitudeDirection", label: "经度（E/W）" },
   { field: "Heading", label: "航向（°）" },
 ] as const;
 

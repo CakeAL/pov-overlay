@@ -3,6 +3,7 @@ export const SVG_FIELDS = [
   "Speed", "SpeedRatio", "SpeedPercent", "SpeedAngle", "SpeedColor",
   "Latitude",
   "Longitude",
+  "LatitudeDirection", "LongitudeDirection", "CompassOffset",
   "Elevation",
   "Heading",
   "Distance",

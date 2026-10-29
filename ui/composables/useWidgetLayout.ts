@@ -8,7 +8,7 @@ export function useWidgetLayout(
   stage: Ref<HTMLElement | undefined>,
 ) {
   const widgets = ref<Widget[]>(defaultWidgets()),
-    selectedId = ref("speed");
+    selectedId = ref("");
   const selected = computed(() =>
     widgets.value.find((widget) => widget.id === selectedId.value),
   );
@@ -40,7 +40,7 @@ export function useWidgetLayout(
   function resetLayout() {
     remember();
     widgets.value = defaultWidgets();
-    selectedId.value = "speed";
+    selectedId.value = "";
   }
   const maximumScale = computed(() => selected.value ? widgetMaximumScale(selected.value, ratio.value) : 1);
   const dimensions = (widget: Widget) => widgetDimensions(widget, ratio.value);

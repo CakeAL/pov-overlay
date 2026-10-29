@@ -28,7 +28,8 @@ describe("project and preset validation", () => {
       ),
     ).toThrow();
     const bad = preset();
-    bad.widgets.push(bad.widgets[0]!);
+    const widget = { id: 'duplicate', kind: 'speed' as const, label: '速度', x: 0, y: 0, scale: 1, opacity: 0, color: '#ffffff', visible: true, locked: false };
+    bad.widgets.push(widget, widget);
     expect(() => parseDocument(JSON.stringify(bad), "preset")).toThrow();
   });
   it("round-trips an empty project without persisting transient blob URLs", () => {

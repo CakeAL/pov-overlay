@@ -55,32 +55,7 @@ export interface Widget {
   typography?: { fontFamily?: string; fontSize?: number; bold?: boolean; italic?: boolean };
 }
 export function defaultWidgets(): Widget[] {
-  return [
-    {
-      id: "speed",
-      kind: "speed",
-      label: "速度",
-      x: 0.055,
-      y: 0.69,
-      scale: 1,
-      opacity: 0,
-      color: "#c7f284",
-      visible: true,
-      locked: false,
-    },
-    {
-      id: "coordinates",
-      kind: "coordinates",
-      label: "经纬度",
-      x: 0.645,
-      y: 0.79,
-      scale: 1,
-      opacity: 0,
-      color: "#c7f284",
-      visible: true,
-      locked: false,
-    },
-  ];
+  return [];
 }
 
 export interface ImageAsset {

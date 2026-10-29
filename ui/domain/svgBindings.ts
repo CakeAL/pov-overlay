@@ -1,7 +1,7 @@
 import { escapeXml } from "./location";
 import type { OverlayContext } from "./overlayContext";
 import type { Sample } from "./types";
-import { formatTime } from "./telemetry";
+import { formatTime, formatCoordinate } from "./telemetry";
 export function bindSvg(
   source: string,
   sample: Sample | null,
@@ -13,6 +13,7 @@ export function bindSvg(
     value == null || !Number.isFinite(value) ? "—" : value.toFixed(digits);
   const speed = sample && sample.speedValid !== false ? Math.max(0, sample.speedMps * 3.6) : 0;
   const speedRatio = Math.min(1, speed / Math.max(1, context.speedMaxKmh ?? 60));
+  const heading = Number.isFinite(sample?.headingDeg) ? sample!.headingDeg! : 0;
   const place = (field: 'province' | 'city' | 'district' | 'street' | 'road') => escapeXml(context.address?.[field] || '—');
   const values: Record<string, string> = {
     Province: place('province'), City: place('city'), District: place('district'), Street: place('street'), Road: place('road'),
@@ -28,6 +29,9 @@ export function bindSvg(
     SpeedColor: speedRatio < 0.5 ? '#a7db76' : speedRatio < 0.8 ? '#f3cf69' : '#f27d72',
     Latitude: number(sample?.latitude, 6),
     Longitude: number(sample?.longitude, 6),
+    LatitudeDirection: formatCoordinate(sample?.latitude, 'lat'),
+    LongitudeDirection: formatCoordinate(sample?.longitude, 'lon'),
+    CompassOffset: String(-16 * (Math.round(((heading % 360 + 360) % 360) / 11.25) % 32)),
     Elevation: number(sample?.elevation, 1),
     Heading: number(sample?.headingDeg, 1),
     Distance: number(
@@ -47,7 +51,7 @@ export function bindSvg(
     Color: /^#[0-9a-f]{6}$/i.test(color) ? color : "#ffffff",
     HasData: sample ? "1" : "0",
     HasSpeed: sample && sample.speedValid !== false ? "1" : "0",
-    HasHeading: sample?.headingDeg == null ? "0" : "1",
+    HasHeading: Number.isFinite(sample?.headingDeg) ? "1" : "0",
   };
   const bound = source.replace(
     /\{\$([A-Za-z][A-Za-z0-9]*)\}/g,

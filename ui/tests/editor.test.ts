@@ -90,8 +90,9 @@ describe("editor feature coordination", () => {
     expect(editor.timeline.sample).toBeNull();
   });
   it("preserves layout history and selected-property edits across extracted panels", () => {
-    const editor = session(),
-      initialX = editor.layout.widgets[0]!.x;
+    const editor = session();
+    editor.svgElements.addTelemetryItem('speed');
+    const initialX = editor.layout.widgets[0]!.x;
     editor.layout.remember();
     editor.layout.updatePosition("x", inputEvent("25"));
     expect(editor.layout.selected?.x).toBe(0.25);
@@ -109,10 +110,11 @@ describe("editor feature coordination", () => {
     const first = session(),
       second = session();
     first.media.acceptTrack({ track: track(), name: "first.gpx" });
+    first.svgElements.addTelemetryItem('speed');
     first.layout.widgets[0]!.x = 0.25;
     await nextTick();
     expect(second.media.track).toBeNull();
-    expect(second.layout.widgets[0]!.x).toBe(0.055);
+    expect(second.layout.widgets).toEqual([]);
   });
 });
 

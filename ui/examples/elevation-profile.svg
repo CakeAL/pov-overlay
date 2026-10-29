@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" font-family="sans-serif" fill="{$Color}">
+  <path d="M6 80L43 21L65 56L82 38L111 80Z" fill="none" stroke="{$Color}" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M32 39L43 45L50 33" fill="none" stroke="{$Color}" stroke-width="2"/>
+  <text x="138" y="27" font-size="16" letter-spacing="2">ELEVATION</text>
+  <text x="134" y="82" font-size="48">{$Elevation}<tspan dx="8" font-size="20">m</tspan></text>
+</svg>
