@@ -45,6 +45,7 @@ pub fn run() {
             crate::commands::documents::read_svg,
             crate::commands::materials::load_image,
             crate::commands::materials::load_video,
+            crate::commands::materials::extract_video_gps,
             crate::commands::overlay_export::export_encoder_info,
             crate::commands::overlay_export::start_overlay_export,
             crate::commands::overlay_export::append_overlay_frame,

@@ -2,13 +2,14 @@
 import HCheckbox from "@celestia-island/hikari/components/HkCheckbox.tsx";
 import HSelect from "@celestia-island/hikari/components/HkSelect.tsx";
 import HButton from "@celestia-island/hikari/components/HkButton.tsx";
-import { Route, Check, Plus, FileVideo } from "lucide-vue-next";
+import { Route, Check, Plus, FileVideo, Satellite } from "lucide-vue-next";
 import { toRefs } from "vue";
 import TrackTimeZoneField from "./TrackTimeZoneField.vue";
 import { useEditorContext } from "../../editor/context";
+import { native } from "../../infrastructure/media";
 import { dateText, timeZone } from "../../lib/format";
 import { formatTime } from "../../domain/telemetry";
-const { media, playback, timeline } = useEditorContext();
+const { media, playback, timeline, videoGps } = useEditorContext();
 const { track, asset, busy, gpxInput, videoInput } = toRefs(media);
 const { chooseGpx, chooseVideo, selectedFile, chooseImage, selectedImage } =
   media;
@@ -75,6 +76,20 @@ const { routePath, routePoint } = toRefs(timeline);
         v-else
         :size="17"
       />
+    </HButton>
+    <HButton
+      v-if="native && asset?.path"
+      variant="ghost"
+      size="sm"
+      class="video-gps-action"
+      :disabled="busy || videoGps.busy"
+      title="从 DJI Osmo Action 4/5/6 视频提取内嵌 GPS，按 2 Hz 导出 GPX 并载入轨迹"
+      data-testid="extract-video-gps"
+      @click="videoGps.exportGpx"
+    >
+      <Satellite :size="14" />{{
+        videoGps.busy ? "正在提取 GPS…" : "提取 GPS 并导出 GPX"
+      }}
     </HButton>
     <HButton variant="outline" size="sm"
       class="asset-card"

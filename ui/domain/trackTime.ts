@@ -28,6 +28,23 @@ export function validTrackTimeOffset(value: unknown): value is number {
   );
 }
 
+/**
+ * DJI writes local clock values and the extractor keeps them verbatim. When
+ * the video carries an explicit UTC recording time, a whole-quarter-hour gap
+ * to the first extracted point identifies the camera's UTC offset.
+ */
+export function inferUtcLabelOffsetMinutes(
+  trackStartMs: number,
+  videoStartMs: number,
+): number | null {
+  if (!Number.isFinite(trackStartMs) || !Number.isFinite(videoStartMs))
+    return null;
+  const differenceMinutes = (trackStartMs - videoStartMs) / 60_000;
+  const offset = Math.round(differenceMinutes / 15) * 15;
+  if (!offset || !validTrackTimeOffset(offset)) return null;
+  return Math.abs(differenceMinutes - offset) <= 2 ? offset : null;
+}
+
 export function utcOffsetLabel(minutes: number): string {
   const absolute = Math.abs(minutes);
   return `UTC${minutes < 0 ? "−" : "+"}${String(Math.floor(absolute / 60)).padStart(2, "0")}:${String(absolute % 60).padStart(2, "0")}`;

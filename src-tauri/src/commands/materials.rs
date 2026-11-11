@@ -1,6 +1,9 @@
 use crate::{
-    application::{track_import, video_import},
-    domain::{track::Track, video::VideoMetadata},
+    application::{track_import, video_gps, video_import},
+    domain::{
+        track::Track,
+        video::{VideoGpsExport, VideoMetadata},
+    },
 };
 use std::path::Path;
 use tauri::Manager;
@@ -30,6 +33,18 @@ pub async fn load_image(
 ) -> Result<crate::application::image_import::ImageAsset, String> {
     tauri::async_runtime::spawn_blocking(move || {
         crate::application::image_import::import_image(Path::new(&path))
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+pub async fn extract_video_gps(
+    video_path: String,
+    output_path: String,
+) -> Result<VideoGpsExport, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        video_gps::export_gpx(Path::new(&video_path), Path::new(&output_path))
     })
     .await
     .map_err(|error| error.to_string())?

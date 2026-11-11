@@ -4331,6 +4331,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "osmo_gps_extract_gpx"
+version = "0.1.0"
+source = "git+https://github.com/CakeAL/osmo-link-rs?rev=8cad47ce0d02b4d762fe5431b8a4b1f1ceba4dc9#8cad47ce0d02b4d762fe5431b8a4b1f1ceba4dc9"
+dependencies = [
+ "geo-types",
+ "gpx",
+ "prost 0.14.5",
+ "thiserror 2.0.21",
+ "time",
+]
+
+[[package]]
 name = "owned_ttf_parser"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4655,6 +4667,7 @@ dependencies = [
  "geojson",
  "gpx",
  "image 0.25.10",
+ "osmo_gps_extract_gpx",
  "reqwest 0.12.28",
  "serde",
  "serde_json",
@@ -4794,6 +4807,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "prost"
+version = "0.14.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9f016da56b311cff4659f5e7335c4d5fda5ca86cae4f48b8ce1cf3335246a7d"
+dependencies = [
+ "bytes",
+ "prost-derive 0.14.5",
+]
+
+[[package]]
 name = "prost-build"
 version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4857,6 +4880,19 @@ checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
 dependencies = [
  "anyhow",
  "itertools 0.11.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "prost-derive"
+version = "0.14.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9a367f131d93b3395fc6207c11e67098493ab040def4ce3085adbf186687f7e"
+dependencies = [
+ "anyhow",
+ "itertools 0.10.5",
  "proc-macro2",
  "quote",
  "syn 2.0.119",

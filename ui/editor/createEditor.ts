@@ -13,6 +13,7 @@ import { useDocuments } from "../composables/useDocuments";
 import { reactive } from "vue";
 import { useMessages } from "../composables/useMessages";
 import { useMediaSession } from "../composables/useMediaSession";
+import { useVideoGps } from "../composables/useVideoGps";
 import { useAlignment } from "../composables/useAlignment";
 import { usePlayback } from "../composables/usePlayback";
 import { useCanvasViewport } from "../composables/useCanvasViewport";
@@ -26,6 +27,7 @@ export function createEditor() {
   const messages = useMessages();
   const fonts = useSystemFonts(messages);
   const media = useMediaSession(messages);
+  const videoGps = useVideoGps(media, messages);
   const elevation = useElevation(media, messages);
   const alignment = useAlignment(media.track, media.activeVideo, messages);
   const playback = usePlayback(media, messages);
@@ -59,6 +61,7 @@ export function createEditor() {
     widgetMenu,
     elevation,
     videoExport,
+    videoGps,
     messages,
     media,
     alignment,

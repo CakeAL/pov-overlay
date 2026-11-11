@@ -24,7 +24,7 @@ src-tauri/
     main.rs              二进制入口
     lib.rs / app.rs      模块装配与 Tauri 启动
     commands/            IPC 适配、后台调度、WebView 文件授权
-    application/         GPX 导入、视频导入、字幕与地图用例
+    application/         GPX 导入、视频导入、DJI GPS 提取、字幕与地图用例
     domain/              轨迹模型、速度/时间采样、时间对齐
     infrastructure/      GPX 解码、文件系统、ffprobe、MP4、SRT、地图渲染
   tests/                 不依赖个人文件或网络的集成测试

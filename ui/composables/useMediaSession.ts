@@ -54,12 +54,19 @@ export function useMediaSession(messages: EditorMessages) {
     sources.value = values;
     rebuild();
   }
-  function acceptTrack(result: { track: Track; name: string }) {
+  function acceptTrack(
+    result: { track: Track; name: string },
+    utcLabelOffsetMinutes: number | null = null,
+  ) {
     if (sources.value.length >= 100) throw new Error("最多导入 100 段 GPX。");
-    restoreSources([
-      ...sources.value,
-      { id: crypto.randomUUID(), ...result, enabled: true },
-    ]);
+    const source: TrackSource = {
+      id: crypto.randomUUID(),
+      ...result,
+      enabled: true,
+    };
+    if (utcLabelOffsetMinutes)
+      source.utcLabelOffsetMinutes = utcLabelOffsetMinutes;
+    restoreSources([...sources.value, source]);
   }
   function removeSource(id: string) {
     restoreSources(sources.value.filter((s) => s.id !== id));

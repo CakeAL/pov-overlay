@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mergeTracks } from "../domain/mergeTracks";
+import { inferUtcLabelOffsetMinutes } from "../domain/trackTime";
 import { routePreview, coverageIntervals } from "../domain/routePreview";
 import { sampleAt } from "../domain/telemetry";
 import type { TrackSource, Track, Sample } from "../domain/types";
@@ -125,5 +126,22 @@ describe("GPX UTC label correction", () => {
       0, 1000, 1500, 2500, 3000,
     ]);
     expect(merged.overwritten).toBe(1);
+  });
+  it("infers a whole-quarter-hour camera offset from the video capture time", () => {
+    const video = Date.parse("2026-10-27T10:22:04Z");
+    for (const offset of [480, -480, 345, -210]) {
+      expect(
+        inferUtcLabelOffsetMinutes(video + offset * 60_000 + 1_200, video),
+      ).toBe(offset);
+    }
+  });
+  it("does not infer an offset from matching clocks, unrelated gaps or missing metadata", () => {
+    const video = Date.parse("2026-10-27T10:22:04Z");
+    expect(inferUtcLabelOffsetMinutes(video + 1_200, video)).toBeNull();
+    expect(inferUtcLabelOffsetMinutes(video + 7 * 60_000, video)).toBeNull();
+    expect(inferUtcLabelOffsetMinutes(video + 500 * 60_000, video)).toBeNull();
+    expect(inferUtcLabelOffsetMinutes(video + 900 * 60_000, video)).toBeNull();
+    expect(inferUtcLabelOffsetMinutes(Number.NaN, video)).toBeNull();
+    expect(inferUtcLabelOffsetMinutes(video, Number.NaN)).toBeNull();
   });
 });

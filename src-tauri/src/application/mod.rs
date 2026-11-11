@@ -2,6 +2,7 @@
 pub mod map_preview;
 pub mod subtitle_export;
 pub mod track_import;
+pub mod video_gps;
 pub mod video_import;
 
 pub mod image_import;
