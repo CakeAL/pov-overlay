@@ -264,3 +264,25 @@ it("defaults to seven-point smoothing and restores it through projects and prese
   expect(editor.telemetry.smoothingPoints).toBe(11);
   expect(editor.documents.preset()).not.toHaveProperty("smoothingSeconds");
 });
+
+it("keeps the overlay snapshot stable between data refresh boundaries", async () => {
+  const editor = session();
+  editor.media.acceptTrack({ track: track(), name: "ride.gpx" });
+  await nextTick();
+  editor.telemetry.refreshSeconds = 1 / 6;
+  editor.playback.seek(0.05);
+  const first = editor.timeline.sample;
+  const context = editor.timeline.context;
+  editor.playback.seek(0.15);
+  expect(editor.timeline.sample).toBe(first);
+  expect(editor.timeline.context).toBe(context);
+  editor.playback.seek(0.18);
+  expect(editor.timeline.sample).not.toBe(first);
+  expect(editor.timeline.sample!.timestampMs).toBeCloseTo(
+    editor.media.track!.startMs + 1000 / 6,
+    6,
+  );
+  expect(editor.timeline.context.timestampMs).toBe(
+    editor.timeline.sample!.timestampMs,
+  );
+});

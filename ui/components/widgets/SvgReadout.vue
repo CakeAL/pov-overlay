@@ -6,7 +6,8 @@ import { useEditorContext } from "../../editor/context";
 import { useRoadBadge } from "../../composables/useRoadBadge";
 const props = defineProps<{ widget: Widget; sample: Sample | null }>();
 const { playback, timeline, locationLabels, messages } = useEditorContext();
-const { currentTime, ratio } = toRefs(playback);
+const { ratio } = toRefs(playback);
+const { sampleTime } = toRefs(timeline);
 const badge = useRoadBadge(
   toRef(props, "widget"),
   toRef(locationLabels, "address"),
@@ -14,7 +15,7 @@ const badge = useRoadBadge(
 );
 const url = computed(() =>
   svgDataUrl(
-    widgetSvg(props.widget, props.sample, currentTime.value, ratio.value, {
+    widgetSvg(props.widget, props.sample, sampleTime.value, ratio.value, {
       ...timeline.context,
       address: locationLabels.address,
       roadBadge: badge.value,
