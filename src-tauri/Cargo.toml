@@ -21,7 +21,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 gpx = "=0.10.0"
 geo = "0.31.0"
-osmo_gps_extract_gpx = { git = "https://github.com/CakeAL/osmo-link-rs", rev = "8cad47ce0d02b4d762fe5431b8a4b1f1ceba4dc9" }
+osmo_gps_extract_gpx = { git = "https://github.com/CakeAL/osmo-link-rs", rev = "eb475d227beae2648e563f18e5a87dacfd006369" }
 time = { version = "0.3.44", features = ["parsing", "formatting"] }
 srtlib = "0.2"
 anyhow = { version = "1", optional = true }

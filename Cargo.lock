@@ -4333,7 +4333,7 @@ dependencies = [
 [[package]]
 name = "osmo_gps_extract_gpx"
 version = "0.1.0"
-source = "git+https://github.com/CakeAL/osmo-link-rs?rev=8cad47ce0d02b4d762fe5431b8a4b1f1ceba4dc9#8cad47ce0d02b4d762fe5431b8a4b1f1ceba4dc9"
+source = "git+https://github.com/CakeAL/osmo-link-rs?rev=eb475d227beae2648e563f18e5a87dacfd006369#eb475d227beae2648e563f18e5a87dacfd006369"
 dependencies = [
  "geo-types",
  "gpx",
