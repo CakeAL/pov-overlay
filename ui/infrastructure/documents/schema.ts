@@ -15,6 +15,7 @@ import {
 import { validFontFamily } from "../../domain/widgetTypography";
 import { sanitizeSvg } from "../svg";
 import { MAX_TEXT_LENGTH, textOverlaySource } from "../../domain/textOverlay";
+import { SVG_EXAMPLES } from "../../domain/svgExamples";
 import { correctTrackTime, validTrackTimeOffset } from "../../domain/trackTime";
 export interface PresetDocument {
   type: "pov-overlay/preset";
@@ -43,6 +44,7 @@ const object = (v: unknown): Record<string, unknown> => {
     throw new Error("文件结构无效。");
   return v as Record<string, unknown>;
 };
+const SVG_EXAMPLE_KEYS = new Set(SVG_EXAMPLES.map((example) => example.key));
 const text = (v: unknown, max = 256): string => {
   if (typeof v !== "string" || v.length > max)
     throw new Error("文本字段无效。");
@@ -137,7 +139,7 @@ export function validateWidgets(v: unknown): Widget[] {
                 return { ...sanitizeSvg(textOverlaySource(textTemplate, undefined, lineFontSizes)), textTemplate, lineFontSizes };
               }
               const exampleKey = svg.exampleKey == null ? undefined : text(svg.exampleKey);
-              if (exampleKey && !['gauge', 'bar', 'ring'].includes(exampleKey)) throw new Error('SVG 范例标识无效。');
+              if (exampleKey && !SVG_EXAMPLE_KEYS.has(exampleKey)) throw new Error('SVG 范例标识无效。');
               return { ...sanitizeSvg(text(svg.source, 2 * 1024 * 1024)), sourcePath: svg.sourcePath == null ? undefined : text(svg.sourcePath, 4096), exampleKey };
             })()
           : undefined,

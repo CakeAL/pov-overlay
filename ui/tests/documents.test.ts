@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { parseDocument } from "../infrastructure/documents/schema";
 import { defaultWidgets } from "../domain/types";
+import { SVG_EXAMPLES } from "../domain/svgExamples";
 const preset = () => ({
   type: "pov-overlay/preset",
   version: 1,
@@ -73,6 +74,33 @@ describe("project and preset validation", () => {
       syncMode: "none",
     };
     expect(() => parseDocument(JSON.stringify(p), "project")).toThrow();
+  });
+  it("accepts every built-in SVG example identifier and rejects unknown ones", () => {
+    const widgets = SVG_EXAMPLES.map((example, index) => ({
+      id: `example-${index}`,
+      kind: "svg",
+      label: example.label,
+      x: 0,
+      y: 0,
+      scale: 1,
+      opacity: 0,
+      color: "#ffffff",
+      visible: true,
+      locked: false,
+      svg: { source: example.source, exampleKey: example.key },
+    }));
+    const parsed = parseDocument(
+      JSON.stringify({ ...preset(), widgets }),
+      "preset",
+    );
+    expect(parsed.widgets.map((widget) => widget.svg?.exampleKey)).toEqual(
+      SVG_EXAMPLES.map((example) => example.key),
+    );
+    const invalid = widgets.map((widget) => ({ ...widget }));
+    invalid[0]!.svg = { ...invalid[0]!.svg, exampleKey: "unknown" };
+    expect(() =>
+      parseDocument(JSON.stringify({ ...preset(), widgets: invalid }), "preset"),
+    ).toThrow("SVG 范例标识无效");
   });
 });
 
