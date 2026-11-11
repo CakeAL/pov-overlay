@@ -4,7 +4,7 @@ import type { Track } from "../../domain/types";
 import { exportRegion, type FrameRegion } from "../../domain/exportRegion";
 import type { ExportBackground } from "../../domain/exportSettings";
 import type { Sample, Widget } from "../../domain/types";
-import { widgetDimensions } from "../../domain/widgetGeometry";
+import { widgetDimensions, containRect, svgAspect } from "../../domain/widgetGeometry";
 import { svgDataUrl } from "../../domain/widgetSvg";
 function image(source: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -72,7 +72,19 @@ export class ExportRenderer {
         ctx.roundRect(x, y, width, height, 7 * widget.scale);
         ctx.fill();
       }
-      ctx.drawImage(images[i]!, x, y, width, height);
+      // Match the preview's object-fit: contain; badges are narrower than their box.
+      const fit = containRect(
+        svgAspect(sources[i]!) ?? width / height,
+        width,
+        height,
+      );
+      ctx.drawImage(
+        images[i]!,
+        x + fit.x,
+        y + fit.y,
+        fit.width,
+        fit.height,
+      );
     });
     this.previousKey = key;
     const pixels = ctx.getImageData(0, 0, this.region.width, this.region.height);
