@@ -1,4 +1,7 @@
-use pov_overlay_desktop::application::{track_import::import_track, video_gps::export_gpx};
+use pov_overlay_desktop::application::{
+    track_import::import_track,
+    video_gps::{extract, save_gpx},
+};
 use std::fs;
 
 fn atom(name: &[u8; 4], payload: &[u8]) -> Vec<u8> {
@@ -151,60 +154,73 @@ fn empty_mp4() -> Vec<u8> {
 }
 
 #[test]
-fn extracts_dji_gps_and_writes_resampled_gpx() {
+fn extracts_dji_gps_into_the_project_and_saves_optional_gpx() {
     let directory = tempfile::tempdir().unwrap();
     let video = directory.path().join("DJI_0001.MP4");
-    let output = directory.path().join("DJI_0001.gpx");
     fs::write(&video, djmd_mp4("dvtm_ac206.proto")).unwrap();
 
-    let result = export_gpx(&video, &output).unwrap();
+    let result = extract(&video).unwrap();
 
+    assert_eq!(fs::read_dir(directory.path()).unwrap().count(), 1);
     assert_eq!(result.raw_point_count, 5);
     assert_eq!(result.point_count, 3);
+    assert_eq!(result.track.samples.len(), 3);
+    assert_eq!(result.track.start_ms, 1_793_846_572_000);
     assert_eq!(result.proto_name, "dvtm_ac206.proto");
     assert!(result.supported_model);
-    let gpx = fs::read_to_string(&output).unwrap();
-    assert_eq!(gpx.matches("<trkpt").count(), 3);
-    assert!(gpx.contains("lat=\"22.7080722\""));
-    assert!(gpx.contains("<time>2026-11-05T02:42:52.000000000Z</time>"));
-    assert!(gpx.contains("<time>2026-11-05T02:42:53.000000000Z</time>"));
+    assert_eq!(result.gpx.matches("<trkpt").count(), 3);
+    assert!(result.gpx.contains("lat=\"22.7080722\""));
+    assert!(
+        result
+            .gpx
+            .contains("<time>2026-11-05T02:42:52.000000000Z</time>")
+    );
+    assert!(
+        result
+            .gpx
+            .contains("<time>2026-11-05T02:42:53.000000000Z</time>")
+    );
+
+    let json = serde_json::to_value(&result).unwrap();
+    assert_eq!(json["track"]["startMs"], 1_793_846_572_000_i64);
+    assert_eq!(json["pointCount"], 3);
+    assert!(json["gpx"].as_str().unwrap().contains("<gpx"));
+
+    let output = directory.path().join("DJI_0001.gpx");
+    save_gpx(&output, &result.gpx).unwrap();
     let track = import_track(&output).unwrap();
     assert_eq!(track.samples.len(), 3);
-    assert_eq!(track.start_ms, 1_793_846_572_000);
+    assert_eq!(track.start_ms, result.track.start_ms);
 }
 
 #[test]
-fn marks_unverified_dji_metadata_but_still_exports() {
+fn marks_unverified_dji_metadata_but_still_adds_the_track() {
     let directory = tempfile::tempdir().unwrap();
     let video = directory.path().join("clip.mp4");
-    let output = directory.path().join("clip.gpx");
     fs::write(&video, djmd_mp4("dvtm_other.proto")).unwrap();
 
-    let result = export_gpx(&video, &output).unwrap();
+    let result = extract(&video).unwrap();
 
     assert!(!result.supported_model);
-    assert!(output.is_file());
+    assert_eq!(result.track.samples.len(), 3);
+    assert!(!result.gpx.is_empty());
 }
 
 #[test]
-fn requires_a_gpx_destination() {
+fn requires_a_gpx_destination_and_keeps_existing_content() {
     let directory = tempfile::tempdir().unwrap();
-    let video = directory.path().join("clip.mp4");
-    fs::write(&video, empty_mp4()).unwrap();
     let output = directory.path().join("clip.srt");
-    let error = export_gpx(&video, &output).unwrap_err();
+    fs::write(&output, "existing").unwrap();
+    let error = save_gpx(&output, "<gpx/>").unwrap_err();
     assert!(error.contains(".gpx"));
-    assert!(!output.exists());
+    assert_eq!(fs::read_to_string(output).unwrap(), "existing");
 }
 
 #[test]
-fn reports_missing_dji_metadata_without_touching_an_existing_gpx() {
+fn reports_missing_dji_metadata() {
     let directory = tempfile::tempdir().unwrap();
     let video = directory.path().join("clip.mp4");
-    let output = directory.path().join("track.gpx");
     fs::write(&video, empty_mp4()).unwrap();
-    fs::write(&output, "existing").unwrap();
-    let error = export_gpx(&video, &output).unwrap_err();
+    let error = extract(&video).unwrap_err();
     assert!(error.contains("DJI Osmo Action 4/5/6"));
-    assert_eq!(fs::read_to_string(output).unwrap(), "existing");
 }

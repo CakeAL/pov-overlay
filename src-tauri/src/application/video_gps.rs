@@ -1,23 +1,15 @@
 use crate::{
-    domain::video::VideoGpsExport,
-    infrastructure::{documents, materials},
+    domain::video::VideoGpsExtraction,
+    infrastructure::{documents, gpx, materials},
 };
 use osmo_gps_extract_gpx::{ResampleMethod, extract_gps, resample, write_gpx};
 use std::path::Path;
 
 /// Library defaults: interpolate the raw GPS samples on a fixed 2 Hz grid.
 const OUTPUT_FREQUENCY_HZ: f64 = 2.0;
+const MAX_GPX_BYTES: usize = 50 * 1024 * 1024;
 
-pub fn export_gpx(video: &Path, output: &Path) -> Result<VideoGpsExport, String> {
-    if output
-        .extension()
-        .and_then(|value| value.to_str())
-        .map(str::to_lowercase)
-        .as_deref()
-        != Some("gpx")
-    {
-        return Err("请选择 .gpx 文件。".into());
-    }
+pub fn extract(video: &Path) -> Result<VideoGpsExtraction, String> {
     let video = materials::resolve_video(video)?;
     let extraction = extract_gps(&video).map_err(extraction_error)?;
     let raw_point_count = extraction.points.len();
@@ -36,12 +28,13 @@ pub fn export_gpx(video: &Path, output: &Path) -> Result<VideoGpsExport, String>
         .unwrap_or("DJI GPS");
     let mut content = Vec::new();
     write_gpx(&mut content, &points, name).map_err(|error| format!("无法写入 GPX：{error}"))?;
-    documents::atomic_write_bytes(output, &content)
-        .map_err(|error| format!("无法保存 GPX：{error}"))?;
+    let text = String::from_utf8(content).map_err(|error| format!("无法生成 GPX 文本：{error}"))?;
+    let track = gpx::parse_gpx(&text)?;
 
     let supported_model = extraction.is_supported_model();
-    Ok(VideoGpsExport {
-        gpx_path: output.to_string_lossy().into_owned(),
+    Ok(VideoGpsExtraction {
+        track,
+        gpx: text,
         point_count: points.len(),
         raw_point_count,
         camera_name: extraction.camera_name,
@@ -49,6 +42,22 @@ pub fn export_gpx(video: &Path, output: &Path) -> Result<VideoGpsExport, String>
         skipped_samples: extraction.skipped_samples,
         supported_model,
     })
+}
+
+pub fn save_gpx(output: &Path, content: &str) -> Result<(), String> {
+    if output
+        .extension()
+        .and_then(|value| value.to_str())
+        .map(str::to_lowercase)
+        .as_deref()
+        != Some("gpx")
+    {
+        return Err("请选择 .gpx 文件。".into());
+    }
+    if content.len() > MAX_GPX_BYTES {
+        return Err("GPX 文件不能超过 50 MB。".into());
+    }
+    documents::atomic_write(output, content).map_err(|error| format!("无法保存 GPX：{error}"))
 }
 
 fn extraction_error(error: osmo_gps_extract_gpx::Error) -> String {

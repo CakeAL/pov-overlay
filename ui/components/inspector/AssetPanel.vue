@@ -2,7 +2,7 @@
 import HCheckbox from "@celestia-island/hikari/components/HkCheckbox.tsx";
 import HSelect from "@celestia-island/hikari/components/HkSelect.tsx";
 import HButton from "@celestia-island/hikari/components/HkButton.tsx";
-import { Route, Check, Plus, FileVideo, Satellite } from "lucide-vue-next";
+import { Route, Check, Plus, FileVideo, Satellite, Download } from "lucide-vue-next";
 import { toRefs } from "vue";
 import TrackTimeZoneField from "./TrackTimeZoneField.vue";
 import { useEditorContext } from "../../editor/context";
@@ -77,20 +77,35 @@ const { routePath, routePoint } = toRefs(timeline);
         :size="17"
       />
     </HButton>
-    <HButton
-      v-if="native && asset?.path"
-      variant="ghost"
-      size="sm"
-      class="video-gps-action"
-      :disabled="busy || videoGps.busy"
-      title="从 DJI Osmo Action 4/5/6 视频提取内嵌 GPS，按 2 Hz 导出 GPX 并载入轨迹"
-      data-testid="extract-video-gps"
-      @click="videoGps.exportGpx"
-    >
-      <Satellite :size="14" />{{
-        videoGps.busy ? "正在提取 GPS…" : "提取 GPS 并导出 GPX"
-      }}
-    </HButton>
+    <div v-if="native && asset?.path" class="video-gps-actions">
+      <HButton
+        variant="ghost"
+        size="sm"
+        class="video-gps-action"
+        :disabled="busy || videoGps.busy"
+        title="从 DJI Osmo Action 4/5/6 视频提取内嵌 GPS，按 2 Hz 加入工程"
+        data-testid="extract-video-gps"
+        @click="videoGps.extract"
+      >
+        <Satellite :size="14" />{{
+          videoGps.extracting ? "正在提取 GPS…" : "从视频提取 GPS"
+        }}
+      </HButton>
+      <HButton
+        v-if="videoGps.canExport"
+        variant="ghost"
+        size="sm"
+        class="video-gps-action"
+        :disabled="busy || videoGps.busy"
+        title="将本次提取的 GPS 另存为 GPX"
+        data-testid="export-video-gps"
+        @click="videoGps.exportGpx"
+      >
+        <Download :size="14" />{{
+          videoGps.exporting ? "正在导出…" : "导出 GPX"
+        }}
+      </HButton>
+    </div>
     <HButton variant="outline" size="sm"
       class="asset-card"
       :disabled="busy"

@@ -1,3 +1,4 @@
+use super::track::Track;
 use serde::Serialize;
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -12,8 +13,9 @@ pub struct VideoMetadata {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct VideoGpsExport {
-    pub gpx_path: String,
+pub struct VideoGpsExtraction {
+    pub track: Track,
+    pub gpx: String,
     pub point_count: usize,
     pub raw_point_count: usize,
     pub camera_name: String,
