@@ -21,6 +21,7 @@ interface NativeVideo {
   timeSource: string | null;
   warning: string | null;
   duration: number;
+  fps: number | null;
 }
 export async function importNativeGpx(
   path?: string,
@@ -72,6 +73,7 @@ export async function importBrowserVideo(file: File): Promise<VideoAsset> {
         ? "未找到带时区的拍摄时间，请手动设置视频起始时间。"
         : null,
     duration: 0,
+    fps: null,
   };
 }
 export function releaseVideo(asset: VideoAsset | null) {

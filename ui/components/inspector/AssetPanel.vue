@@ -3,7 +3,7 @@ import HCheckbox from "@celestia-island/hikari/components/HkCheckbox.tsx";
 import HSelect from "@celestia-island/hikari/components/HkSelect.tsx";
 import HButton from "@celestia-island/hikari/components/HkButton.tsx";
 import { Route, Check, Plus, FileVideo, Satellite, Download } from "lucide-vue-next";
-import { toRefs } from "vue";
+import { computed, toRefs } from "vue";
 import TrackTimeZoneField from "./TrackTimeZoneField.vue";
 import { useEditorContext } from "../../editor/context";
 import { native } from "../../infrastructure/media";
@@ -17,6 +17,12 @@ const { image, imageInput, backgroundMode, sources, joinSources, mergeInfo } =
   toRefs(media);
 const { videoDuration } = toRefs(playback);
 const { routePath, routePoint } = toRefs(timeline);
+const fpsText = computed(() => {
+  const value = asset.value?.fps;
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? `${Number(value.toFixed(2))} fps`
+    : "";
+});
 </script>
 
 <template>
@@ -71,7 +77,10 @@ const { routePath, routePoint } = toRefs(timeline);
       <span class="asset-icon video-icon"><FileVideo :size="20" /></span
       ><span class="asset-copy"
         ><strong>{{ asset?.name || "导入预览视频" }}</strong
-        ><small v-if="asset">{{ formatTime(videoDuration) }}</small></span
+        ><small v-if="asset"
+          >{{ formatTime(videoDuration)
+          }}<template v-if="fpsText"> · {{ fpsText }}</template></small
+        ></span
       ><Check v-if="asset" :size="15" class="success-icon" /><Plus
         v-else
         :size="17"

@@ -33,6 +33,7 @@ export interface VideoAsset {
   timeSource: string | null;
   warning: string | null;
   duration: number;
+  fps?: number | null;
 }
 export type WidgetKind = "speed" | "coordinates" | "svg" | "route" | "minimap";
 export interface SvgOrigin { sourcePath?: string; exampleKey?: string }

@@ -27,5 +27,6 @@ pub fn import_video(path: &Path) -> Result<VideoMetadata, String> {
         time_source: timing.time_source,
         warning,
         duration: timing.duration,
+        fps: timing.fps,
     })
 }
