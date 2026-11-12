@@ -29,6 +29,43 @@ export function angleBetween(
   if (b == null) return a;
   return (a + (((b - a + 540) % 360) - 180) * t + 360) % 360;
 }
+/**
+ * DJI logs at 2 Hz while the GPS fix updates at 1 Hz, producing paired points
+ * with identical coordinates. Keeping the stale pair makes linear position
+ * interpolation hold for half the interval and then jump. Collapse a moving
+ * pair to its first point, but leave longer runs intact so real stops remain
+ * stationary for point-window smoothing.
+ */
+function collapseDuplicatePositions(samples: Sample[]): Sample[] {
+  const result: Sample[] = [];
+  for (let start = 0; start < samples.length; ) {
+    const first = samples[start]!;
+    let end = start + 1;
+    while (
+      end < samples.length &&
+      samples[end]!.segment === first.segment &&
+      samples[end]!.timestampMs - samples[end - 1]!.timestampMs <= MAX_GAP_MS &&
+      samples[end]!.latitude === first.latitude &&
+      samples[end]!.longitude === first.longitude
+    )
+      end++;
+    const last = samples[end - 1]!,
+      next = samples[end];
+    const nextInSegment =
+      next != null &&
+      next.segment === first.segment &&
+      next.timestampMs - last.timestampMs <= MAX_GAP_MS;
+    result.push(first);
+    // Only a moving two-point paired fix is stale; keep longer stationary
+    // runs intact so point-window smoothing still sees the full stop.
+    if (end - start !== 2 || !nextInSegment)
+      for (let index = start + 1; index < end; index++)
+        result.push(samples[index]!);
+    start = end;
+  }
+  return result;
+}
+
 /** Cached distance-over-time speed estimates, followed by monotone cubic interpolation. */
 export function prepareMotion(
   track: Track,
@@ -36,7 +73,8 @@ export function prepareMotion(
   stopThresholdKmh = 0,
 ): Track {
   const stopThresholdMps = Math.max(0, stopThresholdKmh) / 3.6;
-  const points = track.samples.map((p) => ({ ...p }));
+  const samples = collapseDuplicatePositions(track.samples);
+  const points = samples.map((p) => ({ ...p }));
   let total = 0;
   for (let start = 0; start < points.length; ) {
     let end = start + 1;
@@ -46,12 +84,7 @@ export function prepareMotion(
       points[end]!.timestampMs - points[end - 1]!.timestampMs <= MAX_GAP_MS
     )
       end++;
-    const estimate = estimateSegmentSpeed(
-      track.samples,
-      start,
-      end,
-      windowPoints,
-    );
+    const estimate = estimateSegmentSpeed(samples, start, end, windowPoints);
     let heading: number | null = null;
     for (let i = start; i < end; i++) {
       const p = points[i]!,

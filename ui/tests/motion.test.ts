@@ -44,6 +44,36 @@ describe("motion fitting", () => {
     expect(fit.samples[1]!.speedMps).toBe(0);
     expect(sampleAt(fit, 1500)).toBeNull();
   });
+  it("collapses paired GPS fixes so movement is not held for half the interval", () => {
+    const half = (ms: number, east: number): Sample => ({
+      timestampMs: ms,
+      latitude: 0,
+      longitude: east,
+      elevation: null,
+      speedMps: 0,
+      segment: 0,
+    });
+    const raw = track([
+      half(0, 0),
+      half(500, 0),
+      half(1000, 0.0001),
+      half(1500, 0.0001),
+      half(2000, 0.0002),
+      half(2500, 0.0002),
+      half(3000, 0.0002),
+      half(3500, 0.0002),
+      half(4000, 0.0002),
+      half(4500, 0.0002),
+      half(5000, 0.0003),
+    ]);
+    const fit = prepareMotion(raw, 0);
+    expect(fit.samples.map((p) => p.timestampMs)).toEqual([
+      0, 1000, 2000, 2500, 3000, 3500, 4000, 4500, 5000,
+    ]);
+    expect(sampleAt(fit, 500)!.longitude).toBeCloseTo(0.00005, 8);
+    expect(sampleAt(fit, 3000)!.longitude).toBeCloseTo(0.0002, 8);
+    expect(sampleAt(fit, 4750)!.longitude).toBeCloseTo(0.00025, 8);
+  });
   it("uses north zero and clockwise compass bearings", () => {
     expect(bearing(point(0), { ...point(0), latitude: 1 })).toBeCloseTo(0);
     expect(bearing(point(0), point(1))).toBeCloseTo(90);
